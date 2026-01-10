@@ -184,7 +184,7 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 1rem 2.25rem;
+    padding: 0.8rem 1.5rem;
     font-family: var(--font-elegant);
     font-size: 1rem;
     font-weight: 600;
@@ -209,16 +209,32 @@ a:hover {
 }
 
 .btn-secondary {
-    background: rgba(157, 78, 221, 0.1);
+    background: rgba(26, 10, 46, 0.6);
     color: var(--text-primary);
-    border: 2px solid var(--purple-accent);
+    border: 1px solid var(--purple-mid);
     backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover {
-    background: var(--purple-accent);
+    background: var(--purple-mid);
+    border-color: var(--purple-light);
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(157, 78, 221, 0.5);
+    color: #fff;
+    box-shadow: 0 8px 30px rgba(123, 44, 191, 0.3);
+}
+
+.btn-solid {
+    background: var(--purple-mid);
+    color: var(--text-primary);
+    box-shadow: 0 4px 15px rgba(74, 28, 107, 0.4);
+    border: 2px solid var(--purple-mid);
+}
+
+.btn-solid:hover {
+    background: var(--purple-light);
+    border-color: var(--purple-light);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(123, 44, 191, 0.5);
     color: var(--text-primary);
 }
 
@@ -361,17 +377,15 @@ a:hover {
 
 /* Hero Content */
 .hero-content {
-    max-width: 700px;
+    max-width: 900px;
+    margin-top: 5rem;
     padding: var(--spacing-md) var(--spacing-lg);
     background: transparent;
-    /* Transparent as requested */
     border-radius: 24px;
     position: relative;
     z-index: 10;
     pointer-events: none;
-    /* Let clicks pass through if needed */
     opacity: 0;
-    /* Hidden initially for intro sequence */
     filter: blur(20px);
     transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -439,6 +453,9 @@ a:hover {
     color: var(--text-secondary);
     font-family: var(--font-mono);
     font-weight: 400;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .cursor {
