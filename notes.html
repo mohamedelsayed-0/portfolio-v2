@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="University Notes by Mohamed Elsayed - Engineering Science courses at UofT">
+    <title>University Notes | Mohamed Elsayed</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" href="assets/profile.png" type="image/png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="transition-overlay"></div>
+    <div class="notes-page">
+        <!-- Page Header -->
+        <header class="page-header sticky-header transparent-header">
+            <div class="container header-content">
+                <!-- Left: Back Button -->
+                <a href="index.html" class="back-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    Back to Home
+                </a>
+
+                <!-- Center: Empty for now (or could add title here) -->
+                <div class="nav-buttons" style="flex: 1;"></div>
+            </div>
+        </header>
+
+        <!-- Page Title -->
+        <section class="page-title-section">
+            <div class="container">
+                <h1 class="section-title" style="margin-top: 2rem;">University Notes</h1>
+                <p
+                    style="color: var(--text-secondary); margin-top: var(--spacing-sm); font-family: var(--font-elegant);">
+                    Engineering Science @ University of Toronto
+                </p>
+            </div>
+        </section>
+
+        <!-- Notes Container -->
+        <div class="notes-container">
+            <div class="container">
+
+                <!-- Fall 2025 (Y1S1) -->
+                <div class="semester-section">
+                    <div class="semester-header" onclick="toggleSemester(this)">
+                        <span class="semester-icon">📂</span>
+                        <span class="semester-title">Fall 2025 (Y1S1)</span>
+                    </div>
+                    <div class="semester-content">
+
+                        <!-- ESC194 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC194 – Calculus I</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/ESC194_Midterm1_Review.pdf" class="file-link">Midterm I Review</a>
+                                    <a href="assets/ESC194_Midterm2_Review.pdf" class="file-link">Midterm II Review</a>
+                                    <a href="assets/ESC194_Exam_Review.pdf" class="file-link">Exam Review</a>
+                                    <a href="assets/ESC194_DeltaEpsilon.pdf" class="file-link">Delta Epsilon Intuitive
+                                        Understanding</a>
+                                    <a href="assets/ESC194_Proofs.pdf" class="file-link">Relevant Proofs to Know</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CIV102 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">CIV102 – Structures and Materials</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/CIV102_Final_Review.pdf" class="file-link">Final Review</a>
+                                    <a href="assets/CIV102_CheatSheet.pdf" class="file-link">Cheat Sheet For Exam</a>
+                                    <a href="assets/CIV102_Notes.pdf" class="file-link">Condensed Course Notes</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PHY180 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">PHY180 – Classical Mechanics</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/PHY180_Exam_Review.pdf" class="file-link">Exam Review</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ESC103 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC103 – Engineering Mathematics</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/ESC103_Exam_Review.pdf" class="file-link">Exam Review</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ESC180 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC180 – Intro to Programming</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/ESC180_Exam_Review.py" class="file-link">exam_review.py</a>
+                                    <a href="assets/ESC180_Projects.pdf" class="file-link">Projects Repository</a>
+                                    <a href="assets/ESC180_Exam_Review.pdf" class="file-link">Exam Review PDF</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ESC101 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC101 – Praxis I</span>
+                            </div>
+                            <div class="course-files">
+                                <p style="color: var(--text-muted);">Can't help...</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Winter 2026 (Y1S2) -->
+                <div class="semester-section">
+                    <div class="semester-header" onclick="toggleSemester(this)">
+                        <span class="semester-icon">📂</span>
+                        <span class="semester-title">Winter 2026 (Y1S2)</span>
+                    </div>
+                    <div class="semester-content">
+
+                        <!-- MAT185 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">MAT185 – Linear Algebra</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/MAT185_Lecture_Notes.pdf" class="file-link">Lecture Notes</a>
+                                    <a href="assets/MAT185_Midterm1_Review.pdf" class="file-link">Midterm I Review</a>
+                                    <a href="assets/MAT185_Midterm2_Review.pdf" class="file-link">Midterm II Review</a>
+                                    <a href="assets/MAT185_Exam_Review.pdf" class="file-link">Exam Review</a>
+                                    <a href="assets/MAT185_Proofs.pdf" class="file-link">Proofs you should know</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ESC195 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC195 – Calculus II</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/ESC195_Series.pdf" class="file-link">Understanding Series</a>
+                                    <a href="assets/ESC195_Midterm1_Review.pdf" class="file-link">Midterm I Review</a>
+                                    <a href="assets/ESC195_Midterm2_Review.pdf" class="file-link">Midterm II Review</a>
+                                    <a href="assets/ESC195_Integration.pdf" class="file-link">Integration</a>
+                                    <a href="assets/ESC195_Exam_Review.pdf" class="file-link">Exam Review</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MSE160 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">MSE160 – Molecules and Materials</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/MSE160_Lecture_Notes.pdf" class="file-link">Lecture Notes</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ECE159 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ECE159 – Electric Circuits</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/ECE159_Lecture_Notes.pdf" class="file-link">Lecture Notes</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ESC102 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC102 – Praxis II</span>
+                            </div>
+                            <div class="course-files">
+                                <p style="color: var(--text-muted);">Can't help...</p>
+                            </div>
+                        </div>
+
+                        <!-- ESC190 -->
+                        <div class="course-item">
+                            <div class="course-header" onclick="toggleCourse(this)">
+                                <span class="course-icon">📂</span>
+                                <span class="course-name">ESC190 – Algorithms & Data Structures</span>
+                            </div>
+                            <div class="course-files">
+                                <div class="file-grid">
+                                    <a href="assets/ESC190_Algorithms.pdf" class="file-link">Algorithms to Study</a>
+                                    <a href="assets/ESC190_Projects.pdf" class="file-link">Projects Repository</a>
+                                    <a href="assets/ESC190_Midterm_Review.pdf" class="file-link">Midterm Review</a>
+                                    <a href="assets/ESC190_Exam_Review.pdf" class="file-link">Exam Review</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
