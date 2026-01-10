@@ -1,4 +1,4 @@
-// ============= PAGE TRANSITIONS =============
+// PAGE TRANSITIONS
 
 function handleTransition(targetUrl) {
     const overlay = document.querySelector('.transition-overlay');
@@ -6,13 +6,12 @@ function handleTransition(targetUrl) {
         overlay.classList.add('active');
         setTimeout(() => {
             window.location.href = targetUrl;
-        }, 1000); // 1s timeout matches CSS transition duration
+        }, 1000); // 1s 
     } else {
         window.location.href = targetUrl;
     }
 }
 
-// Handle Back Button correctly for page transitions
 window.addEventListener('pageshow', (event) => {
     // If the page is loaded from cache (e.g. Back button), hide the overlay
     const overlay = document.querySelector('.transition-overlay');
@@ -35,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const href = link.getAttribute('href');
         // Only internal links that are not hash parameters and NOT PDFs
         if (href && !href.startsWith('#') && !href.startsWith('mailto') && !href.startsWith('http')) {
-            if (href.toLowerCase().endsWith('.pdf')) return; // Instant go for PDFs
+            if (href.toLowerCase().endsWith('.pdf')) return; // Instant PDFs
 
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -65,12 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
 });
 
-// ============= SCROLL REVEAL SYSTEM =============
+// SCROLL REVEAL SYSTEM
 function initScrollReveal() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('revealed');
+            } else {
+                entry.target.classList.remove('revealed');
             }
         });
     }, {
@@ -83,16 +84,15 @@ function initScrollReveal() {
     });
 }
 
-// ============= BLOCKY BLACK HOLE ENGINE =============
 
-// ============= BLOCKY BLACK HOLE ENGINE (3D & INTRO) =============
+//  intor naimation
 
 class BlackHole {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.particles = [];
-        this.shockwaves = []; // Fixed: Initialize shockwaves array
+        this.shockwaves = []; //  shockwaves array
         this.numParticles = window.innerWidth < 768 ? 1200 : 2200;
         this.initialParticles = this.numParticles;
         this.radius = 60;
@@ -100,8 +100,7 @@ class BlackHole {
         this.centerY = window.innerHeight / 2;
         this.mouse = { x: this.centerX, y: this.centerY };
 
-        // Time-based State Machine for background execution
-        this.state = 'CHAOS'; // Start with chaos/random movement
+        this.state = 'CHAOS'; // Start andom movement
         this.startTime = Date.now();
         this.stateStartTime = this.startTime;
 
@@ -134,21 +133,19 @@ class BlackHole {
             Math.max(this.canvas.width, this.canvas.height) * 0.8 :
             Math.random() * Math.max(this.canvas.width, this.canvas.height) * 0.8 + this.radius;
 
-        // Ensure AMBIENT particles match the CHAOS/Formation style
-        // They should be small, bright dots
         if (isAmbient && isNew) {
             return {
                 x: Math.random() * this.canvas.width,
                 y: Math.random() * this.canvas.height,
-                vx: (Math.random() - 0.5) * 0.5, // Gentle drift
+                vx: (Math.random() - 0.5) * 0.5, // gentle drift
                 vy: (Math.random() - 0.5) * 0.5,
-                size: Math.random() * 1.5 + 0.5, // Same size as chaos
+                size: Math.random() * 1.5 + 0.5, // same size as chaos
                 color: Math.random() > 0.4 ? '#9d4edd' : '#e0aaff',
-                baseAlpha: Math.random() * 0.5 + 0.4 // Slightly brighter
+                baseAlpha: Math.random() * 0.5 + 0.4 // slightly brighter
             };
         }
 
-        // For initial CHAOS, give them high random velocity
+        // high velocity at start
         const chaosVx = isNew ? 0 : (Math.random() - 0.5) * 4;
         const chaosVy = isNew ? 0 : (Math.random() - 0.5) * 4;
 
@@ -175,7 +172,7 @@ class BlackHole {
         const now = Date.now();
         const elapsed = (now - this.stateStartTime);
 
-        // Adjust trail intensity based on state
+        // adjust intensity based on state
         const clearAlpha = (this.state === 'CHAOS' || this.state === 'AMBIENT') ? 0.4 : 0.25;
         this.ctx.fillStyle = `rgba(5, 5, 8, ${clearAlpha})`;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -189,10 +186,10 @@ class BlackHole {
     updateState(elapsed) {
         switch (this.state) {
             case 'CHAOS':
-                // Smoothly ramp up gravity to flow into SINK
+                // ramp up pull to flow into SINK
                 const duration = 1200;
                 const progress = Math.min(elapsed / duration, 1);
-                // Ramp from 0.8 (initial pull) to 3.5 (SINK gravity)
+                // ramp from 0.8 (initial pull) to 3.5 (SINK gravity)
                 const currentG = 0.8 + (2.7 * (progress * progress)); // Ease in
 
                 if (elapsed > duration) {
@@ -200,7 +197,7 @@ class BlackHole {
                     this.stateStartTime = Date.now();
                 }
 
-                // Also ramp spin slightly
+                // increase spin slightly
                 this.applyPhysics(currentG, 0.2 + (progress * 0.7));
                 break;
 
@@ -208,21 +205,20 @@ class BlackHole {
                 // Track progress by particles remaining
                 this.bhOpacity = this.particles.length / this.initialParticles;
 
-                // TRIGGER: When mostly empty OR time is up. 
-                // Shortened to 1500ms for a punchier feel.
-                if (this.particles.length < this.initialParticles * 0.2 || elapsed > 1500) {
+                // TRIGGER: when mostly empty OR time is up. 
+                if (this.particles.length < this.initialParticles * 0.2 || elapsed > 1000) {
                     this.state = 'BLACKOUT';
                     this.stateStartTime = Date.now();
                     this.bhOpacity = 0;
-                    this.particles = []; // Clear remaining particles
+                    this.particles = []; // clear remaining particles
 
-                    // Trigger "Cosmic Bloom" & Flash
+                    // Trigger flash and rings
                     this.bloomSize = 0;
                     this.bloomOpacity = 1;
-                    this.flashOpacity = 1; // Start white flash
+                    this.flashOpacity = 1; //  white flash
                     this.createShockwave();
                 }
-                // Classic suction physics (Strong but smooth)
+                // Classic suction physics 
                 this.applyPhysics(3.5, 0.9);
                 break;
 
@@ -231,23 +227,21 @@ class BlackHole {
                 if (elapsed < 30) {
                     this.revealContent();
                 }
-                // Short blackout (100ms) to transition
                 if (elapsed > 60) {
                     this.state = 'FADE_IN';
                     this.stateStartTime = Date.now();
                 }
 
-                // Expand the bloom & Flash
                 this.bloomSize += 45; // Faster expansion
                 this.bloomOpacity = Math.max(0, this.bloomOpacity - 0.04);
-                this.flashOpacity = Math.max(0, this.flashOpacity - 0.1); // Quick flash fade
+                this.flashOpacity = Math.max(0, this.flashOpacity - 0.1); // flash fade
 
                 this.updateShockwaves();
                 break;
 
             case 'FADE_IN':
-                // Transition to ambient after content is revealed
-                // Fade out the flash completely
+                // Transition to ambient when landing beings
+                // Fade out 
                 this.flashOpacity = Math.max(0, this.flashOpacity - 0.05);
 
                 if (elapsed > 750) {
@@ -268,13 +262,12 @@ class BlackHole {
         }
     }
     createShockwave() {
-        // Create 3 concentric rings for a "ripple" effect
         for (let i = 0; i < 3; i++) {
             this.shockwaves.push({
                 x: this.centerX,
                 y: this.centerY,
                 radius: 0,
-                speed: 20 + (i * 5), // Inner rings move slower, outer faster (or vice versa)
+                speed: 20 + (i * 5), //
                 alpha: 1 - (i * 0.2), // Outer rings fainter
                 decay: 0.02 + (i * 0.005),
                 width: 2 + i // Varying widths
@@ -286,7 +279,7 @@ class BlackHole {
         for (let i = this.shockwaves.length - 1; i >= 0; i--) {
             const s = this.shockwaves[i];
             s.radius += s.speed;
-            s.speed *= 0.99; // Smoother deceleration
+            s.speed *= 0.99; // deceleration
             s.alpha -= s.decay;
             if (s.alpha <= 0) {
                 this.shockwaves.splice(i, 1);
@@ -303,19 +296,19 @@ class BlackHole {
             const dy = this.centerY - obj.y;
             let dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 0.1) dist = 0.1; // Prevent division by zero
+            if (dist < 0.1) dist = 0.1; // division by zero
 
 
             // Vortex suction
             const distFactor = this.state === 'SINK' ? (this.radius * 2) / (dist + 10) + 1 : 1.0;
-            const pull = (gravityForce * 720 * distFactor) / (dist + 30);
+            const pull = (gravityForce * 320 * distFactor) / (dist + 30);
 
             if (gravityForce !== 0) {
                 obj.vx += (dx / dist) * pull;
                 obj.vy += (dy / dist) * pull;
             }
 
-            // Mouse Interaction (Disable for AMBIENT)
+            // Mouse Interaction (not there for ambENT)
             if (this.state !== 'AMBIENT') {
                 const mdx = this.mouse.x - obj.x;
                 const mdy = this.mouse.y - obj.y;
@@ -397,13 +390,11 @@ class BlackHole {
             hero.style.filter = 'blur(20px)';
 
             // Delay the reveal so it eases in AFTER the explosion
-            // Extended delay as requested: 1.6s
             setTimeout(() => {
                 hero.style.opacity = '1';
                 hero.style.filter = 'blur(0)';
 
                 // CRITICAL: Trigger typing ONLY after content is revealed
-                // This slows it down as requested
                 setTimeout(() => initTypingEffects(), 500);
 
             }, 1600); // Wait 1600ms (extra 1s)
@@ -436,7 +427,7 @@ class BlackHole {
     }
 }
 
-// ============= BACKGROUND ONLY ENGINE (FOR ABOUT PAGE) =============
+// BACKGROUND
 class BlockyBackground {
     constructor(canvas) {
         this.canvas = canvas;
@@ -484,7 +475,7 @@ class BlockyBackground {
     }
 }
 
-// ============= INITIALIZATION HELPERS =============
+// starting HELPERS
 
 function createFloatingBlocks() {
     const container = document.querySelector('.stars-container');
@@ -553,7 +544,7 @@ function showError(message) {
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// ============= NOTES INTERACTION =============
+//  NOTES INTERACTION
 function toggleSemester(header) {
     header.classList.toggle('open');
     const content = header.nextElementSibling;

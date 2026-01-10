@@ -33,8 +33,8 @@
 
     /* Transitions */
     --transition-fast: 0.2s ease;
-    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -57,9 +57,8 @@ body {
     min-height: 100vh;
     letter-spacing: 0.02em;
     overscroll-behavior-y: none;
-    /* Fix Mac/iOS white screen on bounce */
+    /* Fix Mac white screen on bounce */
     background: var(--bg-primary);
-    /* Use solid background to prevent white flicker */
     color: var(--text-primary);
 }
 
@@ -263,7 +262,7 @@ a:hover {
     transform: translateY(-10px);
 }
 
-/* ============= LANDING PAGE ============= */
+/*  LANDING PAGE  */
 
 .landing-page {
     min-height: 100vh;
@@ -360,7 +359,7 @@ a:hover {
     z-index: 1;
 }
 
-/* Hero Content - Transparent but legible */
+/* Hero Content */
 .hero-content {
     max-width: 700px;
     padding: var(--spacing-md) var(--spacing-lg);
@@ -388,7 +387,7 @@ a:hover {
     pointer-events: auto;
 }
 
-/* Page Title Section (Centered, Fun Font) */
+/* Page Title Section */
 .page-title-section {
     text-align: center;
     padding: var(--spacing-lg) 0 var(--spacing-md);
@@ -415,7 +414,6 @@ a:hover {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    /* No animation needed if we want it static/persistent, or keep if subtle. User said "remain purple no matter where i am", implying the old shift was distracting or changed color too much. I'll make it a fixed rich purple gradient. */
     text-shadow: 0 0 30px rgba(157, 78, 221, 0.4);
 }
 
@@ -492,7 +490,7 @@ a:hover {
     font-family: var(--font-elegant);
     font-size: 1rem;
     font-weight: 700;
-    /* Bolding as requested */
+    /* Bolding */
     position: relative;
     padding-bottom: 4px;
     letter-spacing: 0.03em;
@@ -559,7 +557,6 @@ a:hover {
 
 .page-header {
     padding: 1.5rem 0;
-    /* Talle header as requested */
     text-align: center;
     background: rgba(5, 5, 8, 0.8);
     backdrop-filter: blur(15px);
@@ -568,17 +565,10 @@ a:hover {
     border-bottom: 1px solid rgba(157, 78, 221, 0.15);
 }
 
-/* ... existing code ... */
-
-/* REWRITTEN BACK LINK - ABSOLUTELY FROZEN */
 .back-link {
     position: absolute;
     left: var(--spacing-md);
     top: 50%;
-    /* margin-top: -10px;  Assumes approx 20px height, safer than transform for jitter prevention if transform is the cause. 
-       Actually, let's keep transform but make it !important and ensure no other styles interfere. 
-       Better yet, use line-height centering method if possible, but absolute needs explicit vertical alignment.
-       I will stick to transform but add !important to EVERYTHING to stop overrides. */
     transform: translateY(-50%) !important;
     display: flex;
     align-items: center;
@@ -588,7 +578,6 @@ a:hover {
     font-family: var(--font-mono);
     font-size: 0.9rem;
     transition: color 0.3s ease;
-    /* ONLY color */
     z-index: 10;
     will-change: transform;
     /* Hint to browser to handle this separately */
@@ -604,7 +593,6 @@ a:hover {
     content: '';
     position: absolute;
     bottom: -4px;
-    /* Slightly lower */
     left: 0;
     width: 0;
     height: 1px;
@@ -619,7 +607,6 @@ a:hover {
 .back-link:hover {
     color: var(--primary-light);
     transform: translateY(-50%);
-    /* FORCE it to stay put */
 }
 
 .page-header.sticky-header {
@@ -627,9 +614,8 @@ a:hover {
     top: 0;
     z-index: 1000;
     background: rgba(5, 5, 8, 0.7);
-    /* More opaque */
     backdrop-filter: blur(12px);
-    /* Blurred background */
+    /* blurred background */
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(157, 78, 221, 0.1);
     transition: all 0.3s ease;
@@ -655,13 +641,10 @@ a:hover {
     padding: 0.5rem 0;
 }
 
-/* Old back-link styles removed to prevent conflicts */
-
 .header-spacer {
     display: none;
 }
 
-/* Remove old grid stuff */
 .header-top {
     display: none;
 }
@@ -670,9 +653,10 @@ a:hover {
     display: flex;
     justify-content: center;
     gap: 6rem;
-    /* Wider gap to make it "longer" */
     align-items: center;
     margin: 0;
+    position: relative;
+    z-index: 20;
 }
 
 .nav-header {
@@ -683,6 +667,8 @@ a:hover {
     cursor: pointer;
     transition: all 0.3s ease;
     margin: 0;
+    padding: 1rem 1.5rem;
+    /* Increase click area */
     position: relative;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -708,13 +694,12 @@ a:hover {
 }
 
 .nav-header:hover::after {
-    width: 40%;
+    width: 80%;
 }
 
 /* About Section */
 .about-section {
     padding: var(--spacing-md) 0 var(--spacing-xl) 0;
-    /* Reduced top padding to move it up */
     position: relative;
     z-index: 1;
 }
@@ -723,9 +708,7 @@ a:hover {
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: var(--spacing-lg);
-    /* Reverted to large gap */
     align-items: start;
-    /* Reverted to start */
 }
 
 .profile-image-container {
@@ -751,7 +734,6 @@ a:hover {
 
 .about-text {
     font-size: 1.5rem;
-    /* Massive Scale like Qilin */
     color: var(--text-secondary);
     line-height: 1.7;
     font-family: var(--font-main);
@@ -773,11 +755,9 @@ a:hover {
 
 .section-title {
     text-align: center;
-    /* Centered as requested */
     margin-bottom: var(--spacing-xl);
     position: relative;
     font-size: 5.5rem;
-    /* Massive professional title */
     font-family: var(--font-display);
     font-weight: 800;
     letter-spacing: -0.04em;
@@ -787,7 +767,7 @@ a:hover {
 
 .section-title::after {
     display: none;
-    /* Cleaner look */
+    /* cleaner */
 }
 
 .experience-grid {
@@ -914,7 +894,6 @@ a:hover {
     text-align: center;
     padding: 0 var(--spacing-md);
     padding-bottom: 10vh;
-    /* Shifted up by 10% */
 }
 
 .contact-buttons {
@@ -928,7 +907,6 @@ a:hover {
 .error-toast {
     position: fixed;
     top: 120px;
-    /* Moved down below header */
     left: 50%;
     transform: translateX(-50%) translateY(-100px);
     background: linear-gradient(135deg, var(--error-red), #cc3644);
@@ -938,7 +916,6 @@ a:hover {
     font-family: var(--font-elegant);
     font-weight: 600;
     z-index: 9999;
-    /* Higher z-index just in case */
     opacity: 0;
     transition: all var(--transition-normal);
     box-shadow: 0 8px 30px rgba(255, 71, 87, 0.5);
@@ -949,7 +926,7 @@ a:hover {
     opacity: 1;
 }
 
-/* ============= NOTES PAGE ============= */
+/* NOTES PAGE */
 
 .notes-page {
     min-height: 100vh;
@@ -1157,7 +1134,7 @@ a:hover {
     transform: translateX(-5px);
 }
 
-/* ============= RESPONSIVE ============= */
+/* RESPONSIVE */
 
 @media (max-width: 768px) {
     .about-content {
@@ -1193,7 +1170,7 @@ a:hover {
     }
 }
 
-/* Floating Stars Animation */
+/* Stars Animation */
 .floating-star {
     position: absolute;
     width: 2px;
