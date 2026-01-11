@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const href = link.getAttribute('href');
         // Only internal links that are not hash parameters and NOT PDFs
         if (href && !href.startsWith('#') && !href.startsWith('mailto') && !href.startsWith('http')) {
-            if (href.toLowerCase().endsWith('.pdf')) return; // Instant PDFs
+            if (href.toLowerCase().includes('.pdf')) return; // Instant PDFs
 
             link.addEventListener('click', (e) => {
                 e.preventDefault();
