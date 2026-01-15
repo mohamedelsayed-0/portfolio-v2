@@ -1,4 +1,4 @@
-// PAGE TRANSITIONS
+// TRANSITIONS
 
 function handleTransition(targetUrl) {
     const overlay = document.querySelector('.transition-overlay');
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Intercept links for smooth transition
     document.querySelectorAll('a[href]').forEach(link => {
         const href = link.getAttribute('href');
-        // Only internal links that are not hash parameters and NOT PDFs
+        // Only internal links
         if (href && !href.startsWith('#') && !href.startsWith('mailto') && !href.startsWith('http')) {
             if (href.toLowerCase().includes('.pdf')) return; // Instant PDFs
 
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initialize specific page logics
+    // specific page logics
     if (document.getElementById('blackhole-canvas')) {
         new BlackHole(document.getElementById('blackhole-canvas'));
     } else if (document.querySelector('.about-page') || document.querySelector('.notes-page')) {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
 });
 
-// SCROLL REVEAL SYSTEM
+// SCROLL system
 function initScrollReveal() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -186,10 +186,10 @@ class BlackHole {
     updateState(elapsed) {
         switch (this.state) {
             case 'CHAOS':
-                // ramp up pull to flow into SINK
+                // ramp up pull to flow into anim
                 const duration = 1200;
                 const progress = Math.min(elapsed / duration, 1);
-                // ramp from 0.8 (initial pull) to 3.5 (SINK gravity)
+                // ramp from 0.8 (initial pull) to 3.5 
                 const currentG = 0.8 + (2.7 * (progress * progress)); // Ease in
 
                 if (elapsed > duration) {
@@ -334,7 +334,7 @@ class BlackHole {
             obj.x += obj.vx;
             obj.y += obj.vy;
 
-            // Screen wrapping for AMBIENT state
+            // Screen wrapping
             if (this.state === 'AMBIENT') {
                 if (obj.x < 0) obj.x = this.canvas.width;
                 if (obj.x > this.canvas.width) obj.x = 0;
@@ -359,7 +359,7 @@ class BlackHole {
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
-        // Shockwaves (Draw first to be behind particles if needed, or after for on top)
+        // Shockwaves
         this.shockwaves.forEach(s => {
             this.ctx.beginPath();
             this.ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
@@ -386,20 +386,20 @@ class BlackHole {
 
         if (hero) {
             hero.style.visibility = 'visible';
-            hero.style.opacity = '0'; // Start hidden
+            hero.style.opacity = '0'; //  hidden
             hero.style.filter = 'blur(20px)';
 
-            // Delay the reveal so it eases in AFTER the explosion
+            // Delay 
             setTimeout(() => {
                 hero.style.opacity = '1';
                 hero.style.filter = 'blur(0)';
 
-                // CRITICAL: Trigger typing ONLY after content is revealed
+                //  after content is revealed
                 setTimeout(() => initTypingEffects(), 500);
 
             }, 1600); // Wait 1600ms (extra 1s)
 
-            // Staggered stagger children reveal
+            // Staggered reveal
             const children = hero.children;
             Array.from(children).forEach((child, index) => {
                 child.style.opacity = '0';
@@ -557,7 +557,7 @@ function toggleCourse(header) {
     content.classList.toggle('open');
 }
 
-// Expose to global scope for HTML onclick attributes
+// global scope for HTML onclick attributes
 window.toggleSemester = toggleSemester;
 window.toggleCourse = toggleCourse;
 
