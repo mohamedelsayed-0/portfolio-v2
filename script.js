@@ -563,7 +563,7 @@ window.toggleCourse = toggleCourse;
 
 // ============================================
 // ABOUT SECTION - Repeating Slide-In Animations
-// Animations replay every time section enters viewport
+// Smooth, professional motion that replays on re-entry
 // ============================================
 
 function initAboutAnimations() {
@@ -574,16 +574,18 @@ function initAboutAnimations() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // Add visible class when entering viewport
-                entry.target.classList.add('about-visible');
+                // Small delay for smoother visual entry
+                requestAnimationFrame(() => {
+                    entry.target.classList.add('about-visible');
+                });
             } else {
-                // Remove visible class when leaving viewport (enables re-animation)
+                // Remove class when fully out of view (enables re-animation)
                 entry.target.classList.remove('about-visible');
             }
         });
     }, {
-        threshold: 0.15,
-        rootMargin: '0px 0px -50px 0px'
+        threshold: 0.08,
+        rootMargin: '0px 0px -30px 0px'
     });
 
     aboutElements.forEach(el => observer.observe(el));
