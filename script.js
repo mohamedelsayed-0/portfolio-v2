@@ -561,3 +561,174 @@ function toggleCourse(header) {
 window.toggleSemester = toggleSemester;
 window.toggleCourse = toggleCourse;
 
+// ============================================
+// ABOUT SECTION - Repeating Slide-In Animations
+// Animations replay every time section enters viewport
+// ============================================
+
+function initAboutAnimations() {
+    const aboutElements = document.querySelectorAll('[data-about-animate]');
+
+    if (aboutElements.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Add visible class when entering viewport
+                entry.target.classList.add('about-visible');
+            } else {
+                // Remove visible class when leaving viewport (enables re-animation)
+                entry.target.classList.remove('about-visible');
+            }
+        });
+    }, {
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    aboutElements.forEach(el => observer.observe(el));
+}
+
+// Initialize about animations when DOM is ready
+document.addEventListener('DOMContentLoaded', initAboutAnimations);
+
+// ============================================
+// THREE.JS SUBTLE PARTICLE BACKGROUND
+// Only runs on landing page (index.html)
+// ============================================
+
+class SubtleParticleField {
+    constructor(canvas) {
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        this.canvas = canvas;
+        this.mouse = { x: 0, y: 0 };
+        this.targetMouse = { x: 0, y: 0 };
+
+        // Check if mobile - use fewer particles
+        this.isMobile = window.innerWidth < 768;
+        this.particleCount = this.isMobile ? 80 : 150;
+
+        this.init();
+        this.createParticles();
+        this.bindEvents();
+        this.animate();
+
+        // Fade in after a delay
+        setTimeout(() => {
+            this.canvas.classList.add('visible');
+        }, 500);
+    }
+
+    init() {
+        this.scene = new THREE.Scene();
+
+        this.camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        this.camera.position.z = 50;
+
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: this.canvas,
+            antialias: true,
+            alpha: true
+        });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0); // Transparent background
+    }
+
+    createParticles() {
+        const positions = new Float32Array(this.particleCount * 3);
+
+        for (let i = 0; i < this.particleCount; i++) {
+            const i3 = i * 3;
+            // Spread particles across the view
+            positions[i3] = (Math.random() - 0.5) * 100;
+            positions[i3 + 1] = (Math.random() - 0.5) * 100;
+            positions[i3 + 2] = (Math.random() - 0.5) * 50 - 20;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        // Muted purple color matching the theme
+        const material = new THREE.PointsMaterial({
+            size: this.isMobile ? 1.5 : 2,
+            color: 0x9d4edd, // --purple-accent
+            transparent: true,
+            opacity: 0.4,
+            sizeAttenuation: true
+        });
+
+        this.particles = new THREE.Points(geometry, material);
+        this.scene.add(this.particles);
+
+        // Store original positions for drift animation
+        this.originalPositions = positions.slice();
+        this.time = 0;
+    }
+
+    bindEvents() {
+        window.addEventListener('resize', () => this.onResize());
+
+        // Only track mouse on desktop
+        if (!this.isMobile) {
+            window.addEventListener('mousemove', (e) => this.onMouseMove(e));
+        }
+    }
+
+    onResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    onMouseMove(e) {
+        this.targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        this.targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    }
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+
+        this.time += 0.001;
+
+        // Smooth mouse follow
+        this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.02;
+        this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.02;
+
+        if (this.particles) {
+            // Slow rotation
+            this.particles.rotation.y += 0.0002;
+            this.particles.rotation.x += 0.0001;
+
+            // Subtle mouse parallax
+            this.particles.rotation.y += this.mouse.x * 0.0005;
+            this.particles.rotation.x += this.mouse.y * 0.0005;
+
+            // Gentle drift animation on particles
+            const positions = this.particles.geometry.attributes.position.array;
+            for (let i = 0; i < this.particleCount; i++) {
+                const i3 = i * 3;
+                positions[i3 + 1] = this.originalPositions[i3 + 1] +
+                    Math.sin(this.time * 2 + i * 0.1) * 0.5;
+            }
+            this.particles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        this.renderer.render(this.scene, this.camera);
+    }
+}
+
+// Initialize Three.js background only on landing page
+(function() {
+    const threeBg = document.getElementById('three-bg');
+    if (threeBg) {
+        new SubtleParticleField(threeBg);
+    }
+})();
+
