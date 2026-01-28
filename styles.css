@@ -785,7 +785,7 @@ a:hover {
 
 /* About Inner Container */
 .about-inner-container {
-    max-width: 880px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
 }
@@ -793,8 +793,8 @@ a:hover {
 /* About Content Grid - Balanced Two Column */
 .about-content-grid {
     display: grid;
-    grid-template-columns: 1fr 200px;
-    gap: var(--spacing-lg);
+    grid-template-columns: 1fr 300px;
+    gap: var(--spacing-xl);
     align-items: center;
 }
 
@@ -823,17 +823,19 @@ a:hover {
 }
 
 .about-profile-image {
-    width: 180px;
-    height: 180px;
+    width: 280px;
+    height: 280px;
     object-fit: cover;
-    border-radius: 12px;
-    border: 2px solid rgba(157, 78, 221, 0.15);
-    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    border-radius: 16px;
+    border: 2px solid rgba(157, 78, 221, 0.2);
+    box-shadow: 0 8px 30px rgba(123, 44, 191, 0.12);
+    transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 .about-profile-image:hover {
-    border-color: rgba(157, 78, 221, 0.35);
-    box-shadow: 0 12px 35px rgba(123, 44, 191, 0.15);
+    border-color: rgba(157, 78, 221, 0.4);
+    box-shadow: 0 16px 50px rgba(123, 44, 191, 0.2);
+    transform: scale(1.02);
 }
 
 /* ============================================
@@ -909,8 +911,8 @@ a:hover {
     }
 
     .about-profile-image {
-        width: 140px;
-        height: 140px;
+        width: 200px;
+        height: 200px;
     }
 
     .about-text-block {
