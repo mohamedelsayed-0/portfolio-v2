@@ -721,7 +721,7 @@ a:hover {
 .about-section-wrapper {
     position: relative;
     z-index: 1;
-    padding-bottom: var(--spacing-xl);
+    padding-bottom: 8rem;
     overflow: hidden;
 }
 
@@ -772,7 +772,7 @@ a:hover {
     z-index: 2;
     text-align: center;
     margin-top: -50px;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: 5rem;
 }
 
 .about-section-title {
@@ -785,57 +785,62 @@ a:hover {
 
 /* About Inner Container */
 .about-inner-container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 var(--spacing-lg);
+    padding: 0 var(--spacing-xl);
 }
 
-/* About Content Grid - Balanced Two Column */
+/* About Content Grid - Professional Two Column */
 .about-content-grid {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: var(--spacing-xl);
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
     align-items: center;
 }
 
-/* Text Block - Confident sizing */
+/* Text Block */
 .about-text-block {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     color: var(--text-secondary);
-    line-height: 1.9;
+    line-height: 1.95;
     font-family: var(--font-main);
     font-weight: 400;
 }
 
 .about-text-block p {
-    margin-bottom: 1.4rem;
+    margin-bottom: 1.6rem;
 }
 
 .about-text-block p:last-child {
     margin-bottom: 0;
 }
 
-/* Image Block - Smaller, supportive */
+/* Image Block */
 .about-image-block {
     position: relative;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .about-profile-image {
-    width: 280px;
-    height: 280px;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 16px;
-    border: 2px solid rgba(157, 78, 221, 0.2);
-    box-shadow: 0 8px 30px rgba(123, 44, 191, 0.12);
+    border-radius: 20px;
+    border: 3px solid rgba(157, 78, 221, 0.25);
+    box-shadow: 0 20px 60px rgba(123, 44, 191, 0.15),
+                0 8px 25px rgba(0, 0, 0, 0.3);
     transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 .about-profile-image:hover {
-    border-color: rgba(157, 78, 221, 0.4);
-    box-shadow: 0 16px 50px rgba(123, 44, 191, 0.2);
-    transform: scale(1.02);
+    border-color: rgba(157, 78, 221, 0.5);
+    box-shadow: 0 25px 70px rgba(123, 44, 191, 0.25),
+                0 12px 35px rgba(0, 0, 0, 0.35);
+    transform: translateY(-5px);
 }
 
 /* ============================================
@@ -882,6 +887,25 @@ a:hover {
 }
 
 /* About Section Mobile Responsive */
+@media (max-width: 968px) {
+    .about-content-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .about-image-block {
+        order: -1;
+    }
+
+    .about-profile-image {
+        max-width: 320px;
+    }
+
+    .about-text-block {
+        text-align: center;
+    }
+}
+
 @media (max-width: 768px) {
     .about-header-bg {
         height: 100px;
@@ -901,23 +925,15 @@ a:hover {
     }
 
     .about-content-grid {
-        grid-template-columns: 1fr;
         gap: var(--spacing-md);
     }
 
-    .about-image-block {
-        order: -1;
-        margin-bottom: var(--spacing-sm);
-    }
-
     .about-profile-image {
-        width: 200px;
-        height: 200px;
+        max-width: 280px;
     }
 
     .about-text-block {
         font-size: 1.05rem;
-        text-align: center;
         line-height: 1.8;
     }
 
