@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
 });
 
-// SCROLL system
+// SCROLL system - handles reveal animations for all sections
 function initScrollReveal() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -75,11 +75,22 @@ function initScrollReveal() {
             }
         });
     }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
+        threshold: 0.08,
+        rootMargin: '0px 0px -40px 0px'
     });
 
-    document.querySelectorAll('.reveal-on-scroll, .glass-card, .experience-card, .semester-box, .project-card').forEach(el => {
+    // Target all animatable elements including new refined sections
+    const selectors = [
+        '.reveal-on-scroll',
+        '.glass-card',
+        '.experience-card',
+        '.semester-box',
+        '.project-card',
+        '.experience-item',
+        '.project-card-refined'
+    ];
+
+    document.querySelectorAll(selectors.join(', ')).forEach(el => {
         observer.observe(el);
     });
 }
