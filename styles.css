@@ -668,8 +668,7 @@ a:hover {
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 2rem;
+    justify-content: space-evenly;
     padding: 0.4rem 0;
 }
 
@@ -682,13 +681,7 @@ a:hover {
 }
 
 .nav-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 0.25rem;
-    align-items: center;
-    margin: 0;
-    position: relative;
-    z-index: 20;
+    display: contents;
 }
 
 .nav-header {
