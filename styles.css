@@ -268,7 +268,7 @@ a:hover {
 .glass-card {
     background: var(--glass-bg);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 16px;
     backdrop-filter: blur(20px);
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
@@ -277,9 +277,9 @@ a:hover {
 
 .glass-card:hover {
     border-color: var(--purple-accent);
-    box-shadow: 0 20px 60px rgba(157, 78, 221, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    transform: translateY(-10px);
+    box-shadow: 0 12px 40px rgba(157, 78, 221, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px);
 }
 
 /*  LANDING PAGE  */
@@ -603,27 +603,23 @@ a:hover {
 }
 
 .back-link {
-    position: absolute;
-    left: var(--spacing-md);
-    top: 50%;
-    transform: translateY(-50%) !important;
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: var(--text-dim);
+    gap: 6px;
+    color: var(--text-muted);
     text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-family: var(--font-elegant);
+    font-size: 0.85rem;
+    font-weight: 500;
     transition: color 0.3s ease;
-    z-index: 10;
-    will-change: transform;
-    /* Hint to browser to handle this separately */
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: relative;
 }
 
 .back-link:hover {
-    color: var(--primary-light);
-    transform: translateY(-50%) !important;
-    /* Force stay */
+    color: var(--text-primary);
 }
 
 .back-link::after {
@@ -641,9 +637,9 @@ a:hover {
     width: 100%;
 }
 
-.back-link:hover {
-    color: var(--primary-light);
-    transform: translateY(-50%);
+.back-link svg {
+    width: 16px;
+    height: 16px;
 }
 
 .page-header.sticky-header {
@@ -673,9 +669,8 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Center the nav mainly */
-    position: relative;
-    padding: 0.5rem 0;
+    gap: 2rem;
+    padding: 0.4rem 0;
 }
 
 .header-spacer {
@@ -689,7 +684,7 @@ a:hover {
 .nav-buttons {
     display: flex;
     justify-content: center;
-    gap: 6rem;
+    gap: 0.25rem;
     align-items: center;
     margin: 0;
     position: relative;
@@ -698,18 +693,16 @@ a:hover {
 
 .nav-header {
     font-family: var(--font-elegant);
-    font-size: 1.1rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.3s ease;
     margin: 0;
-    padding: 1rem 1.5rem;
-    /* Increase click area */
+    padding: 0.6rem 1rem;
     position: relative;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 10px rgba(157, 78, 221, 0.1);
+    letter-spacing: 0.08em;
 }
 
 .nav-header:hover {
@@ -1130,12 +1123,12 @@ a:hover {
 
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
 }
 
 .project-card {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
     cursor: pointer;
     text-decoration: none;
     display: block;
@@ -1143,7 +1136,8 @@ a:hover {
 
 .project-card h3 {
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
     transition: color var(--transition-fast);
 }
 
@@ -1154,15 +1148,15 @@ a:hover {
 .project-tech {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: var(--spacing-sm);
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
 }
 
 .tech-tag {
-    padding: 0.3rem 0.85rem;
+    padding: 0.2rem 0.65rem;
     background: rgba(74, 28, 107, 0.3);
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-family: var(--font-mono);
     color: var(--purple-glow);
     border: 1px solid var(--purple-mid);
@@ -1170,8 +1164,9 @@ a:hover {
 
 .project-card p {
     color: var(--text-secondary);
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     font-family: var(--font-main);
+    line-height: 1.5;
 }
 
 .project-date {
