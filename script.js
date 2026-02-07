@@ -894,8 +894,65 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// ============================================
+// ROBLOX MODAL (scrollable gallery)
+// ============================================
+
+const robloxDemos = [
+    {
+        title: 'Gameplay Systems Engineering',
+        desc: 'Server-side logic and gameplay mechanics in Lua for high-concurrency titles.'
+    },
+    {
+        title: '3D Character Animations',
+        desc: 'Blender-made animations exported and integrated into Roblox Studio.'
+    },
+    {
+        title: 'UI/UX Design',
+        desc: 'In-game interfaces, menus, and HUD elements for multiple shipped titles.'
+    },
+    {
+        title: 'Physics & Combat Systems',
+        desc: 'Custom hit detection, ragdoll physics, and ability systems at scale.'
+    },
+    {
+        title: 'World Building & Environment',
+        desc: 'Large-scale map design and environmental storytelling for open-world games.'
+    },
+    {
+        title: 'Monetization & Economy',
+        desc: 'In-game shops, currency systems, and progression mechanics.'
+    }
+];
+
+function openRobloxModal() {
+    const modal = document.getElementById('roblox-modal');
+    const list = document.getElementById('roblox-demos-list');
+
+    list.innerHTML = robloxDemos.map(d =>
+        '<div class="roblox-demo-item">' +
+            '<div class="roblox-demo-thumb"><div class="demo-placeholder"><span>GIF</span></div></div>' +
+            '<div class="roblox-demo-text"><h4>' + d.title + '</h4><p>' + d.desc + '</p></div>' +
+            '<span class="roblox-demo-cta">Click me!</span>' +
+        '</div>'
+    ).join('');
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRobloxModal(event, force) {
+    if (force || event.target.classList.contains('demo-modal-overlay')) {
+        const modal = document.getElementById('roblox-modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
 window.openDemoModal = openDemoModal;
 window.closeDemoModal = closeDemoModal;
+window.openRobloxModal = openRobloxModal;
+window.closeRobloxModal = closeRobloxModal;
 
 // ============================================
 // PROJECT MODALS (About Page)

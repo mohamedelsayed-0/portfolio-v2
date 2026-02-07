@@ -63,8 +63,8 @@
             <div class="container">
                 <div class="demos-grid">
 
-                    <!-- Demo Card 1: Roblox Game Dev -->
-                    <div class="glass-card demo-card reveal-on-scroll" onclick="openDemoModal(0)">
+                    <!-- Demo Card 1: Roblox Game Dev (featured, full-width) -->
+                    <div class="glass-card demo-card demo-card-featured reveal-on-scroll" onclick="openRobloxModal()">
                         <div class="demo-preview">
                             <div class="demo-placeholder">
                                 <span>GIF Preview</span>
@@ -78,6 +78,7 @@
                                 <span class="tech-tag">Blender</span>
                                 <span class="tech-tag">Roblox Studio</span>
                             </div>
+                            <span class="demo-click-hint">Click me!</span>
                         </div>
                     </div>
 
@@ -138,7 +139,7 @@
         </section>
     </div>
 
-    <!-- Demo Modal -->
+    <!-- Demo Modal (single project) -->
     <div id="demo-modal" class="demo-modal-overlay" onclick="closeDemoModal(event)">
         <div class="demo-modal">
             <button class="demo-modal-close" onclick="closeDemoModal(event, true)">&times;</button>
@@ -151,6 +152,16 @@
             <p id="demo-modal-desc"></p>
             <div id="demo-modal-tags" class="demo-tags"></div>
             <div id="demo-modal-actions" class="demo-modal-buttons"></div>
+        </div>
+    </div>
+
+    <!-- Roblox Modal (scrollable gallery) -->
+    <div id="roblox-modal" class="demo-modal-overlay" onclick="closeRobloxModal(event)">
+        <div class="demo-modal roblox-modal-inner">
+            <button class="demo-modal-close" onclick="closeRobloxModal(event, true)">&times;</button>
+            <h3 style="padding: var(--spacing-md) var(--spacing-md) 0.5rem;">Roblox Game Development</h3>
+            <p style="padding: 0 var(--spacing-md); margin-bottom: var(--spacing-sm);">Games and collaborations spanning 1.7B+ visits. Click any card below to learn more.</p>
+            <div id="roblox-demos-list" class="roblox-demos-list"></div>
         </div>
     </div>
 

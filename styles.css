@@ -1566,7 +1566,108 @@ a:hover {
 }
 
 .demo-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
+}
+
+/* Featured card spans full width */
+.demo-card-featured {
+    grid-column: 1 / -1;
+    flex-direction: row;
+}
+
+.demo-card-featured .demo-preview {
+    width: 45%;
+    flex-shrink: 0;
+    aspect-ratio: 16 / 9;
+    border-bottom: none;
+    border-right: 1px solid var(--border-color);
+}
+
+.demo-card-featured .demo-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.demo-click-hint {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: var(--purple-accent);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+/* Roblox scrollable modal */
+.roblox-modal-inner {
+    max-width: 750px;
+}
+
+.roblox-demos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 var(--spacing-md) var(--spacing-md);
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+.roblox-demo-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.roblox-demo-item:hover {
+    border-color: var(--purple-accent);
+    background: rgba(74, 28, 107, 0.2);
+}
+
+.roblox-demo-thumb {
+    width: 120px;
+    height: 68px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.roblox-demo-thumb .demo-placeholder {
+    font-size: 0.7rem;
+    border-radius: 8px;
+}
+
+.roblox-demo-text {
+    flex: 1;
+}
+
+.roblox-demo-text h4 {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.roblox-demo-text p {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.roblox-demo-cta {
+    color: var(--purple-accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .demo-preview {
