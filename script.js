@@ -389,10 +389,11 @@ class BlackHole {
             hero.style.opacity = '0'; //  hidden
             hero.style.filter = 'blur(20px)';
 
-            // Delay 
+            // Delay
             setTimeout(() => {
                 hero.style.opacity = '1';
                 hero.style.filter = 'blur(0)';
+                hero.style.transform = 'perspective(800px) rotateX(0deg) translateY(0)';
 
                 //  after content is revealed
                 setTimeout(() => initTypingEffects(), 500);
@@ -619,16 +620,17 @@ class SubtleParticleField {
         this.mouse = { x: 0, y: 0 };
         this.targetMouse = { x: 0, y: 0 };
 
-        // Check if mobile - use fewer particles
         this.isMobile = window.innerWidth < 768;
-        this.particleCount = this.isMobile ? 80 : 150;
+        this.particleCount = this.isMobile ? 120 : 250;
+        this.connectionDistance = this.isMobile ? 12 : 18;
+        this.maxConnections = this.isMobile ? 40 : 80;
 
         this.init();
         this.createParticles();
+        this.createConnectionLines();
         this.bindEvents();
         this.animate();
 
-        // Fade in after a delay
         setTimeout(() => {
             this.canvas.classList.add('visible');
         }, 500);
@@ -652,44 +654,95 @@ class SubtleParticleField {
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.setClearColor(0x000000, 0); // Transparent background
+        this.renderer.setClearColor(0x000000, 0);
     }
 
     createParticles() {
         const positions = new Float32Array(this.particleCount * 3);
+        const sizes = new Float32Array(this.particleCount);
 
         for (let i = 0; i < this.particleCount; i++) {
             const i3 = i * 3;
-            // Spread particles across the view
-            positions[i3] = (Math.random() - 0.5) * 100;
-            positions[i3 + 1] = (Math.random() - 0.5) * 100;
-            positions[i3 + 2] = (Math.random() - 0.5) * 50 - 20;
+            positions[i3] = (Math.random() - 0.5) * 120;
+            positions[i3 + 1] = (Math.random() - 0.5) * 120;
+            positions[i3 + 2] = (Math.random() - 0.5) * 80 - 10;
+            // Depth-based sizing: closer particles (higher z) are larger
+            sizes[i] = Math.random() * 2.5 + 1.0;
         }
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-        // Muted purple color matching the theme
         const material = new THREE.PointsMaterial({
-            size: this.isMobile ? 1.5 : 2,
-            color: 0x9d4edd, // --purple-accent
+            size: this.isMobile ? 2.0 : 2.5,
+            color: 0x9d4edd,
             transparent: true,
-            opacity: 0.4,
-            sizeAttenuation: true
+            opacity: 0.55,
+            sizeAttenuation: true,
+            blending: THREE.AdditiveBlending
         });
 
         this.particles = new THREE.Points(geometry, material);
         this.scene.add(this.particles);
 
-        // Store original positions for drift animation
         this.originalPositions = positions.slice();
         this.time = 0;
     }
 
+    createConnectionLines() {
+        // Pre-allocate geometry for connection lines
+        const linePositions = new Float32Array(this.maxConnections * 6); // 2 vertices * 3 coords per line
+        const lineGeometry = new THREE.BufferGeometry();
+        lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+        lineGeometry.setDrawRange(0, 0);
+
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0x9d4edd,
+            transparent: true,
+            opacity: 0.12,
+            blending: THREE.AdditiveBlending
+        });
+
+        this.lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+        this.scene.add(this.lines);
+    }
+
+    updateConnections() {
+        const positions = this.particles.geometry.attributes.position.array;
+        const linePositions = this.lines.geometry.attributes.position.array;
+        let lineIndex = 0;
+        const distSq = this.connectionDistance * this.connectionDistance;
+
+        // Check pairs for nearby particles
+        for (let i = 0; i < this.particleCount && lineIndex < this.maxConnections; i++) {
+            const i3 = i * 3;
+            for (let j = i + 1; j < this.particleCount && lineIndex < this.maxConnections; j++) {
+                const j3 = j * 3;
+                const dx = positions[i3] - positions[j3];
+                const dy = positions[i3 + 1] - positions[j3 + 1];
+                const dz = positions[i3 + 2] - positions[j3 + 2];
+                const d = dx * dx + dy * dy + dz * dz;
+
+                if (d < distSq) {
+                    const li = lineIndex * 6;
+                    linePositions[li] = positions[i3];
+                    linePositions[li + 1] = positions[i3 + 1];
+                    linePositions[li + 2] = positions[i3 + 2];
+                    linePositions[li + 3] = positions[j3];
+                    linePositions[li + 4] = positions[j3 + 1];
+                    linePositions[li + 5] = positions[j3 + 2];
+                    lineIndex++;
+                }
+            }
+        }
+
+        this.lines.geometry.setDrawRange(0, lineIndex * 2);
+        this.lines.geometry.attributes.position.needsUpdate = true;
+    }
+
     bindEvents() {
         window.addEventListener('resize', () => this.onResize());
-
-        // Only track mouse on desktop
         if (!this.isMobile) {
             window.addEventListener('mousemove', (e) => this.onMouseMove(e));
         }
@@ -709,29 +762,40 @@ class SubtleParticleField {
     animate() {
         requestAnimationFrame(() => this.animate());
 
-        this.time += 0.001;
+        this.time += 0.0012;
 
         // Smooth mouse follow
-        this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.02;
-        this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.02;
+        this.mouse.x += (this.targetMouse.x - this.mouse.x) * 0.03;
+        this.mouse.y += (this.targetMouse.y - this.mouse.y) * 0.03;
 
         if (this.particles) {
             // Slow rotation
-            this.particles.rotation.y += 0.0002;
-            this.particles.rotation.x += 0.0001;
+            this.particles.rotation.y += 0.00025;
+            this.particles.rotation.x += 0.00012;
 
-            // Subtle mouse parallax
-            this.particles.rotation.y += this.mouse.x * 0.0005;
-            this.particles.rotation.x += this.mouse.y * 0.0005;
+            // Stronger mouse parallax
+            this.particles.rotation.y += this.mouse.x * 0.002;
+            this.particles.rotation.x += this.mouse.y * 0.001;
 
-            // Gentle drift animation on particles
+            // Drift animation with varied motion per particle
             const positions = this.particles.geometry.attributes.position.array;
             for (let i = 0; i < this.particleCount; i++) {
                 const i3 = i * 3;
+                const phase = i * 0.13;
+                positions[i3] = this.originalPositions[i3] +
+                    Math.sin(this.time * 1.5 + phase) * 1.2;
                 positions[i3 + 1] = this.originalPositions[i3 + 1] +
-                    Math.sin(this.time * 2 + i * 0.1) * 0.5;
+                    Math.cos(this.time * 2.0 + phase * 0.7) * 0.8;
+                positions[i3 + 2] = this.originalPositions[i3 + 2] +
+                    Math.sin(this.time * 1.0 + phase * 1.3) * 0.6;
             }
             this.particles.geometry.attributes.position.needsUpdate = true;
+
+            // Update connection lines
+            this.updateConnections();
+
+            // Sync line rotation with particles
+            this.lines.rotation.copy(this.particles.rotation);
         }
 
         this.renderer.render(this.scene, this.camera);
