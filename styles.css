@@ -1472,3 +1472,217 @@ a:hover {
 #three-bg.visible {
     opacity: 1;
 }
+
+/* ============================================
+   DEMOS PAGE
+   ============================================ */
+
+.demos-page {
+    min-height: 100vh;
+    padding-bottom: var(--spacing-xl);
+    background: linear-gradient(180deg, #0a0514 0%, var(--bg-primary) 20%, var(--bg-secondary) 80%, #0a0514 100%);
+    position: relative;
+}
+
+.demos-page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(ellipse at 30% 30%, rgba(123, 44, 191, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 70%, rgba(157, 78, 221, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientShift 25s ease-in-out infinite;
+}
+
+.demos-section {
+    position: relative;
+    z-index: 1;
+    padding: var(--spacing-md) 0 var(--spacing-xl);
+}
+
+.demos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.demo-card {
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.demo-card:hover {
+    transform: translateY(-8px);
+}
+
+.demo-preview {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.demo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(26, 10, 46, 0.8), rgba(74, 28, 107, 0.3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+.demo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.demo-card:hover .demo-preview img {
+    transform: scale(1.05);
+}
+
+.demo-info {
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+}
+
+.demo-info h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.15rem;
+    transition: color var(--transition-fast);
+}
+
+.demo-card:hover h3 {
+    color: var(--purple-glow);
+}
+
+.demo-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+}
+
+.demo-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+/* Demo Modal */
+.demo-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 8, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.demo-modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.demo-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.demo-modal-overlay.active .demo-modal {
+    transform: translateY(0) scale(1);
+}
+
+.demo-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(10, 10, 20, 0.7);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    z-index: 1;
+}
+
+.demo-modal-close:hover {
+    background: var(--purple-mid);
+    border-color: var(--purple-accent);
+}
+
+.demo-modal-preview {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 20px 20px 0 0;
+}
+
+.demo-placeholder-lg {
+    font-size: 1.1rem;
+}
+
+.demo-modal h3 {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    padding: var(--spacing-sm) var(--spacing-md) 0.5rem;
+}
+
+.demo-modal p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 0 var(--spacing-md);
+    margin-bottom: 0.75rem;
+}
+
+.demo-modal .demo-tags {
+    padding: 0 var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.demo-modal-buttons {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0 var(--spacing-md) var(--spacing-md);
+}
+
+.demo-modal-buttons:empty {
+    display: none;
+}
+
+.demo-modal-buttons .btn {
+    font-size: 0.9rem;
+    padding: 0.65rem 1.25rem;
+}

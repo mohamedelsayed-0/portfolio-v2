@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // specific page logics
     if (document.getElementById('blackhole-canvas')) {
         new BlackHole(document.getElementById('blackhole-canvas'));
-    } else if (document.querySelector('.about-page') || document.querySelector('.notes-page')) {
+    } else if (document.querySelector('.about-page') || document.querySelector('.notes-page') || document.querySelector('.demos-page')) {
         const canvas = document.createElement('canvas');
         canvas.id = 'bg-canvas';
         canvas.style.position = 'fixed';
@@ -733,4 +733,92 @@ class SubtleParticleField {
         new SubtleParticleField(threeBg);
     }
 })();
+
+// ============================================
+// DEMOS PAGE - Modal System
+// ============================================
+
+const demoData = [
+    {
+        title: 'Roblox Game Development',
+        desc: 'Collaborated with game development studios on projects that collectively surpassed 1.7 billion platform visits and 250,000 concurrent players. Engineered gameplay systems in Lua and created 3D animations in Blender.',
+        tags: ['Lua', 'Blender', 'Roblox Studio'],
+        repo: null,
+        project: null,
+        demo: null
+    },
+    {
+        title: 'Structural Beam Simulation',
+        desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations under moving and distributed loads.',
+        tags: ['Python', 'MATLAB'],
+        repo: 'https://github.com/mohamedelsayed-0/CIV102',
+        project: null,
+        demo: null
+    },
+    {
+        title: 'Pong AI',
+        desc: 'AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall. Implements collision physics and responsive paddle controls with an adaptive strategy.',
+        tags: ['Python', 'Pygame'],
+        repo: 'https://github.com/mohamedelsayed-0/Pong-AI',
+        project: null,
+        demo: null
+    },
+    {
+        title: 'Lumina — LaTeX Notetaker',
+        desc: 'Web-based tool that converts handwritten, typed, and audio notes into structured LaTeX documents. Built with a TypeScript frontend and Python backend for processing.',
+        tags: ['TypeScript', 'Python', 'CSS'],
+        repo: null,
+        project: null,
+        demo: null
+    }
+];
+
+function openDemoModal(index) {
+    const data = demoData[index];
+    if (!data) return;
+
+    const modal = document.getElementById('demo-modal');
+    document.getElementById('demo-modal-title').textContent = data.title;
+    document.getElementById('demo-modal-desc').textContent = data.desc;
+
+    const tagsEl = document.getElementById('demo-modal-tags');
+    tagsEl.innerHTML = data.tags.map(t => '<span class="tech-tag">' + t + '</span>').join('');
+
+    const actionsEl = document.getElementById('demo-modal-actions');
+    let buttons = '';
+    if (data.repo) {
+        buttons += '<a href="' + data.repo + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Go to Repo</a>';
+    }
+    if (data.project) {
+        buttons += '<a href="' + data.project + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Go to Project</a>';
+    }
+    if (data.demo) {
+        buttons += '<a href="' + data.demo + '" target="_blank" rel="noopener noreferrer" class="btn btn-solid">Go to Demo</a>';
+    }
+    actionsEl.innerHTML = buttons;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDemoModal(event, force) {
+    if (force || event.target.classList.contains('demo-modal-overlay')) {
+        const modal = document.getElementById('demo-modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('demo-modal');
+        if (modal && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+});
+
+window.openDemoModal = openDemoModal;
+window.closeDemoModal = closeDemoModal;
 
