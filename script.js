@@ -823,14 +823,87 @@ function closeDemoModal(event, force) {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        const modal = document.getElementById('demo-modal');
-        if (modal && modal.classList.contains('active')) {
+        document.querySelectorAll('.demo-modal-overlay.active').forEach(modal => {
             modal.classList.remove('active');
             document.body.style.overflow = '';
-        }
+        });
     }
 });
 
 window.openDemoModal = openDemoModal;
 window.closeDemoModal = closeDemoModal;
+
+// ============================================
+// PROJECT MODALS (About Page)
+// ============================================
+
+const projectData = [
+    {
+        title: 'Structural Beam Simulation',
+        desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations including deflection animations under moving and distributed loads. Validated predictions against physical tests.',
+        tags: ['Python', 'MATLAB'],
+        date: 'Nov 2025',
+        repo: 'https://github.com/mohamedelsayed-0/CIV102',
+        project: null,
+        demo: null
+    },
+    {
+        title: 'Pong AI',
+        desc: 'AI-driven Pong agent developed for the annual ESC180 tournament, securing 3rd place. Maximizes score against a professor-built AI over a thousand rounds. Implements collision physics, responsive paddle controls, and an adaptive strategy with optimized time complexity.',
+        tags: ['Python', 'Pygame'],
+        date: 'Jan 2026',
+        repo: 'https://github.com/mohamedelsayed-0/Pong-AI',
+        project: null,
+        demo: null
+    },
+    {
+        title: 'Lumina — LaTeX Notetaker',
+        desc: 'Web-based tool that converts handwritten, typed, and audio notes into structured LaTeX documents optimized for notation-heavy coursework and technical writing. Implements OCR, parsing, and automation pipelines to generate compilable LaTeX with support for equations, figures, and modular document organization.',
+        tags: ['TypeScript', 'JavaScript', 'CSS', 'Python'],
+        date: 'Dec 2025 – Present',
+        repo: null,
+        project: null,
+        demo: null
+    }
+];
+
+function openProjectModal(index) {
+    const data = projectData[index];
+    if (!data) return;
+
+    const modal = document.getElementById('project-modal');
+    document.getElementById('project-modal-title').textContent = data.title;
+    document.getElementById('project-modal-desc').textContent = data.desc;
+    document.getElementById('project-modal-date').textContent = data.date;
+
+    const tagsEl = document.getElementById('project-modal-tags');
+    tagsEl.innerHTML = data.tags.map(t => '<span class="tech-tag">' + t + '</span>').join('');
+
+    const actionsEl = document.getElementById('project-modal-actions');
+    let buttons = '';
+    if (data.repo) {
+        buttons += '<a href="' + data.repo + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Go to Repo</a>';
+    }
+    if (data.project) {
+        buttons += '<a href="' + data.project + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Go to Project</a>';
+    }
+    if (data.demo) {
+        buttons += '<a href="' + data.demo + '" target="_blank" rel="noopener noreferrer" class="btn btn-solid">Go to Demo</a>';
+    }
+    actionsEl.innerHTML = buttons;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProjectModal(event, force) {
+    if (force || event.target.classList.contains('demo-modal-overlay')) {
+        const modal = document.getElementById('project-modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+window.openProjectModal = openProjectModal;
+window.closeProjectModal = closeProjectModal;
 

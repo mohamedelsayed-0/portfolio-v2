@@ -175,60 +175,42 @@
             <h2 class="section-title">Projects</h2>
             <div class="projects-grid">
                 <!--  beam sim -->
-                <a href="https://github.com/mohamedelsayed-0/CIV102" target="_blank" rel="noopener noreferrer"
-                    class="glass-card project-card from-left">
+                <div class="glass-card project-card from-left" onclick="openProjectModal(0)">
                     <h3>Structural Beam Simulation</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
                         <span class="tech-tag">MATLAB</span>
-
                     </div>
-                    <p style="margin-bottom: 0.5rem;">Built a general beam deflection calculator for any given arbitrary
-                        cross sections by computing section
-                        properties directly from geometry; generating deflection curves, and factor of safecty metrics
-                        for arbitrary loads using numerical integration.</p>
-                    <p>Developed MATLAB stress/deformation visualizations, including 3D deflection animations under
-                        moving/distributed loads, and validated predictions against physical tests.</p>
-                    <p class="repo-hint" style="color: var(--purple-accent); font-weight: 600; margin-top: 1rem;">Click
-                        me to go to repository!</p>
+                    <p>Beam deflection calculator for arbitrary cross sections with 3D stress visualizations and
+                        deflection animations under moving and distributed loads.</p>
                     <div class="project-date">Nov 2025</div>
-                </a>
+                </div>
 
                 <!-- Pong AI -->
-                <a href="https://github.com/mohamedelsayed-0/Pong-AI" target="_blank" rel="noopener noreferrer"
-                    class="glass-card project-card from-left">
+                <div class="glass-card project-card from-left" onclick="openProjectModal(1)">
                     <h3>Pong AI</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
                         <span class="tech-tag">Pygame</span>
                     </div>
-                    <p>My code developed for the annual ESC180 Pong AI tournament, where I was able to secure third
-                        place. I developed a classic Pong game where you had to maximize your score against the
-                        Professor's AI in a game of a thousand rounds.
-                        <p>Implemented collision physics, responsive paddle controls, a a bit of fine tuning while
-                            somewhat optimizing time complexity.
-                            the AI player.</p>
-                        <p class="repo-hint" style="color: var(--purple-accent); font-weight: 600; margin-top: 1rem;">
-                            Click
-                            me to go to repository!</p>
-                        <div class="project-date">Jan 2026</div>
-                </a>
+                    <p>AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall. Implements collision
+                        physics and responsive paddle controls with an adaptive strategy.</p>
+                    <div class="project-date">Jan 2026</div>
+                </div>
 
                 <!-- Lumina -->
-                <a href="#" onclick="handlePrivateRepo(event)" class="glass-card project-card from-right">
-                    <h3>Lumina - LaTeX Notetaker Converter</h3>
+                <div class="glass-card project-card from-right" onclick="openProjectModal(2)">
+                    <h3>Lumina — LaTeX Notetaker</h3>
                     <div class="project-tech">
                         <span class="tech-tag">TypeScript</span>
                         <span class="tech-tag">JavaScript</span>
                         <span class="tech-tag">CSS</span>
                         <span class="tech-tag">Python</span>
                     </div>
-                    <p>Built a web-based tool to convert handwritten, typed, and audio notes into structured LaTeX
-                        documents optimized for notation heavy coursework and technical writing.</p>
-                    <p>Implemented OCR, parsing, and automation pipelines to generate compilable LaTeX with support for
-                        equations, figures, and modular document organization.</p>
+                    <p>Web tool that converts handwritten, typed, and audio notes into structured LaTeX documents
+                        optimized for notation-heavy coursework.</p>
                     <div class="project-date">Dec 2025 – Present</div>
-                </a>
+                </div>
             </div>
         </div>
     </section>
@@ -265,6 +247,20 @@
             </div>
         </div>
     </section>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="demo-modal-overlay" onclick="closeProjectModal(event)">
+        <div class="demo-modal">
+            <button class="demo-modal-close" onclick="closeProjectModal(event, true)">&times;</button>
+            <div style="padding: var(--spacing-md) var(--spacing-md) 0;">
+                <h3 id="project-modal-title" style="padding: 0; margin-bottom: 0.5rem;"></h3>
+            </div>
+            <p id="project-modal-desc"></p>
+            <div id="project-modal-tags" class="demo-tags" style="padding: 0 var(--spacing-md); margin-bottom: var(--spacing-sm);"></div>
+            <div id="project-modal-date" style="padding: 0 var(--spacing-md); color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-elegant);"></div>
+            <div id="project-modal-actions" class="demo-modal-buttons" style="margin-top: var(--spacing-sm);"></div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
