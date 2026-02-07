@@ -428,11 +428,23 @@ a:hover {
     margin-bottom: var(--spacing-sm);
     font-family: var(--font-hero);
     background: linear-gradient(135deg, var(--purple-accent) 0%, var(--purple-glow) 50%, var(--purple-light) 100%);
-    /* Persistent purple */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-shadow: 0 0 30px rgba(157, 78, 221, 0.4);
+}
+
+.hero h1.glow-pulse {
+    animation: heroGlow 3s ease-in-out infinite;
+}
+
+@keyframes heroGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(157, 78, 221, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(199, 125, 255, 0.5));
+    }
 }
 
 @keyframes gradientShift {

@@ -415,13 +415,21 @@ class BlackHole {
 
         if (footer) {
             footer.style.visibility = 'visible';
-            footer.style.opacity = '0';
-            footer.style.transform = 'translateY(10px)';
-            footer.style.transition = 'all 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s'; // Later delay
+            footer.style.opacity = '1';
+
+            // Stagger individual footer links
+            const links = footer.querySelectorAll('.footer-link');
+            links.forEach((link, i) => {
+                link.style.opacity = '0';
+                link.style.transform = 'translateY(12px)';
+                link.style.transition = `opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) ${2.0 + i * 0.15}s, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) ${2.0 + i * 0.15}s`;
+            });
 
             setTimeout(() => {
-                footer.style.opacity = '1';
-                footer.style.transform = 'translateY(0)';
+                links.forEach(link => {
+                    link.style.opacity = '1';
+                    link.style.transform = 'translateY(0)';
+                });
             }, 50);
         }
     }
@@ -488,7 +496,9 @@ function initTypingEffects() {
     const bio = document.getElementById('bio');
 
     if (greeting) {
-        typeWriter(greeting, "Hello! I'm Mohamed.", 40);
+        typeWriter(greeting, "Hello! I'm Mohamed.", 40, () => {
+            greeting.classList.add('glow-pulse');
+        });
     }
     if (bio) {
         setTimeout(() => {
@@ -497,7 +507,7 @@ function initTypingEffects() {
     }
 }
 
-function typeWriter(element, text, speed) {
+function typeWriter(element, text, speed, onComplete) {
     let i = 0;
     element.innerHTML = ''; // Clear
     const cursor = document.createElement('span');
@@ -510,6 +520,8 @@ function typeWriter(element, text, speed) {
             element.insertBefore(char, cursor);
             i++;
             setTimeout(type, speed);
+        } else if (onComplete) {
+            onComplete();
         }
     }
     type();
