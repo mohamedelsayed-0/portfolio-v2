@@ -7,6 +7,13 @@
     <meta name="description" content="About Mohamed Elsayed - Experience, Projects, and Contact Information">
     <title>About Me | Mohamed Elsayed</title>
 
+    <!-- Open Graph -->
+    <meta property="og:title" content="About Me | Mohamed Elsayed">
+    <meta property="og:description" content="Experience, projects, and contact information.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://elsayedmohamed.com/about.html">
+    <meta property="og:image" content="https://elsayedmohamed.com/assets/profile.png">
+
     <!-- fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +22,10 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
-    <link rel="icon" href="assets/profile.png" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/profile.png">
+    <link rel="apple-touch-icon" href="assets/profile.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9d4edd">
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -41,6 +51,7 @@
                 <h2 class="nav-header" data-scroll="experience">Experience</h2>
                 <h2 class="nav-header" data-scroll="projects">Projects</h2>
                 <h2 class="nav-header" data-scroll="contact">Contact Me</h2>
+                <a href="assets/resume.pdf" target="_blank" class="nav-header" style="text-decoration: none;">Resume</a>
             </nav>
 
             <!-- Right: Spacer for balance  -->
@@ -219,9 +230,12 @@
     <section id="contact" class="contact-section">
         <div class="container">
             <h2 class="section-title">Get in Touch</h2>
-            <p style="color: var(--text-primary); margin-bottom: var(--spacing-md);">
-                Feel free to reach out if you'd like to collaborate or just say hello!
+            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                Open to collaborations, research opportunities, and interesting conversations.
             </p>
+            <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-primary" style="margin-bottom: var(--spacing-md);">
+                Send me an email
+            </a>
             <div class="contact-buttons" style="justify-content: center;">
                 <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-icon" title="Email">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
