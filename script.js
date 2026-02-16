@@ -819,6 +819,10 @@ const demoData = [
         title: 'Roblox Game Development',
         desc: 'Collaborated with game development studios on projects that collectively surpassed 1.7 billion platform visits and 250,000 concurrent players. Engineered gameplay systems in Lua and created 3D animations in Blender.',
         tags: ['Lua', 'Blender', 'Roblox Studio'],
+        preview: null,
+        assignment: null,
+        gallery: [],
+        note: null,
         repo: null,
         project: null,
         demo: null
@@ -827,6 +831,10 @@ const demoData = [
         title: 'Structural Beam Simulation',
         desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations under moving and distributed loads.',
         tags: ['Python', 'MATLAB'],
+        preview: null,
+        assignment: null,
+        gallery: [],
+        note: null,
         repo: 'https://github.com/mohamedelsayed-0/CIV102',
         project: null,
         demo: null
@@ -835,6 +843,19 @@ const demoData = [
         title: 'Pong AI',
         desc: 'AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall. Implements collision physics and responsive paddle controls with an adaptive strategy.',
         tags: ['Python', 'Pygame'],
+        preview: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif',
+        assignment: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/',
+        gallery: [
+            {
+                src: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/pong_static.jpg',
+                alt: 'Pong AI tournament setup in class'
+            },
+            {
+                src: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif',
+                alt: 'Pong AI engine versus engine gameplay'
+            }
+        ],
+        note: 'p.s. i skipped this lecture so i wasnt in any of the pictures..',
         repo: 'https://github.com/mohamedelsayed-0/Pong-AI',
         project: null,
         demo: null
@@ -843,6 +864,10 @@ const demoData = [
         title: 'Lumina — LaTeX Notetaker',
         desc: 'Web-based tool that converts handwritten, typed, and audio notes into structured LaTeX documents. Built with a TypeScript frontend and Python backend for processing.',
         tags: ['TypeScript', 'Python', 'CSS'],
+        preview: null,
+        assignment: null,
+        gallery: [],
+        note: null,
         repo: null,
         project: null,
         demo: null
@@ -854,14 +879,40 @@ function openDemoModal(index) {
     if (!data) return;
 
     const modal = document.getElementById('demo-modal');
+    const previewEl = document.getElementById('demo-modal-preview');
+    const extraEl = document.getElementById('demo-modal-extra');
     document.getElementById('demo-modal-title').textContent = data.title;
     document.getElementById('demo-modal-desc').textContent = data.desc;
+
+    if (data.preview) {
+        previewEl.innerHTML = '<img src="' + data.preview + '" alt="' + data.title + ' preview" loading="lazy">';
+    } else {
+        previewEl.innerHTML = '<div class="demo-placeholder demo-placeholder-lg"><span>GIF Preview</span></div>';
+    }
 
     const tagsEl = document.getElementById('demo-modal-tags');
     tagsEl.innerHTML = data.tags.map(t => '<span class="tech-tag">' + t + '</span>').join('');
 
+    let extraContent = '';
+    if (data.gallery && data.gallery.length) {
+        extraContent += '<div class="demo-modal-gallery">' +
+            data.gallery.map(item =>
+                '<figure class="demo-modal-gallery-item">' +
+                    '<img src="' + item.src + '" alt="' + item.alt + '" loading="lazy">' +
+                '</figure>'
+            ).join('') +
+            '</div>';
+    }
+    if (data.note) {
+        extraContent += '<p class="demo-modal-note">' + data.note + '</p>';
+    }
+    extraEl.innerHTML = extraContent;
+
     const actionsEl = document.getElementById('demo-modal-actions');
     let buttons = '';
+    if (data.assignment) {
+        buttons += '<a href="' + data.assignment + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Assignment Description</a>';
+    }
     if (data.repo) {
         buttons += '<a href="' + data.repo + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Go to Repo</a>';
     }
@@ -964,6 +1015,7 @@ const projectData = [
         desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations including deflection animations under moving and distributed loads. Validated predictions against physical tests.',
         tags: ['Python', 'MATLAB'],
         date: 'Nov 2025',
+        assignment: null,
         repo: 'https://github.com/mohamedelsayed-0/CIV102',
         project: null,
         demo: null
@@ -973,6 +1025,7 @@ const projectData = [
         desc: 'AI-driven Pong agent developed for the annual ESC180 tournament, securing 3rd place. Maximizes score against a professor-built AI over a thousand rounds. Implements collision physics, responsive paddle controls, and an adaptive strategy with optimized time complexity.',
         tags: ['Python', 'Pygame'],
         date: 'Jan 2026',
+        assignment: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/',
         repo: 'https://github.com/mohamedelsayed-0/Pong-AI',
         project: null,
         demo: null
@@ -982,6 +1035,7 @@ const projectData = [
         desc: 'Web-based tool that converts handwritten, typed, and audio notes into structured LaTeX documents optimized for notation-heavy coursework and technical writing. Implements OCR, parsing, and automation pipelines to generate compilable LaTeX with support for equations, figures, and modular document organization.',
         tags: ['TypeScript', 'JavaScript', 'CSS', 'Python'],
         date: 'Dec 2025 – Present',
+        assignment: null,
         repo: null,
         project: null,
         demo: null
@@ -1002,6 +1056,9 @@ function openProjectModal(index) {
 
     const actionsEl = document.getElementById('project-modal-actions');
     let buttons = '';
+    if (data.assignment) {
+        buttons += '<a href="' + data.assignment + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Assignment Description</a>';
+    }
     if (data.repo) {
         buttons += '<a href="' + data.repo + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Go to Repo</a>';
     }
@@ -1027,4 +1084,3 @@ function closeProjectModal(event, force) {
 
 window.openProjectModal = openProjectModal;
 window.closeProjectModal = closeProjectModal;
-

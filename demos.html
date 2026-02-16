@@ -102,13 +102,16 @@
                     <!-- Demo Card 3: Pong AI -->
                     <div class="glass-card demo-card reveal-on-scroll" onclick="openDemoModal(2)">
                         <div class="demo-preview">
-                            <div class="demo-placeholder">
-                                <span>GIF Preview</span>
-                            </div>
+                            <img src="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif"
+                                alt="Pong AI gameplay preview GIF" loading="lazy">
                         </div>
                         <div class="demo-info">
                             <h3>Pong AI</h3>
-                            <p>AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall.</p>
+                            <p>AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall.
+                                <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/" target="_blank"
+                                    rel="noopener noreferrer"
+                                    onclick="event.stopPropagation();">Assignment description</a>.
+                            </p>
                             <div class="demo-tags">
                                 <span class="tech-tag">Python</span>
                                 <span class="tech-tag">Pygame</span>
@@ -143,7 +146,7 @@
     <div id="demo-modal" class="demo-modal-overlay" onclick="closeDemoModal(event)">
         <div class="demo-modal">
             <button class="demo-modal-close" onclick="closeDemoModal(event, true)">&times;</button>
-            <div class="demo-modal-preview">
+            <div id="demo-modal-preview" class="demo-modal-preview">
                 <div class="demo-placeholder demo-placeholder-lg">
                     <span>GIF Preview</span>
                 </div>
@@ -151,6 +154,7 @@
             <h3 id="demo-modal-title"></h3>
             <p id="demo-modal-desc"></p>
             <div id="demo-modal-tags" class="demo-tags"></div>
+            <div id="demo-modal-extra" class="demo-modal-extra"></div>
             <div id="demo-modal-actions" class="demo-modal-buttons"></div>
         </div>
     </div>
