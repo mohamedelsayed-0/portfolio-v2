@@ -1169,6 +1169,30 @@ a:hover {
     margin-top: var(--spacing-sm);
 }
 
+/* About Demos Link Section */
+.demos-link-section {
+    padding: var(--spacing-xl) 0;
+    position: relative;
+    z-index: 1;
+}
+
+.demos-link-card {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+.demos-link-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+}
+
+.demos-link-card p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
 /* Contact Section */
 .contact-section {
     padding: var(--spacing-xl) 0;
