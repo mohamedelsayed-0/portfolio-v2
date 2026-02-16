@@ -849,12 +849,12 @@ const demoData = [
         assignment: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/',
         gallery: [
             {
-                src: 'https://cdn.discordapp.com/attachments/979106511886368828/1472828960802078740/image.png?ex=6993fe5c&is=6992acdc&hm=ef6c70697669576f64c5957ad6418e2df5018115fc58d18875ec72f0c8d995c1&',
-                alt: 'LinkedIn post about Pong AI Engines tournament results'
+                src: 'https://cdn.discordapp.com/attachments/979106511886368828/1472829136387964970/image.png?ex=6993fe85&is=6992ad05&hm=def85077e09b157fffe65943ab195d0476fb77e87004c4d189f8479bbfab337f&',
+                alt: 'Pong AI gallery image 1'
             },
             {
-                src: 'https://cdn.discordapp.com/attachments/979106511886368828/1472829136387964970/image.png?ex=6993fe85&is=6992ad05&hm=def85077e09b157fffe65943ab195d0476fb77e87004c4d189f8479bbfab337f&',
-                alt: 'Pong AI lecture photo and winners'
+                src: 'https://cdn.discordapp.com/attachments/979106511886368828/1472828960802078740/image.png?ex=6993fe5c&is=6992acdc&hm=ef6c70697669576f64c5957ad6418e2df5018115fc58d18875ec72f0c8d995c1&',
+                alt: 'Pong AI gallery image 2'
             }
         ],
         note: 'p.s. i skipped this lecture so i wasnt in any of the pictures..',
