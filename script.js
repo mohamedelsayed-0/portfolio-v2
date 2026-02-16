@@ -878,8 +878,7 @@ const demoData = [
     }
 ];
 
-function openDemoModal(index) {
-    const data = demoData[index];
+function showDemoDetails(data) {
     if (!data) return;
 
     const modal = document.getElementById('demo-modal');
@@ -895,7 +894,7 @@ function openDemoModal(index) {
     }
 
     const tagsEl = document.getElementById('demo-modal-tags');
-    tagsEl.innerHTML = data.tags.map(t => '<span class="tech-tag">' + t + '</span>').join('');
+    tagsEl.innerHTML = (data.tags || []).map(t => '<span class="tech-tag">' + t + '</span>').join('');
 
     let extraContent = '';
     if (data.gallery && data.gallery.length) {
@@ -935,6 +934,11 @@ function openDemoModal(index) {
     document.body.style.overflow = 'hidden';
 }
 
+function openDemoModal(index) {
+    const data = demoData[index];
+    showDemoDetails(data);
+}
+
 function closeDemoModal(event, force) {
     if (force || event.target.classList.contains('demo-modal-overlay')) {
         const modal = document.getElementById('demo-modal');
@@ -959,27 +963,42 @@ document.addEventListener('keydown', (e) => {
 const robloxDemos = [
     {
         title: 'Gameplay Systems Engineering',
-        desc: 'Server-side logic and gameplay mechanics in Lua for high-concurrency titles.'
+        desc: 'Server-side logic and gameplay mechanics in Lua for high-concurrency titles.',
+        tags: ['Lua', 'Roblox Studio'],
+        preview: null,
+        gallery: [],
+        note: null,
+        assignment: null,
+        linkedin: null,
+        repo: null,
+        project: null,
+        demo: null
     },
     {
         title: '3D Character Animations',
-        desc: 'Blender-made animations exported and integrated into Roblox Studio.'
-    },
-    {
-        title: 'UI/UX Design',
-        desc: 'In-game interfaces, menus, and HUD elements for multiple shipped titles.'
+        desc: 'Blender-made animations exported and integrated into Roblox Studio.',
+        tags: ['Blender', 'Roblox Studio'],
+        preview: null,
+        gallery: [],
+        note: null,
+        assignment: null,
+        linkedin: null,
+        repo: null,
+        project: null,
+        demo: null
     },
     {
         title: 'Physics & Combat Systems',
-        desc: 'Custom hit detection, ragdoll physics, and ability systems at scale.'
-    },
-    {
-        title: 'World Building & Environment',
-        desc: 'Large-scale map design and environmental storytelling for open-world games.'
-    },
-    {
-        title: 'Monetization & Economy',
-        desc: 'In-game shops, currency systems, and progression mechanics.'
+        desc: 'Custom hit detection, ragdoll physics, and ability systems at scale.',
+        tags: ['Lua', 'Physics'],
+        preview: null,
+        gallery: [],
+        note: null,
+        assignment: null,
+        linkedin: null,
+        repo: null,
+        project: null,
+        demo: null
     }
 ];
 
@@ -987,8 +1006,8 @@ function openRobloxModal() {
     const modal = document.getElementById('roblox-modal');
     const list = document.getElementById('roblox-demos-list');
 
-    list.innerHTML = robloxDemos.map(d =>
-        '<div class="roblox-demo-item">' +
+    list.innerHTML = robloxDemos.map((d, index) =>
+        '<div class="roblox-demo-item" onclick="openRobloxDemo(' + index + ')">' +
             '<div class="roblox-demo-thumb"><div class="demo-placeholder"><span>GIF</span></div></div>' +
             '<div class="roblox-demo-text"><h4>' + d.title + '</h4><p>' + d.desc + '</p></div>' +
             '<span class="roblox-demo-cta">Click me!</span>' +
@@ -997,6 +1016,16 @@ function openRobloxModal() {
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+function openRobloxDemo(index) {
+    const data = robloxDemos[index];
+    if (!data) return;
+
+    const robloxModal = document.getElementById('roblox-modal');
+    robloxModal.classList.remove('active');
+
+    showDemoDetails(data);
 }
 
 function closeRobloxModal(event, force) {
@@ -1010,6 +1039,7 @@ function closeRobloxModal(event, force) {
 window.openDemoModal = openDemoModal;
 window.closeDemoModal = closeDemoModal;
 window.openRobloxModal = openRobloxModal;
+window.openRobloxDemo = openRobloxDemo;
 window.closeRobloxModal = closeRobloxModal;
 
 // ============================================
