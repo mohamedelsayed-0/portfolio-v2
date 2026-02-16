@@ -823,6 +823,7 @@ const demoData = [
         assignment: null,
         gallery: [],
         note: null,
+        linkedin: null,
         repo: null,
         project: null,
         demo: null
@@ -835,6 +836,7 @@ const demoData = [
         assignment: null,
         gallery: [],
         note: null,
+        linkedin: null,
         repo: 'https://github.com/mohamedelsayed-0/CIV102',
         project: null,
         demo: null
@@ -847,15 +849,16 @@ const demoData = [
         assignment: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/',
         gallery: [
             {
-                src: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/pong_static.jpg',
-                alt: 'Pong AI tournament setup in class'
+                src: 'https://cdn.discordapp.com/attachments/979106511886368828/1472828960802078740/image.png?ex=6993fe5c&is=6992acdc&hm=ef6c70697669576f64c5957ad6418e2df5018115fc58d18875ec72f0c8d995c1&',
+                alt: 'LinkedIn post about Pong AI Engines tournament results'
             },
             {
-                src: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif',
-                alt: 'Pong AI engine versus engine gameplay'
+                src: 'https://cdn.discordapp.com/attachments/979106511886368828/1472829136387964970/image.png?ex=6993fe85&is=6992ad05&hm=def85077e09b157fffe65943ab195d0476fb77e87004c4d189f8479bbfab337f&',
+                alt: 'Pong AI lecture photo and winners'
             }
         ],
         note: 'p.s. i skipped this lecture so i wasnt in any of the pictures..',
+        linkedin: 'https://www.linkedin.com/feed/update/urn:li:activity:7415496511515504640/',
         repo: 'https://github.com/mohamedelsayed-0/Pong-AI',
         project: null,
         demo: null
@@ -868,6 +871,7 @@ const demoData = [
         assignment: null,
         gallery: [],
         note: null,
+        linkedin: null,
         repo: null,
         project: null,
         demo: null
@@ -912,6 +916,9 @@ function openDemoModal(index) {
     let buttons = '';
     if (data.assignment) {
         buttons += '<a href="' + data.assignment + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Assignment Description</a>';
+    }
+    if (data.linkedin) {
+        buttons += '<a href="' + data.linkedin + '" target="_blank" rel="noopener noreferrer" class="btn btn-solid">linkedin post</a>';
     }
     if (data.repo) {
         buttons += '<a href="' + data.repo + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Go to Repo</a>';
@@ -1016,6 +1023,7 @@ const projectData = [
         tags: ['Python', 'MATLAB'],
         date: 'Nov 2025',
         assignment: null,
+        linkedin: null,
         repo: 'https://github.com/mohamedelsayed-0/CIV102',
         project: null,
         demo: null
@@ -1026,6 +1034,7 @@ const projectData = [
         tags: ['Python', 'Pygame'],
         date: 'Jan 2026',
         assignment: 'https://www.cs.toronto.edu/~guerzhoy/niftypong/',
+        linkedin: 'https://www.linkedin.com/feed/update/urn:li:activity:7415496511515504640/',
         repo: 'https://github.com/mohamedelsayed-0/Pong-AI',
         project: null,
         demo: null
@@ -1036,6 +1045,7 @@ const projectData = [
         tags: ['TypeScript', 'JavaScript', 'CSS', 'Python'],
         date: 'Dec 2025 – Present',
         assignment: null,
+        linkedin: null,
         repo: null,
         project: null,
         demo: null
@@ -1058,6 +1068,9 @@ function openProjectModal(index) {
     let buttons = '';
     if (data.assignment) {
         buttons += '<a href="' + data.assignment + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Assignment Description</a>';
+    }
+    if (data.linkedin) {
+        buttons += '<a href="' + data.linkedin + '" target="_blank" rel="noopener noreferrer" class="btn btn-solid">linkedin post</a>';
     }
     if (data.repo) {
         buttons += '<a href="' + data.repo + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Go to Repo</a>';
