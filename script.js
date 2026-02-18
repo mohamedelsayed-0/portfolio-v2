@@ -1048,6 +1048,17 @@ window.closeRobloxModal = closeRobloxModal;
 
 const projectData = [
     {
+        title: 'Gaussian Simulations',
+        desc: 'Independent research project deriving closed-form entanglement survival conditions for two-mode squeezed vacuum states in symmetric phase-insensitive Gaussian channels. Uses symplectic-invariant reduction to convert PPT checks into explicit, analytically invertible thresholds for thermal-loss and symmetric quantum-limited amplification settings.',
+        tags: ['Python', 'Quantum Information'],
+        date: 'Ongoing',
+        assignment: null,
+        linkedin: null,
+        repo: 'https://github.com/mohamedelsayed-0/gaussian_simulations/tree/main',
+        project: null,
+        demo: null
+    },
+    {
         title: 'Structural Beam Simulation',
         desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations including deflection animations under moving and distributed loads. Validated predictions against physical tests.',
         tags: ['Python', 'MATLAB'],
