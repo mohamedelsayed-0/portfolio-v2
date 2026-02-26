@@ -1,150 +1,119 @@
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useRef, useMemo, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Html, Line } from '@react-three/drei';
 
-const CoreParticles: React.FC = () => {
-    const pointsRef = useRef<THREE.Points>(null);
-    const { mouse, viewport } = useThree();
-    const particleCount = 400;
+const courses = [
+    // Fall
+    { id: 'ESC180', title: 'Intro to Programming' },
+    { id: 'ESC103', title: 'Engineering Math' },
+    { id: 'CIV102', title: 'Structures' },
+    { id: 'ESC194', title: 'Calculus I' },
+    { id: 'PHY180', title: 'Classical Mechanics' },
+    { id: 'ESC101', title: 'Praxis I' },
+    // Winter
+    { id: 'MAT185', title: 'Linear Algebra' },
+    { id: 'ESC195', title: 'Calculus II' },
+    { id: 'MSE160', title: 'Materials' },
+    { id: 'ECE159', title: 'Electric Circuits' },
+    { id: 'ESC190', title: 'Data Structures' },
+];
 
-    // Generate sphere particles randomly distributed
-    const { positions, originalPositions, colors } = useMemo(() => {
-        const positions = new Float32Array(particleCount * 3);
-        const originalPositions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
+const KnowledgeGraph: React.FC = () => {
+    const groupRef = useRef<THREE.Group>(null);
+    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
-        // Purple accent (#9d4edd -> 157, 78, 221) and Purple glow (#c77dff -> 199, 125, 255)
-        const colorA = new THREE.Color('#9d4edd');
-        const colorB = new THREE.Color('#c77dff');
+    // Generate positions for nodes
+    const nodes = useMemo(() => {
+        return courses.map((course, i) => {
+            const phi = Math.acos(-1 + (2 * i) / courses.length);
+            const theta = Math.sqrt(courses.length * Math.PI) * phi;
+            const r = 10;
+            return {
+                ...course,
+                pos: new THREE.Vector3(
+                    r * Math.cos(theta) * Math.sin(phi),
+                    r * Math.sin(theta) * Math.sin(phi),
+                    r * Math.cos(phi)
+                )
+            };
+        });
+    }, []);
 
-        for (let i = 0; i < particleCount; i++) {
-            // Random point on a sphere surface (Math.random) -> expanded to volume
-            const r = 8 + Math.random() * 4; // radius 8 to 12
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos((Math.random() * 2) - 1);
-
-            const x = r * Math.sin(phi) * Math.cos(theta);
-            const y = r * Math.sin(phi) * Math.sin(theta);
-            const z = r * Math.cos(phi);
-
-            const i3 = i * 3;
-            positions[i3] = x;
-            positions[i3 + 1] = y;
-            positions[i3 + 2] = z;
-
-            originalPositions[i3] = x;
-            originalPositions[i3 + 1] = y;
-            originalPositions[i3 + 2] = z;
-
-            const mixColor = colorA.clone().lerp(colorB, Math.random());
-            colors[i3] = mixColor.r;
-            colors[i3 + 1] = mixColor.g;
-            colors[i3 + 2] = mixColor.b;
-        }
-
-        return { positions, originalPositions, colors };
-    }, [particleCount]);
-
-    useFrame((state) => {
-        if (!pointsRef.current) return;
-        const time = state.clock.elapsedTime;
-        const positionsAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        const posArray = positionsAttr.array as Float32Array;
-
-        // Pulse core
-        const pulse = Math.sin(time * 2) * 0.5 + 1; // 0.5 to 1.5
-
-        // Map mouse to 3D world space approximately
-        const mx = (mouse.x * viewport.width) / 2;
-        const my = (mouse.y * viewport.height) / 2;
-
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-
-            // Base coordinate with pulse expansion
-            const bx = originalPositions[i3] * pulse;
-            const by = originalPositions[i3 + 1] * pulse;
-            const bz = originalPositions[i3 + 2] * pulse;
-
-            // Interaction Repulsion
-            const dx = bx - mx;
-            const dy = by - my;
-            // Assume z is depth
-            const dz = bz - 0;
-
-            const distSq = dx * dx + dy * dy + dz * dz;
-            const maxDist = 200; // Hover effect radius
-
-            if (distSq < maxDist) {
-                const force = (maxDist - distSq) / maxDist;
-                const dirX = dx / Math.sqrt(distSq);
-                const dirY = dy / Math.sqrt(distSq);
-
-                // Push away
-                posArray[i3] = bx + dirX * force * 5;
-                posArray[i3 + 1] = by + dirY * force * 5;
-                posArray[i3 + 2] = bz;
-            } else {
-                // Noise drift
-                const driftX = Math.sin(time + i) * 0.5;
-                const driftY = Math.cos(time + i * 0.5) * 0.5;
-                posArray[i3] = bx + driftX;
-                posArray[i3 + 1] = by + driftY;
-                posArray[i3 + 2] = bz;
+    // Generate random connection lines between nodes
+    const edges = useMemo(() => {
+        const lines: [THREE.Vector3, THREE.Vector3][] = [];
+        nodes.forEach((node, i) => {
+            // connect to 2 random other nodes
+            for (let j = 0; j < 2; j++) {
+                const targetIdx = (i + j + 1) % nodes.length;
+                lines.push([node.pos, nodes[targetIdx].pos]);
             }
-        }
+        });
+        return lines;
+    }, [nodes]);
 
-        positionsAttr.needsUpdate = true;
-        pointsRef.current.rotation.y = time * 0.2;
-        pointsRef.current.rotation.x = time * 0.1;
+    useFrame(() => {
+        if (groupRef.current) {
+            groupRef.current.rotation.y += 0.001;
+            groupRef.current.rotation.x += 0.0005;
+        }
     });
 
     return (
-        <points ref={pointsRef}>
-            <bufferGeometry>
-                <bufferAttribute
-                    attach="attributes-position"
-                    count={particleCount}
-                    args={[positions, 3]}
-                />
-                <bufferAttribute
-                    attach="attributes-color"
-                    count={particleCount}
-                    args={[colors, 3]}
-                />
-            </bufferGeometry>
-            <pointsMaterial
-                size={0.4}
-                vertexColors
-                transparent
-                opacity={0.8}
-                blending={THREE.AdditiveBlending}
-                sizeAttenuation
-            />
-        </points>
+        <group ref={groupRef}>
+            {edges.map((pts, i) => (
+                <Line key={i} points={pts} color="#9d4edd" opacity={0.2} transparent lineWidth={1} />
+            ))}
+
+            {nodes.map((node) => (
+                <group key={node.id} position={node.pos}>
+                    <mesh
+                        onPointerOver={(e) => { e.stopPropagation(); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
+                        onPointerOut={() => { setHoveredNode(null); document.body.style.cursor = 'default'; }}
+                    >
+                        <sphereGeometry args={[hoveredNode === node.id ? 0.6 : 0.4, 32, 32]} />
+                        <meshBasicMaterial color={hoveredNode === node.id ? "#ffffff" : "#c77dff"} />
+                    </mesh>
+
+                    {/* Floating Label */}
+                    <Html distanceFactor={15} center>
+                        <div className={`transition-all duration-300 font-mono text-center pointer-events-none
+                            ${hoveredNode === node.id ? 'opacity-100 scale-110 text-white z-50' : 'opacity-40 text-purple-light text-xs'}`}
+                        >
+                            <div className="font-bold">{node.id}</div>
+                            {hoveredNode === node.id && (
+                                <div className="text-[10px] whitespace-nowrap bg-black/80 px-2 py-1 border border-purple-accent/50 rounded mt-1">
+                                    {node.title}
+                                </div>
+                            )}
+                        </div>
+                    </Html>
+                </group>
+            ))}
+        </group>
     );
 };
 
 export const NeuralNet: React.FC = () => {
     return (
-        <div className="relative h-screen w-full bg-cyber-black pt-24 pb-8 px-8 flex flex-col items-center">
+        <div className="relative h-screen w-full bg-cyber-black pt-24 pb-8 px-8 flex flex-col items-center overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <Canvas camera={{ position: [0, 0, 30], fov: 60 }}>
+                <Canvas camera={{ position: [0, 0, 25], fov: 60 }}>
                     <ambientLight intensity={0.5} />
-                    <CoreParticles />
-                    <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+                    <KnowledgeGraph />
+                    <OrbitControls enableZoom={true} enablePan={false} autoRotate={false} />
                 </Canvas>
             </div>
 
             <div className="relative z-10 w-full max-w-5xl h-full flex flex-col justify-end pb-12 pointer-events-none">
-                <div className="glass-card p-8 pointer-events-auto">
-                    <h2 className="text-3xl font-mono text-purple-glow mb-4 tracking-widest uppercase flex items-center gap-3">
-                        <div className="w-3 h-3 bg-purple-accent rounded-full animate-pulse" />
-                        Sentient Core
+                <div className="glass-card p-6 pointer-events-auto">
+                    <h2 className="text-2xl font-mono text-purple-glow mb-2 tracking-widest uppercase flex items-center gap-3">
+                        <div className="w-2 h-2 bg-purple-accent rounded-full animate-pulse" />
+                        Knowledge Graph
                     </h2>
-                    <p className="text-text-secondary font-sans leading-relaxed text-lg max-w-3xl">
-                        This is the neural nexus of my knowledge graph. A constantly evolving structure of cross-disciplinary connections spanning Physics, Mathematics, and Computer Science. Hover over the nodes in the structure to view the disruption forces of real-time data flow.
+                    <p className="text-text-secondary font-sans leading-relaxed text-sm max-w-2xl">
+                        University notes and course materials. Rotate and zoom the 3D graph to explore connections between Engineering Science concepts.
                     </p>
                 </div>
             </div>

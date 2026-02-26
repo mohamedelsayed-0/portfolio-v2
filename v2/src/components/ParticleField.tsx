@@ -5,6 +5,8 @@ import * as THREE from 'three';
 export const ParticleField: React.FC = () => {
     const pointsRef = useRef<THREE.Points>(null);
     const linesRef = useRef<THREE.LineSegments>(null);
+    const diskRef = useRef<THREE.Mesh>(null);
+    const glowRef = useRef<THREE.Mesh>(null);
 
     const particleCount = 200;
     const maxConnections = 80;
@@ -36,6 +38,21 @@ export const ParticleField: React.FC = () => {
         return new Float32Array(maxConnections * 6); // 2 vertices * 3 coords
     }, [maxConnections]);
 
+    // Create a circular texture for particles
+    const circleTexture = useMemo(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.beginPath();
+            ctx.arc(16, 16, 14, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+        }
+        return new THREE.CanvasTexture(canvas);
+    }, []);
+
     useFrame((state) => {
         const time = state.clock.elapsedTime * 0.5;
 
@@ -57,9 +74,19 @@ export const ParticleField: React.FC = () => {
         }
         pointsGeo.attributes.position.needsUpdate = true;
 
-        // 2. Slow rotation
-        pointsRef.current.rotation.y += 0.00025;
-        pointsRef.current.rotation.x += 0.00012;
+        // 2. Slow rotation for particles
+        pointsRef.current.rotation.y -= 0.0005;
+        pointsRef.current.rotation.x -= 0.0002;
+
+        // Black hole animate
+        if (diskRef.current && glowRef.current) {
+            diskRef.current.rotation.z += 0.005;
+            glowRef.current.rotation.z -= 0.002;
+
+            // Pulse glow
+            const s = 1.0 + Math.sin(time * 2) * 0.05;
+            glowRef.current.scale.set(s, s, s);
+        }
 
         // Stronger parallax via mouse if needed (ignoring mouse for a simpler background)
         pointsRef.current.rotation.y += (state.pointer.x * 0.05 - pointsRef.current.rotation.y) * 0.02;
@@ -98,6 +125,25 @@ export const ParticleField: React.FC = () => {
 
     return (
         <group>
+            {/* Black Hole */}
+            <group position={[0, 0, -20]}>
+                {/* Core */}
+                <mesh>
+                    <circleGeometry args={[4, 64]} />
+                    <meshBasicMaterial color="#000000" />
+                </mesh>
+                {/* Accretion Disk */}
+                <mesh ref={diskRef}>
+                    <ringGeometry args={[4.2, 8, 64]} />
+                    <meshBasicMaterial color="#9d4edd" side={THREE.DoubleSide} transparent opacity={0.6} blending={THREE.AdditiveBlending} />
+                </mesh>
+                {/* Outer Glow */}
+                <mesh ref={glowRef} position={[0, 0, -0.1]}>
+                    <ringGeometry args={[4.0, 12, 64]} />
+                    <meshBasicMaterial color="#4a0e4e" side={THREE.DoubleSide} transparent opacity={0.2} blending={THREE.AdditiveBlending} />
+                </mesh>
+            </group>
+
             <points ref={pointsRef}>
                 <bufferGeometry>
                     <bufferAttribute
@@ -115,9 +161,12 @@ export const ParticleField: React.FC = () => {
                     size={2.5}
                     color="#9d4edd"
                     transparent
-                    opacity={0.55}
+                    opacity={0.6}
                     sizeAttenuation
                     blending={THREE.AdditiveBlending}
+                    map={circleTexture}
+                    alphaTest={0.01}
+                    depthWrite={false}
                 />
             </points>
 

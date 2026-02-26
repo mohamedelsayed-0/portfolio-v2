@@ -3,57 +3,77 @@ import { gsap } from 'gsap';
 
 export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const textRef = useRef<HTMLDivElement>(null);
     const ringRef = useRef<HTMLDivElement>(null);
-    const [text, setText] = useState('LOADING_ASSETS');
+    const flashRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
+    const [text, setText] = useState('SYSTEM_BOOT');
 
     useEffect(() => {
-        // Scramble Text Effect
+        // Scramble Text Effect (Faster)
         let iterations = 0;
         const interval = setInterval(() => {
             setText((prev) => {
-                if (iterations >= 20) {
+                if (iterations >= 10) {
                     clearInterval(interval);
-                    return 'SYSTEM_READY';
+                    return 'READY';
                 }
-
-                const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+                const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                 return prev.split("").map((_, index) => {
-                    if (index < iterations) return 'SYSTEM_READY'[index];
+                    if (index < iterations) return 'READY'[index];
                     return letters[Math.floor(Math.random() * letters.length)];
                 }).join("");
             });
             iterations += 1;
-        }, 50);
+        }, 60);
 
-        // GSAP Transitions
-        if (containerRef.current && ringRef.current && textRef.current) {
+        if (containerRef.current && ringRef.current && textRef.current && flashRef.current) {
             const tl = gsap.timeline({
                 onComplete: () => {
                     onComplete();
                 }
             });
 
+            // 1. Spool up / draw in
             tl.to(ringRef.current, {
-                rotate: 360,
-                duration: 2,
-                ease: "power2.inOut",
+                rotate: 720,
+                scale: 0.8,
+                duration: 1.5,
+                ease: "power2.in",
             }, 0)
                 .to(textRef.current, {
                     opacity: 1,
                     duration: 0.5,
                 }, 0)
-                .to(textRef.current, {
-                    scale: 1.1,
-                    color: '#c77dff',
-                    duration: 0.5,
-                    ease: "power2.out",
+
+                // 2. Collapse rapidly (The Singularity)
+                .to(ringRef.current, {
+                    scale: 0,
+                    duration: 0.3,
+                    ease: "expo.in"
                 }, 1.5)
+                .to(textRef.current, {
+                    scale: 0,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: "expo.in"
+                }, 1.5)
+
+                // 3. The Flash (Whiteout)
+                .to(flashRef.current, {
+                    opacity: 1,
+                    duration: 0.1,
+                }, 1.8)
+
+                // 4. Fade to Reveal
+                .to(flashRef.current, {
+                    opacity: 0,
+                    duration: 1.2,
+                    ease: "power2.out"
+                }, 1.9)
                 .to(containerRef.current, {
                     opacity: 0,
-                    filter: 'blur(20px)',
-                    duration: 1,
-                    ease: "power3.inOut"
+                    duration: 0.5,
+                    ease: "power2.out"
                 }, 2.5);
         }
 
@@ -63,36 +83,38 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
     return (
         <div
             ref={containerRef}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-cyber-black text-cloud-purple overflow-hidden"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-cyber-black overflow-hidden pointer-events-none"
         >
-            {/* Background Radial Rings */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                <div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full border border-purple-accent/30 radial-pulse animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" />
-                <div className="absolute w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full border border-purple-light/40 radial-pulse animate-[ping_4s_cubic-bezier(0,0,0.2,1)_infinite_1s]" />
+            {/* Ambient Background Particles Simulation */}
+            <div className="absolute inset-0 opacity-30">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] rounded-full border border-purple-accent/10 block animate-[spin_10s_linear_infinite]" />
             </div>
 
-            {/* Holographic Ring */}
+            {/* Accretion Disk Ring */}
             <div
                 ref={ringRef}
-                className="absolute w-[300px] h-[300px] rounded-full border-[1px] border-dashed border-purple-accent/60 flex items-center justify-center before:content-[''] before:absolute before:inset-2 before:rounded-full before:border-[1px] before:border-purple-glow/30"
+                className="absolute w-[200px] h-[200px] rounded-full border-[2px] border-dashed border-purple-accent/80 flex items-center justify-center before:content-[''] before:absolute before:inset-4 before:rounded-full before:border-[1px] before:border-purple-glow/50"
                 style={{
-                    boxShadow: '0 0 50px rgba(157,78,221,0.2), inset 0 0 50px rgba(157,78,221,0.2)'
+                    boxShadow: '0 0 80px rgba(157,78,221,0.5), inset 0 0 60px rgba(157,78,221,0.5)'
                 }}
             >
-                <div className="absolute w-[2px] h-20 bg-purple-glow blur-[1px] top-0 left-1/2 -ml-[1px]" />
+                <div className="absolute w-full h-[2px] bg-purple-glow blur-[2px] top-1/2 -mt-[1px]" />
+                <div className="absolute h-full w-[2px] bg-purple-glow blur-[2px] left-1/2 -ml-[1px]" />
             </div>
 
             {/* Text Output */}
             <div
                 ref={textRef}
-                className="font-mono text-xl tracking-[0.3em] font-medium opacity-0 flex flex-col items-center gap-4 relative z-10"
+                className="font-mono text-xl tracking-[0.4em] text-white font-bold opacity-0 relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
             >
                 <span>{text}</span>
-                <div className="w-48 h-[1px] bg-gradient-to-r from-transparent via-purple-accent to-transparent" />
-                <span className="text-xs text-purple-accent tracking-widest opacity-60">
-                    MCP-2099 KERNEL v9.4
-                </span>
             </div>
+
+            {/* The Flash Overlay */}
+            <div
+                ref={flashRef}
+                className="absolute inset-0 bg-white opacity-0 z-50 pointer-events-none"
+            />
         </div>
     );
 };

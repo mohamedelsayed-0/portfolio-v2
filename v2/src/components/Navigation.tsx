@@ -10,9 +10,9 @@ function cn(...inputs: ClassValue[]) {
 
 const navItems = [
     { path: '/', label: 'Interface', icon: Terminal },
-    { path: '/core', label: 'Neural Net', icon: Brain },
-    { path: '/dashboard', label: 'Protocol', icon: LayoutDashboard },
-    { path: '/logs', label: 'Logs', icon: Activity },
+    { path: '/core', label: 'Notes', icon: Brain },
+    { path: '/dashboard', label: 'About', icon: LayoutDashboard },
+    { path: '/logs', label: 'Demos', icon: Activity },
 ];
 
 export const Navigation: React.FC = () => {
@@ -52,7 +52,7 @@ export const Navigation: React.FC = () => {
                     rel="noopener noreferrer"
                     className="px-4 py-2 text-sm font-mono tracking-widest uppercase bg-purple-accent/10 border border-purple-accent/50 rounded-xl hover:bg-purple-accent hover:text-white transition-all shadow-[0_0_10px_rgba(157,78,221,0.2)] hover:shadow-[0_0_20px_rgba(157,78,221,0.6)]"
                 >
-                    Initialize
+                    See more
                 </a>
             </div>
         </nav>
