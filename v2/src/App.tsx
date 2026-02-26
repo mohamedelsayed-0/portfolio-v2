@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Routes, Route, HashRouter } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { CinematicLoader } from './components/CinematicLoader';
+import { HeroSection } from './components/HeroSection';
 import { NeuralNet } from './components/NeuralNet';
 import { Dashboard } from './components/Dashboard';
 import { Logs } from './components/Logs';
