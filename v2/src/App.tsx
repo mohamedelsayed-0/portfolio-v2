@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { Routes, Route, HashRouter } from 'react-router-dom';
+import { Navigation } from './components/Navigation';
+import { CinematicLoader } from './components/CinematicLoader';
+
+// Placeholder Pages (To be replaced with real components)
+const HeroSection = () => <div className="h-screen flex items-center justify-center font-hero text-6xl text-purple-glow">INITIATED_</div>;
+const NeuralNet = () => <div className="h-screen flex items-center justify-center font-mono text-4xl">NEURAL NET: ONLINE</div>;
+const Dashboard = () => <div className="h-screen flex items-center justify-center font-mono text-4xl">PROTOCOL LOGS</div>;
+const Logs = () => <div className="h-screen flex items-center justify-center font-mono text-4xl">SYSTEM LOGS</div>;
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [loading, setLoading] = useState(true);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <HashRouter>
+      <div className="relative min-h-screen">
+        {loading && <CinematicLoader onComplete={() => setLoading(false)} />}
+
+        {!loading && (
+          <div className="opacity-0 animate-[fadeIn_1.5s_ease-in-out_forwards]">
+            <Navigation />
+
+            <main className="relative z-10">
+              <Routes>
+                <Route path="/" element={<HeroSection />} />
+                <Route path="/core" element={<NeuralNet />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/logs" element={<Logs />} />
+              </Routes>
+            </main>
+          </div>
+        )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </HashRouter>
+  );
 }
 
-export default App
+export default App;
