@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { Routes, Route, HashRouter } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { CinematicLoader } from './components/CinematicLoader';
-import { HeroSection } from './components/HeroSection';
 import { NeuralNet } from './components/NeuralNet';
 import { Dashboard } from './components/Dashboard';
-
-// Placeholder Pages (To be replaced with real components)
-const Logs = () => <div className="h-screen flex items-center justify-center font-mono text-4xl">SYSTEM LOGS</div>;
+import { Logs } from './components/Logs';
 
 function App() {
   const [loading, setLoading] = useState(true);
