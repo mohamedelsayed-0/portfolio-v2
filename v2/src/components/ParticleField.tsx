@@ -103,14 +103,12 @@ export const ParticleField: React.FC = () => {
                     <bufferAttribute
                         attach="attributes-position"
                         count={positions.length / 3}
-                        array={positions}
-                        itemSize={3}
+                        args={[positions, 3]}
                     />
                     <bufferAttribute
                         attach="attributes-size"
                         count={sizes.length}
-                        array={sizes}
-                        itemSize={1}
+                        args={[sizes, 1]}
                     />
                 </bufferGeometry>
                 <pointsMaterial
@@ -128,8 +126,7 @@ export const ParticleField: React.FC = () => {
                     <bufferAttribute
                         attach="attributes-position"
                         count={linePositions.length / 3}
-                        array={linePositions}
-                        itemSize={3}
+                        args={[linePositions, 3]}
                     />
                 </bufferGeometry>
                 <lineBasicMaterial
