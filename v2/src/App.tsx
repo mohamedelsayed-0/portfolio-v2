@@ -4,9 +4,9 @@ import { Navigation } from './components/Navigation';
 import { CinematicLoader } from './components/CinematicLoader';
 import { HeroSection } from './components/HeroSection';
 import { NeuralNet } from './components/NeuralNet';
+import { Dashboard } from './components/Dashboard';
 
 // Placeholder Pages (To be replaced with real components)
-const Dashboard = () => <div className="h-screen flex items-center justify-center font-mono text-4xl">PROTOCOL LOGS</div>;
 const Logs = () => <div className="h-screen flex items-center justify-center font-mono text-4xl">SYSTEM LOGS</div>;
 
 function App() {
