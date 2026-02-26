@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cyber-black: #050508;
+  --color-bg-secondary: #0d0d14;
+  --color-bg-card: rgba(15, 15, 25, 0.85);
+  --color-purple-dark: #1a0a2e;
+  --color-purple-mid: #4a1c6b;
+  --color-purple-light: #7b2cbf;
+  --color-purple-accent: #9d4edd;
+  --color-purple-glow: #c77dff;
+  --color-cloud-purple: #f3e8ff;
+  --color-text-secondary: #d8c6eb;
+  --color-text-muted: #8e7aa3;
+  --color-glass-bg: rgba(10, 10, 20, 0.65);
+
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-hero: 'Playfair Display', serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-cyber-black);
+    color: var(--color-cloud-purple);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    antialiased: true;
+  }
+}
+
+/* Glass Card */
+@layer components {
+  .glass-card {
+    background: var(--color-glass-bg);
+    border: 1px solid rgba(157, 78, 221, 0.25);
+    border-radius: 1rem;
+    backdrop-filter: blur(20px);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .glass-card:hover {
+    border-color: var(--color-purple-accent);
+    box-shadow: 0 12px 40px rgba(157, 78, 221, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px);
+  }
+
+  .glass-panel {
+    background: rgba(15, 15, 25, 0.85);
+    border: 1px solid rgba(157, 78, 221, 0.15);
+    backdrop-filter: blur(12px);
+  }
+}
