@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Terminal, Brain, LayoutDashboard, FileText, Activity } from 'lucide-react';
+import { Terminal, Brain, LayoutDashboard, Activity } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
