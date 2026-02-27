@@ -8,9 +8,9 @@ export const ParticleField: React.FC = () => {
     const diskRef = useRef<THREE.Mesh>(null);
     const glowRef = useRef<THREE.Mesh>(null);
 
-    const particleCount = 200;
-    const maxConnections = 80;
-    const connectionDistance = 15;
+    const particleCount = 120;
+    const maxConnections = 50;
+    const connectionDistance = 12;
 
     const { positions, originalPositions, sizes } = useMemo(() => {
         const positions = new Float32Array(particleCount * 3);
@@ -19,15 +19,15 @@ export const ParticleField: React.FC = () => {
 
         for (let i = 0; i < particleCount; i++) {
             const i3 = i * 3;
-            positions[i3] = (Math.random() - 0.5) * 120;
-            positions[i3 + 1] = (Math.random() - 0.5) * 120;
-            positions[i3 + 2] = (Math.random() - 0.5) * 80 - 10;
+            positions[i3] = (Math.random() - 0.5) * 100;
+            positions[i3 + 1] = (Math.random() - 0.5) * 100;
+            positions[i3 + 2] = (Math.random() - 0.5) * 60 - 10;
 
             originalPositions[i3] = positions[i3];
             originalPositions[i3 + 1] = positions[i3 + 1];
             originalPositions[i3 + 2] = positions[i3 + 2];
 
-            sizes[i] = Math.random() * 2.5 + 1.0;
+            sizes[i] = Math.random() * 1.8 + 0.8;
         }
         return { positions, originalPositions, sizes };
     }, [particleCount]);
@@ -122,12 +122,12 @@ export const ParticleField: React.FC = () => {
                     <meshBasicMaterial color="#000000" />
                 </mesh>
                 <mesh ref={diskRef}>
-                    <ringGeometry args={[4.2, 8, 64]} />
-                    <meshBasicMaterial color="#9d4edd" side={THREE.DoubleSide} transparent opacity={0.6} blending={THREE.AdditiveBlending} />
+                    <ringGeometry args={[4.2, 6, 64]} />
+                    <meshBasicMaterial color="#9d4edd" side={THREE.DoubleSide} transparent opacity={0.3} blending={THREE.AdditiveBlending} />
                 </mesh>
                 <mesh ref={glowRef} position={[0, 0, -0.1]}>
-                    <ringGeometry args={[4.0, 12, 64]} />
-                    <meshBasicMaterial color="#4a0e4e" side={THREE.DoubleSide} transparent opacity={0.2} blending={THREE.AdditiveBlending} />
+                    <ringGeometry args={[4.0, 9, 64]} />
+                    <meshBasicMaterial color="#4a0e4e" side={THREE.DoubleSide} transparent opacity={0.1} blending={THREE.AdditiveBlending} />
                 </mesh>
             </group>
 
@@ -145,7 +145,7 @@ export const ParticleField: React.FC = () => {
                     />
                 </bufferGeometry>
                 <pointsMaterial
-                    size={2.5}
+                    size={1.8}
                     color="#9d4edd"
                     transparent
                     opacity={0.6}

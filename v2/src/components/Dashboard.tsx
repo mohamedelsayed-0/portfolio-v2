@@ -2,6 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ServerCog, Cpu, Network, Code } from 'lucide-react';
 
+const StatCard: React.FC<{ value: string; label: string }> = ({ value, label }) => (
+    <div className="bento-card glass-card p-6 flex flex-col items-center justify-center text-center">
+        <span className="text-4xl font-bold text-purple-accent">{value}</span>
+        <span className="text-xs text-text-muted uppercase tracking-wider mt-2 font-mono">{label}</span>
+    </div>
+);
+
 const ExpCard: React.FC<{ title: string; company: string; date: string; desc: string; icon: React.FC<any> }> = ({ title, company, date, desc, icon: Icon }) => (
     <div className="bento-card glass-card p-6 flex flex-col justify-between h-full relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-accent/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-purple-accent/20 transition-colors duration-500" />
@@ -83,32 +90,33 @@ export const Dashboard: React.FC = () => {
 
             <div className="relative z-10 max-w-7xl mx-auto flex flex-col gap-6">
 
-                <header className="mb-6 flex items-center justify-between border-b border-purple-accent/20 pb-4">
-                    <div>
-                        <h1 className="text-3xl font-mono text-purple-glow tracking-widest uppercase">Protocol // About Me</h1>
-                        <p className="text-text-muted text-sm mt-1 font-mono">&gt; ACCESSING EXPERIENCE RECORDS</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <StatCard value="4+" label="Years Coding" />
+                    <StatCard value="11" label="Courses" />
+                    <StatCard value="5" label="Projects" />
+                    <StatCard value="1.7B+" label="Game Visits" />
+                </div>
+
+                <div className="bento-card glass-card col-span-full p-6 flex flex-col md:flex-row items-center gap-8">
+                    <div className="w-32 h-32 rounded-full border-2 border-purple-accent/50 overflow-hidden shrink-0 shadow-[0_0_30px_rgba(157,78,221,0.3)]">
+                        <img src="./assets/profile.png" alt="Profile" className="w-full h-full object-cover" />
                     </div>
-                </header>
+                    <div>
+                        <h3 className="text-2xl font-display text-cloud-purple mb-2">Engineering Science &middot; Software &middot; Physics</h3>
+                        <p className="text-text-secondary leading-relaxed">
+                            I'm Mohamed, an Engineering Science student at the University of Toronto planning to pursue Engineering Physics. I love solving problems revolving around mathematics, and building tools that connect theory with real-world applications.
+                        </p>
+                        <div className="mt-4 flex gap-3 flex-wrap">
+                            <span className="px-3 py-1 bg-purple-accent/10 border border-purple-accent/30 rounded font-mono text-xs text-purple-light">Applied Physics</span>
+                            <span className="px-3 py-1 bg-purple-accent/10 border border-purple-accent/30 rounded font-mono text-xs text-purple-light">Number Theory</span>
+                            <span className="px-3 py-1 bg-purple-accent/10 border border-purple-accent/30 rounded font-mono text-xs text-purple-light">Abstract Geometry</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 className="text-2xl font-mono text-purple-glow tracking-widest uppercase mt-6">Experience</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
-
-                    <div className="bento-card glass-card col-span-1 md:col-span-2 lg:col-span-3 p-6 flex flex-col md:flex-row items-center gap-8">
-                        <div className="w-32 h-32 rounded-full border-2 border-purple-accent/50 overflow-hidden shrink-0 shadow-[0_0_30px_rgba(157,78,221,0.3)]">
-                            <img src="./assets/profile.png" alt="Profile" className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-display text-cloud-purple mb-2">Engineering Science &middot; Software &middot; Physics</h3>
-                            <p className="text-text-secondary leading-relaxed">
-                                I'm Mohamed, an Engineering Science student at the University of Toronto planning to pursue Engineering Physics. I love solving problems revolving around mathematics, and building tools that connect theory with real-world applications.
-                            </p>
-                            <div className="mt-4 flex gap-3 flex-wrap">
-                                <span className="px-3 py-1 bg-purple-accent/10 border border-purple-accent/30 rounded font-mono text-xs text-purple-light">Applied Physics</span>
-                                <span className="px-3 py-1 bg-purple-accent/10 border border-purple-accent/30 rounded font-mono text-xs text-purple-light">Number Theory</span>
-                                <span className="px-3 py-1 bg-purple-accent/10 border border-purple-accent/30 rounded font-mono text-xs text-purple-light">Abstract Geometry</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <ExpCard
                         title="Technical Lead"
                         company="Al Mannar NGO"
@@ -116,7 +124,6 @@ export const Dashboard: React.FC = () => {
                         desc="Lead tech strategy. Architected SQLite-backed data management system for beneficiary records, automating workflows with Python."
                         icon={Network}
                     />
-
                     <ExpCard
                         title="Undergrad Research"
                         company="AUC"
@@ -124,7 +131,6 @@ export const Dashboard: React.FC = () => {
                         desc="Developed electronic control systems using microcontrollers to automate precision translation stages for optics experiments."
                         icon={Cpu}
                     />
-
                     <ExpCard
                         title="Backend Intern"
                         company="eVision"
@@ -132,7 +138,6 @@ export const Dashboard: React.FC = () => {
                         desc="Built a scalable file-parsing automation system in Java processing structured financial documents, improving pipeline reliability."
                         icon={ServerCog}
                     />
-
                     <ExpCard
                         title="Software Dev"
                         company="Self-Employed"
@@ -140,15 +145,9 @@ export const Dashboard: React.FC = () => {
                         desc="Collaborated with Roblox studios (1.7B+ visits). Engineered Lua gameplay systems and server logic optimizing high concurrency."
                         icon={Code}
                     />
-
                 </div>
 
-                <header className="mt-12 mb-6 flex items-center justify-between border-b border-purple-accent/20 pb-4">
-                    <div>
-                        <h1 className="text-3xl font-mono text-purple-glow tracking-widest uppercase">Protocol // Projects</h1>
-                        <p className="text-text-muted text-sm mt-1 font-mono">&gt; LOADING PROJECT FILES...</p>
-                    </div>
-                </header>
+                <h2 className="text-2xl font-mono text-purple-glow tracking-widest uppercase mt-6">Projects</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
                     {projects.map((project) => (

@@ -46,12 +46,12 @@ export const Navigation: React.FC = () => {
                 <div className="w-[1px] h-6 bg-purple-accent/30 mx-2" />
 
                 <a
-                    href="https://github.com/mohamedelsayed-0"
+                    href="./assets/resume.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 text-sm font-mono tracking-widest uppercase bg-purple-accent/10 border border-purple-accent/50 rounded-xl hover:bg-purple-accent hover:text-white transition-all shadow-[0_0_10px_rgba(157,78,221,0.2)] hover:shadow-[0_0_20px_rgba(157,78,221,0.6)]"
                 >
-                    See more
+                    Resume
                 </a>
             </div>
         </nav>

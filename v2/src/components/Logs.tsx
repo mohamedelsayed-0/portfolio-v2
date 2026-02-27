@@ -33,7 +33,7 @@ export const Logs: React.FC = () => {
     }, []);
 
     return (
-        <div ref={containerRef} className="relative min-h-screen w-full bg-cyber-black pt-24 pb-8 px-8 flex flex-col items-center">
+        <div ref={containerRef} className="relative min-h-screen w-full bg-cyber-black pt-24 pb-12 px-8 flex flex-col items-center">
             <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
 
             <div className="relative z-10 w-full max-w-5xl flex flex-col gap-6">
@@ -43,7 +43,6 @@ export const Logs: React.FC = () => {
                         <TerminalSquare className="text-purple-accent" />
                         Demos
                     </h1>
-                    <p className="text-text-muted text-sm mt-1 font-mono">&gt; EXECUTING SIMULATIONS...</p>
                 </header>
 
                 <div className="grid grid-cols-2 gap-6">
@@ -52,6 +51,26 @@ export const Logs: React.FC = () => {
                         title="Roblox Game Development"
                         desc="Gameplay systems and animations for titles with 1.7B+ visits and 250K+ concurrent players. High-concurrency Lua systems."
                         tags={['Lua', 'Blender', 'Roblox Studio']}
+                    />
+                    <DemoCard
+                        title="Structural Beam Simulation"
+                        desc="Beam deflection calculator with 3D stress visualizations and load animations."
+                        tags={['Python', 'MATLAB']}
+                    />
+                    <DemoCard
+                        title="Pong AI"
+                        desc="AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall. Adaptive strategy and physics."
+                        tags={['Python', 'Pygame']}
+                    />
+                    <DemoCard
+                        title="Lumina — LaTeX Notetaker"
+                        desc="Web tool that converts handwritten, typed, and audio notes into structured LaTeX documents."
+                        tags={['TypeScript', 'Python', 'CSS']}
+                    />
+                    <DemoCard
+                        title="Gaussian Simulations"
+                        desc="Deriving closed-form entanglement survival thresholds for two-mode squeezed vacuum states."
+                        tags={['Python', 'Quantum Info']}
                     />
                 </div>
             </div>

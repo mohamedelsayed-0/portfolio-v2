@@ -17,6 +17,20 @@ const courses = [
     { id: 'ESC190', title: 'Data Structures' },
 ];
 
+const coursePdfMap: Record<string, string | null> = {
+    ESC180: './assets/ESC180_Exam_Review.pdf',
+    ESC103: './assets/ESC103_Exam_Review.pdf',
+    CIV102: './assets/CIV102_Notes.pdf',
+    ESC194: './assets/ESC194_Exam_Review.pdf',
+    PHY180: './assets/PHY180_Exam_Review.pdf',
+    ESC101: null,
+    MAT185: './assets/MAT185_Lecture_Notes.pdf',
+    ESC195: './assets/ESC195_Exam_Review.pdf',
+    MSE160: './assets/MSE160_Lecture_Notes.pdf',
+    ECE159: './assets/ECE159_Lecture_Notes.pdf',
+    ESC190: './assets/ESC190_Exam_Review.pdf',
+};
+
 const KnowledgeGraph: React.FC = () => {
     const groupRef = useRef<THREE.Group>(null);
     const edgesRef = useRef<THREE.Group>(null);
@@ -77,10 +91,22 @@ const KnowledgeGraph: React.FC = () => {
             {nodes.map((node) => (
                 <group key={node.id} position={node.pos}>
                     <mesh
-                        onPointerOver={(e) => { e.stopPropagation(); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
-                        onPointerOut={() => { setHoveredNode(null); document.body.style.cursor = 'default'; }}
+                        onPointerOver={(e) => {
+                            e.stopPropagation();
+                            setHoveredNode(node.id);
+                            document.body.style.cursor = coursePdfMap[node.id] ? 'pointer' : 'default';
+                        }}
+                        onPointerOut={() => {
+                            setHoveredNode(null);
+                            document.body.style.cursor = 'default';
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const pdf = coursePdfMap[node.id];
+                            if (pdf) window.open(pdf, '_blank');
+                        }}
                     >
-                        <sphereGeometry args={[hoveredNode === node.id ? 0.25 : 0.15, 32, 32]} />
+                        <sphereGeometry args={[hoveredNode === node.id ? 0.5 : 0.35, 32, 32]} />
                         <meshBasicMaterial
                             color={hoveredNode === node.id ? '#ffffff' : '#9d4edd'}
                             transparent
@@ -91,7 +117,7 @@ const KnowledgeGraph: React.FC = () => {
 
                     <Html distanceFactor={15} center>
                         <div className={`transition-all duration-300 font-mono text-center pointer-events-none
-                            ${hoveredNode === node.id ? 'opacity-100 scale-110 text-white z-50' : 'opacity-40 text-purple-light text-xs'}`}
+                            ${hoveredNode === node.id ? 'opacity-100 scale-110 text-white z-50' : 'opacity-60 text-purple-light text-xs'}`}
                         >
                             <div className="font-bold">{node.id}</div>
                             {hoveredNode === node.id && (
@@ -109,7 +135,7 @@ const KnowledgeGraph: React.FC = () => {
 
 export const NeuralNet: React.FC = () => {
     return (
-        <div className="relative h-screen w-full bg-cyber-black pt-24 pb-8 px-8 flex flex-col items-center overflow-hidden">
+        <div className="relative h-screen w-full bg-cyber-black pt-24 pb-12 px-8 flex flex-col items-center overflow-hidden">
             <div className="absolute inset-0 z-0">
                 <Canvas camera={{ position: [0, 0, 25], fov: 60 }}>
                     <ambientLight intensity={0.5} />
@@ -119,13 +145,13 @@ export const NeuralNet: React.FC = () => {
             </div>
 
             <div className="relative z-10 w-full max-w-5xl h-full flex flex-col justify-end pb-12 pointer-events-none">
-                <div className="glass-card p-6 pointer-events-auto max-w-md">
+                <div className="glass-card p-6 pointer-events-auto max-w-lg">
                     <h2 className="text-2xl font-mono text-purple-glow mb-2 tracking-widest uppercase flex items-center gap-3">
                         <div className="w-2 h-2 bg-purple-accent rounded-full animate-pulse" />
                         Knowledge Graph
                     </h2>
                     <p className="text-text-secondary font-sans leading-relaxed text-sm max-w-2xl">
-                        University notes and course materials. Rotate and zoom the 3D graph to explore connections between Engineering Science concepts.
+                        University notes and course materials. Rotate and zoom the 3D graph to explore connections between Engineering Science concepts. Click a node to view notes.
                     </p>
                 </div>
             </div>
