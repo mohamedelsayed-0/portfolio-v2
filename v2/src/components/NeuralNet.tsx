@@ -4,14 +4,12 @@ import * as THREE from 'three';
 import { OrbitControls, Html, Line } from '@react-three/drei';
 
 const courses = [
-    // Fall
     { id: 'ESC180', title: 'Intro to Programming' },
     { id: 'ESC103', title: 'Engineering Math' },
     { id: 'CIV102', title: 'Structures' },
     { id: 'ESC194', title: 'Calculus I' },
     { id: 'PHY180', title: 'Classical Mechanics' },
     { id: 'ESC101', title: 'Praxis I' },
-    // Winter
     { id: 'MAT185', title: 'Linear Algebra' },
     { id: 'ESC195', title: 'Calculus II' },
     { id: 'MSE160', title: 'Materials' },
@@ -21,9 +19,9 @@ const courses = [
 
 const KnowledgeGraph: React.FC = () => {
     const groupRef = useRef<THREE.Group>(null);
+    const edgesRef = useRef<THREE.Group>(null);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
-    // Generate positions for nodes
     const nodes = useMemo(() => {
         return courses.map((course, i) => {
             const phi = Math.acos(-1 + (2 * i) / courses.length);
@@ -40,11 +38,9 @@ const KnowledgeGraph: React.FC = () => {
         });
     }, []);
 
-    // Generate random connection lines between nodes
     const edges = useMemo(() => {
         const lines: [THREE.Vector3, THREE.Vector3][] = [];
         nodes.forEach((node, i) => {
-            // connect to 2 random other nodes
             for (let j = 0; j < 2; j++) {
                 const targetIdx = (i + j + 1) % nodes.length;
                 lines.push([node.pos, nodes[targetIdx].pos]);
@@ -53,18 +49,30 @@ const KnowledgeGraph: React.FC = () => {
         return lines;
     }, [nodes]);
 
-    useFrame(() => {
+    useFrame((state) => {
         if (groupRef.current) {
             groupRef.current.rotation.y += 0.001;
             groupRef.current.rotation.x += 0.0005;
+        }
+
+        if (edgesRef.current) {
+            const pulse = 0.085 + Math.sin(state.clock.elapsedTime * 1.5) * 0.035;
+            edgesRef.current.children.forEach((child) => {
+                const mesh = child as THREE.Mesh;
+                if (mesh.material && 'opacity' in mesh.material) {
+                    (mesh.material as THREE.Material).opacity = pulse;
+                }
+            });
         }
     });
 
     return (
         <group ref={groupRef}>
-            {edges.map((pts, i) => (
-                <Line key={i} points={pts} color="#9d4edd" opacity={0.2} transparent lineWidth={1} />
-            ))}
+            <group ref={edgesRef}>
+                {edges.map((pts, i) => (
+                    <Line key={i} points={pts} color="#9d4edd" opacity={0.08} transparent lineWidth={1} />
+                ))}
+            </group>
 
             {nodes.map((node) => (
                 <group key={node.id} position={node.pos}>
@@ -72,11 +80,15 @@ const KnowledgeGraph: React.FC = () => {
                         onPointerOver={(e) => { e.stopPropagation(); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
                         onPointerOut={() => { setHoveredNode(null); document.body.style.cursor = 'default'; }}
                     >
-                        <sphereGeometry args={[hoveredNode === node.id ? 0.6 : 0.4, 32, 32]} />
-                        <meshBasicMaterial color={hoveredNode === node.id ? "#ffffff" : "#c77dff"} />
+                        <sphereGeometry args={[hoveredNode === node.id ? 0.25 : 0.15, 32, 32]} />
+                        <meshBasicMaterial
+                            color={hoveredNode === node.id ? '#ffffff' : '#9d4edd'}
+                            transparent
+                            opacity={hoveredNode === node.id ? 1.0 : 0.7}
+                            blending={THREE.AdditiveBlending}
+                        />
                     </mesh>
 
-                    {/* Floating Label */}
                     <Html distanceFactor={15} center>
                         <div className={`transition-all duration-300 font-mono text-center pointer-events-none
                             ${hoveredNode === node.id ? 'opacity-100 scale-110 text-white z-50' : 'opacity-40 text-purple-light text-xs'}`}
@@ -102,12 +114,12 @@ export const NeuralNet: React.FC = () => {
                 <Canvas camera={{ position: [0, 0, 25], fov: 60 }}>
                     <ambientLight intensity={0.5} />
                     <KnowledgeGraph />
-                    <OrbitControls enableZoom={true} enablePan={false} autoRotate={false} />
+                    <OrbitControls enableZoom={true} enablePan={false} autoRotate={true} autoRotateSpeed={0.3} minDistance={15} maxDistance={35} />
                 </Canvas>
             </div>
 
             <div className="relative z-10 w-full max-w-5xl h-full flex flex-col justify-end pb-12 pointer-events-none">
-                <div className="glass-card p-6 pointer-events-auto">
+                <div className="glass-card p-6 pointer-events-auto max-w-md">
                     <h2 className="text-2xl font-mono text-purple-glow mb-2 tracking-widest uppercase flex items-center gap-3">
                         <div className="w-2 h-2 bg-purple-accent rounded-full animate-pulse" />
                         Knowledge Graph
