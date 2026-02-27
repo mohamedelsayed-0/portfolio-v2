@@ -9,7 +9,6 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
     const [text, setText] = useState('SYSTEM_BOOT');
 
     useEffect(() => {
-        // Scramble Text Effect (Faster)
         let iterations = 0;
         const interval = setInterval(() => {
             setText((prev) => {
@@ -33,7 +32,6 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
                 }
             });
 
-            // 1. Spool up / draw in
             tl.to(ringRef.current, {
                 rotate: 720,
                 scale: 0.8,
@@ -45,7 +43,6 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
                     duration: 0.5,
                 }, 0)
 
-                // 2. Collapse rapidly (The Singularity)
                 .to(ringRef.current, {
                     scale: 0,
                     duration: 0.3,
@@ -58,13 +55,11 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
                     ease: "expo.in"
                 }, 1.5)
 
-                // 3. The Flash (Whiteout)
                 .to(flashRef.current, {
                     opacity: 1,
                     duration: 0.1,
                 }, 1.8)
 
-                // 4. Fade to Reveal
                 .to(flashRef.current, {
                     opacity: 0,
                     duration: 1.2,
@@ -85,12 +80,10 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
             ref={containerRef}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-cyber-black overflow-hidden pointer-events-none"
         >
-            {/* Ambient Background Particles Simulation */}
             <div className="absolute inset-0 opacity-30">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] rounded-full border border-purple-accent/10 block animate-[spin_10s_linear_infinite]" />
             </div>
 
-            {/* Accretion Disk Ring */}
             <div
                 ref={ringRef}
                 className="absolute w-[200px] h-[200px] rounded-full border-[2px] border-dashed border-purple-accent/80 flex items-center justify-center before:content-[''] before:absolute before:inset-4 before:rounded-full before:border-[1px] before:border-purple-glow/50"
@@ -102,7 +95,6 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
                 <div className="absolute h-full w-[2px] bg-purple-glow blur-[2px] left-1/2 -ml-[1px]" />
             </div>
 
-            {/* Text Output */}
             <div
                 ref={textRef}
                 className="font-mono text-xl tracking-[0.4em] text-white font-bold opacity-0 relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
@@ -110,7 +102,6 @@ export const CinematicLoader: React.FC<{ onComplete: () => void }> = ({ onComple
                 <span>{text}</span>
             </div>
 
-            {/* The Flash Overlay */}
             <div
                 ref={flashRef}
                 className="absolute inset-0 bg-white opacity-0 z-50 pointer-events-none"

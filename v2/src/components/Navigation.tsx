@@ -37,7 +37,6 @@ export const Navigation: React.FC = () => {
                             {item.label}
                         </span>
 
-                        {/* Terminal Cursor on hover */}
                         <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity -left-2 text-purple-accent font-mono text-xs">
                             &gt;
                         </span>

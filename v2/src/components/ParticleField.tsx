@@ -12,7 +12,6 @@ export const ParticleField: React.FC = () => {
     const maxConnections = 80;
     const connectionDistance = 15;
 
-    // Generate Initial Particles
     const { positions, originalPositions, sizes } = useMemo(() => {
         const positions = new Float32Array(particleCount * 3);
         const originalPositions = new Float32Array(particleCount * 3);
@@ -33,12 +32,10 @@ export const ParticleField: React.FC = () => {
         return { positions, originalPositions, sizes };
     }, [particleCount]);
 
-    // Pre-allocate lines geometry
     const linePositions = useMemo(() => {
-        return new Float32Array(maxConnections * 6); // 2 vertices * 3 coords
+        return new Float32Array(maxConnections * 6);
     }, [maxConnections]);
 
-    // Create a circular texture for particles
     const circleTexture = useMemo(() => {
         const canvas = document.createElement('canvas');
         canvas.width = 32;
@@ -63,7 +60,6 @@ export const ParticleField: React.FC = () => {
         const currentPositions = pointsGeo.attributes.position.array as Float32Array;
         const currentLinePositions = linesGeo.attributes.position.array as Float32Array;
 
-        // 1. Float Animation
         for (let i = 0; i < particleCount; i++) {
             const i3 = i * 3;
             const phase = i * 0.13;
@@ -74,25 +70,20 @@ export const ParticleField: React.FC = () => {
         }
         pointsGeo.attributes.position.needsUpdate = true;
 
-        // 2. Slow rotation for particles
         pointsRef.current.rotation.y -= 0.0005;
         pointsRef.current.rotation.x -= 0.0002;
 
-        // Black hole animate
         if (diskRef.current && glowRef.current) {
             diskRef.current.rotation.z += 0.005;
             glowRef.current.rotation.z -= 0.002;
 
-            // Pulse glow
             const s = 1.0 + Math.sin(time * 2) * 0.05;
             glowRef.current.scale.set(s, s, s);
         }
 
-        // Stronger parallax via mouse if needed (ignoring mouse for a simpler background)
         pointsRef.current.rotation.y += (state.pointer.x * 0.05 - pointsRef.current.rotation.y) * 0.02;
         pointsRef.current.rotation.x += (-state.pointer.y * 0.05 - pointsRef.current.rotation.x) * 0.02;
 
-        // 3. Update Connections
         let lineIndex = 0;
         const distSq = connectionDistance * connectionDistance;
 
@@ -125,19 +116,15 @@ export const ParticleField: React.FC = () => {
 
     return (
         <group>
-            {/* Black Hole */}
             <group position={[0, 0, -20]}>
-                {/* Core */}
                 <mesh>
                     <circleGeometry args={[4, 64]} />
                     <meshBasicMaterial color="#000000" />
                 </mesh>
-                {/* Accretion Disk */}
                 <mesh ref={diskRef}>
                     <ringGeometry args={[4.2, 8, 64]} />
                     <meshBasicMaterial color="#9d4edd" side={THREE.DoubleSide} transparent opacity={0.6} blending={THREE.AdditiveBlending} />
                 </mesh>
-                {/* Outer Glow */}
                 <mesh ref={glowRef} position={[0, 0, -0.1]}>
                     <ringGeometry args={[4.0, 12, 64]} />
                     <meshBasicMaterial color="#4a0e4e" side={THREE.DoubleSide} transparent opacity={0.2} blending={THREE.AdditiveBlending} />
