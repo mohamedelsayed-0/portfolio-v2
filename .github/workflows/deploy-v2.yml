@@ -1,45 +1,26 @@
-name: Deploy React v2 to GitHub Pages
+name: Deploy v2 to GitHub Pages
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'v2/**'
-      - 'assets/**'
+      - "v2/**"
+      - ".github/workflows/deploy-v2.yml"
 
 permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    
-    defaults:
-      run:
-        working-directory: ./v2
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build Project
-        run: npm run build
-
-      - name: Copy course assets to dist
-        working-directory: .
-        run: cp assets/*.pdf v2/dist/assets/
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy static v2 site
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./v2/dist
+          publish_dir: ./v2

@@ -1,12 +1,93 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Mohamed Elsayed - Engineering Science student building rigorous systems across physics, mathematics, backend tooling, and interactive 3D.">
     <title>Mohamed Elsayed</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Mohamed Elsayed">
+    <meta property="og:description"
+        content="Engineering Science student at the University of Toronto. Physics, systems, mathematics, and interactive work.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://elsayedmohamed.com/">
+    <meta property="og:image" content="https://elsayedmohamed.com/assets/profile.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg?v=20260406-7">
+    <link rel="apple-touch-icon" href="assets/profile.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#050505">
+
+    <link rel="stylesheet" href="styles.css?v=20260406-11">
+</head>
+
+<body class="portfolio-landing landing-preload">
+    <canvas id="landing-scene-canvas" aria-hidden="true"></canvas>
+    <div class="landing-vignette" aria-hidden="true"></div>
+    <div class="transition-overlay"></div>
+
+    <div class="landing-shell">
+        <header class="landing-header">
+            <nav class="landing-nav" aria-label="Primary">
+                <a href="about.html">About</a>
+                <a href="demos.html">Demos</a>
+                <a href="notes.html">Notes</a>
+                <a href="assets/Resume (6).pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+            </nav>
+        </header>
+
+        <main class="landing-main">
+            <div class="ice-cube-field" id="ice-cube-field" aria-hidden="true"></div>
+
+            <section class="landing-copy" id="landing-copy">
+                <p class="landing-overline">Engineering Science</p>
+                <div class="landing-rule" aria-hidden="true"></div>
+                <h1 class="landing-title">
+                    <span>Mohamed</span>
+                    <span>Elsayed</span>
+                </h1>
+                <p class="landing-subtitle">
+                    Systems, mathematics, and interactive engineering.
+                </p>
+                <p class="landing-deck">
+                    University of Toronto Engineering Science student building research-minded tools, visual systems,
+                    and technically precise work.
+                </p>
+
+                <div class="landing-meta-row" aria-label="Location and focus">
+                    <span>Toronto / Cairo</span>
+                    <span>Physics / Systems / Interactive 3D</span>
+                </div>
+
+                <div class="landing-actions">
+                    <a href="about.html" class="btn btn-primary">Read Profile</a>
+                    <a href="demos.html" class="btn btn-secondary">View Demos</a>
+                    <a href="notes.html" class="btn btn-secondary">Open Archive</a>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer-links">
+            <a href="mailto:mohamedessam.elsayed07@gmail.com" class="footer-link">Email</a>
+            <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" target="_blank" rel="noopener noreferrer"
+                class="footer-link">LinkedIn</a>
+            <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
+                class="footer-link">GitHub</a>
+        </footer>
+    </div>
+
+    <script src="script.js?v=20260406-9"></script>
+    <script src="landing-scene.js?v=20260406-11"></script>
+</body>
+
 </html>
