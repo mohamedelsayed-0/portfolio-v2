@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About Mohamed Elsayed - Experience, Projects, and Contact Information">
+    <title>About Me | Mohamed Elsayed</title>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="About Me | Mohamed Elsayed">
+    <meta property="og:description" content="Experience, projects, and contact information.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://elsayedmohamed.com/about.html">
+    <meta property="og:image" content="https://elsayedmohamed.com/assets/profile.png">
+
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/profile.png">
+    <link rel="apple-touch-icon" href="assets/profile.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9d4edd">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="about-page">
+    <div class="transition-overlay"></div>
+    <div id="error-toast" class="error-toast"></div>
+
+    <!-- Page header -->
+    <header class="page-header sticky-header transparent-header"> <!-- added sticky-header class -->
+        <div class="container header-content">
+            <!-- Left: Back Button -->
+            <a href="index.html" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+            </a>
+
+            <!-- Center: Navigation -->
+            <nav class="nav-buttons">
+                <h2 class="nav-header" data-scroll="experience">Experience</h2>
+                <h2 class="nav-header" data-scroll="projects">Projects</h2>
+                <h2 class="nav-header" data-scroll="demos">Demos</h2>
+                <h2 class="nav-header" data-scroll="contact">Contact</h2>
+                <a href="assets/resume.pdf" target="_blank" class="nav-header" style="text-decoration: none;">Resume</a>
+            </nav>
+
+            <!-- Right: Spacer for balance  -->
+            <div class="header-spacer"></div>
+        </div>
+    </header>
+
+    <!-- About Section with Header Background -->
+    <section class="about-section-wrapper">
+        <!-- Subtle atmospheric header background -->
+        <div class="about-header-bg">
+            <div class="about-header-overlay"></div>
+        </div>
+
+        <!-- About Title -->
+        <div class="about-title-container">
+            <h2 class="about-section-title slide-in-about" data-about-animate>About Me</h2>
+        </div>
+
+        <!-- About Content - Zoomed Out Container -->
+        <div class="about-inner-container">
+            <div class="about-content-grid">
+                <!-- Text slides from left -->
+                <div class="about-text-block slide-in-left" data-about-animate>
+                    <h3 class="about-headline">Engineering Science · Software & Systems · Physics</h3>
+                    <p>
+                        I'm Mohamed, an Engineering Science student at the University of Toronto planning to pursuing
+                        Engineering Physics. I'm often intrigued by problems that revolve around mathematics, and find
+                        myself very passionate towards them.
+                        I also love building and seeing tools that connect theory with applictions in the real world.
+                    </p>
+                    <ul class="about-highlights">
+                        <li>I'm interested in applied physics, number theory, and abstract geometry</li>
+                        <li>Experience spanning embedded systems, backend automation, and game development</li>
+                    </ul>
+                </div>
+                <!-- Image slides from right -->
+                <div class="about-image-block slide-in-right" data-about-animate>
+                    <img src="assets/profile.png" alt="Mohamed Elsayed" class="about-profile-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- experience Section -->
+    <section id="experience" class="experience-section">
+        <div class="container">
+            <h2 class="section-title">Experience</h2>
+            <div class="experience-grid">
+                <!-- al mannar NGO -->
+                <div class="glass-card experience-card">
+                    <h3>Technical Lead & Head of Technology</h3>
+                    <div class="experience-meta">
+                        <span>Al Mannar NGO · Permanent Part-time</span>
+                        <span>Jul 2021 – Present · Luxor, Egypt · Hybrid</span>
+                    </div>
+                    <ul>
+                        <li>Lead all technology strategy and software infrastructure for a regional charity serving
+                            thousands of beneficiaries across Upper Egypt.</li>
+                        <li>Architected and maintain a SQLite-backed data management system that digitized beneficiary
+                            records and streamlined aid distribution workflows.</li>
+                        <li>Developed internal Python tools to automate reporting, donor tracking, and resource
+                            allocation, reducing administrative overhead.</li>
+                        <li>Coordinate with organizational leadership to align technology initiatives with operational
+                            needs and long-term growth plans.</li>
+                    </ul>
+                </div>
+
+                <!-- auc research -->
+                <div class="glass-card experience-card">
+                    <h3>Undergraduate Research Assistant</h3>
+                    <div class="experience-meta">
+                        <span>The American University in Cairo · Internship</span>
+                        <span>Jul 2025 – Sep 2025 · Cairo, Egypt · Hybrid</span>
+                    </div>
+                    <ul>
+                        <li>Developed a custom electronic control system using microcontrollers to automate a precision
+                            translation stage for optics experiments.</li>
+                        <li>Designed and assembled circuit boards for motor control and magnetic field manipulation,
+                            ensuring reliability through rigorous testing.</li>
+                        <li>Programmed microcontrollers to integrate hardware and software for automated research setups
+                            in applied physics.</li>
+                        <li>Produced detailed technical documentation covering system architecture, calibration
+                            procedures, and operating protocols.</li>
+                    </ul>
+                </div>
+
+                <!-- evision -->
+                <div class="glass-card experience-card">
+                    <h3>Backend Intern</h3>
+                    <div class="experience-meta">
+                        <span>eVision (Digital Financial Systems) · Full-time</span>
+                        <span>Jul 2024 – Aug 2024 · Cairo, Egypt · On-site</span>
+                    </div>
+                    <ul>
+                        <li>Built a scalable file-parsing automation system in Java that processed structured financial
+                            documents, reducing manual data-entry effort.</li>
+                        <li>Improved data pipeline reliability by implementing validation checks and error-handling
+                            routines across ingestion workflows.</li>
+                        <li>Partnered with frontend, database, and QA teams in a cross-functional agile environment to
+                            ensure seamless integration and system robustness.</li>
+                        <li>Gained hands-on experience across the full software development lifecycle, from design and
+                            implementation to testing and deployment.</li>
+                    </ul>
+                </div>
+
+                <!-- self-employed -->
+                <div class="glass-card experience-card">
+                    <h3>Software Developer & Animator</h3>
+                    <div class="experience-meta">
+                        <span>Self-Employed</span>
+                        <span>Oct 2021 – Jul 2023 · Remote</span>
+                    </div>
+                    <ul>
+                        <li>Collaborated with Roblox game development studios on projects that collectively surpassed
+                            1.7 billion platform visits and 250,000 concurrent players.</li>
+                        <li>Engineered gameplay systems and server-side logic in Lua, optimizing for performance at
+                            scale
+                            under high-concurrency conditions.</li>
+                        <li>Created 3D animations and assets in Blender, delivering production-ready content for
+                            multiple shipped game titles.</li>
+                        <li>Managed client relationships and project timelines independently, delivering contracted work
+                            on schedule across simultaneous engagements.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- projects Section -->
+    <section id="projects" class="projects-section">
+        <div class="container">
+            <h2 class="section-title">Projects</h2>
+            <div class="projects-grid">
+                <!-- Gaussian simulations -->
+                <div class="glass-card project-card from-left" onclick="openProjectModal(0)">
+                    <h3>Gaussian Simulations</h3>
+                    <div class="project-tech">
+                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">Quantum Information</span>
+                    </div>
+                    <p>Independent research deriving closed-form entanglement survival thresholds for two-mode
+                        squeezed vacuum states in symmetric phase-insensitive Gaussian channels.</p>
+                    <div class="project-date">Ongoing</div>
+                </div>
+
+                <!--  beam sim -->
+                <div class="glass-card project-card from-left" onclick="openProjectModal(1)">
+                    <h3>Structural Beam Simulation</h3>
+                    <div class="project-tech">
+                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">MATLAB</span>
+                    </div>
+                    <p>Beam deflection calculator for arbitrary cross sections with 3D stress visualizations and
+                        deflection animations under moving and distributed loads.</p>
+                    <div class="project-date">Nov 2025</div>
+                </div>
+
+                <!-- Pong AI -->
+                <div class="glass-card project-card from-left" onclick="openProjectModal(2)">
+                    <h3>Pong AI</h3>
+                    <div class="project-tech">
+                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">Pygame</span>
+                    </div>
+                    <p>AI-driven Pong agent built for the ESC180 tournament — placed 3rd overall. Implements collision
+                        physics and responsive paddle controls with an adaptive strategy.
+                        <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/" target="_blank"
+                            rel="noopener noreferrer" onclick="event.stopPropagation();">Assignment description</a>.
+                    </p>
+                    <div class="project-date">Jan 2026</div>
+                </div>
+
+                <!-- Lumina -->
+                <div class="glass-card project-card from-right" onclick="openProjectModal(3)">
+                    <h3>Lumina — LaTeX Notetaker</h3>
+                    <div class="project-tech">
+                        <span class="tech-tag">TypeScript</span>
+                        <span class="tech-tag">JavaScript</span>
+                        <span class="tech-tag">CSS</span>
+                        <span class="tech-tag">Python</span>
+                    </div>
+                    <p>Web tool that converts handwritten, typed, and audio notes into structured LaTeX documents
+                        optimized for notation-heavy coursework.</p>
+                    <div class="project-date">Dec 2025 – Present</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demos Section -->
+    <section id="demos" class="demos-link-section">
+        <div class="container">
+            <h2 class="section-title">Demos</h2>
+            <div class="glass-card demos-link-card">
+                <h3>Interactive Work Samples</h3>
+                <p>See gameplay systems, animations, and software demo previews in one place.</p>
+                <a href="demos.html" class="btn btn-solid">Open Demos Page</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Get in Touch</h2>
+            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                Open to collaborations, research opportunities, and interesting conversations.
+            </p>
+            <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-primary"
+                style="margin-bottom: var(--spacing-md);">
+                Send me an email
+            </a>
+            <div class="contact-buttons" style="justify-content: center;">
+                <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-icon" title="Email">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" target="_blank"
+                    rel="noopener noreferrer" class="btn btn-icon" title="LinkedIn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                </a>
+                <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
+                    class="btn btn-icon" title="GitHub">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="demo-modal-overlay" onclick="closeProjectModal(event)">
+        <div class="demo-modal">
+            <button class="demo-modal-close" onclick="closeProjectModal(event, true)">&times;</button>
+            <div style="padding: var(--spacing-md) var(--spacing-md) 0;">
+                <h3 id="project-modal-title" style="padding: 0; margin-bottom: 0.5rem;"></h3>
+            </div>
+            <p id="project-modal-desc"></p>
+            <div id="project-modal-tags" class="demo-tags"
+                style="padding: 0 var(--spacing-md); margin-bottom: var(--spacing-sm);"></div>
+            <div id="project-modal-date"
+                style="padding: 0 var(--spacing-md); color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-elegant);">
+            </div>
+            <div id="project-modal-actions" class="demo-modal-buttons" style="margin-top: var(--spacing-sm);"></div>
+        </div>
+    </div>
+
+    <script src="script.js?v=20260217-1"></script>
+</body>
+
+</html>
