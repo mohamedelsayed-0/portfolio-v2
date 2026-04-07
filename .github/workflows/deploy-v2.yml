@@ -1,11 +1,11 @@
-name: Deploy v2 to GitHub Pages
+name: Deploy v1 to GitHub Pages
 
 on:
   push:
     branches:
       - main
     paths:
-      - "v2/**"
+      - "v1/**"
       - ".github/workflows/deploy-v2.yml"
 
 permissions:
@@ -19,8 +19,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy static v2 site
+      - name: Deploy static v1 site
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./v2
+          publish_dir: ./v1
