@@ -27,14 +27,13 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050505">
 
-    <link rel="stylesheet" href="styles.css?v=20260423-1">
+    <link rel="stylesheet" href="styles.css?v=20260428-7">
 </head>
 
 <body class="portfolio-landing landing-preload">
     <canvas id="landing-scene-canvas" aria-hidden="true"></canvas>
     <div class="landing-vignette" aria-hidden="true"></div>
     <div class="transition-overlay"></div>
-
     <div class="landing-shell">
         <header class="landing-header">
             <nav class="landing-nav" aria-label="Primary">
@@ -49,6 +48,28 @@
             <div class="ice-cube-field" id="ice-cube-field" aria-hidden="true"></div>
 
             <section class="landing-copy" id="landing-copy">
+                <div class="landing-instrument" aria-hidden="true">
+                    <svg class="landing-instrument__diagram" viewBox="0 0 960 540" preserveAspectRatio="none">
+                        <path class="instrument-orbit instrument-orbit--a" pathLength="1"
+                            d="M78 352 C216 220 376 196 510 268 C650 344 774 320 890 196" />
+                        <path class="instrument-orbit instrument-orbit--b" pathLength="1"
+                            d="M122 166 C280 104 456 132 580 230 C704 328 804 368 902 330" />
+                        <path class="instrument-wave" pathLength="1"
+                            d="M96 420 C158 382 196 456 256 418 C318 378 358 454 420 416 C482 378 524 452 584 414 C650 370 690 450 760 406" />
+                        <g class="instrument-network">
+                            <line pathLength="1" x1="150" y1="260" x2="254" y2="204" />
+                            <line pathLength="1" x1="254" y1="204" x2="352" y2="250" />
+                            <line pathLength="1" x1="690" y1="176" x2="786" y2="128" />
+                            <line pathLength="1" x1="786" y1="128" x2="846" y2="214" />
+                            <circle cx="150" cy="260" r="4" />
+                            <circle cx="254" cy="204" r="4" />
+                            <circle cx="352" cy="250" r="4" />
+                            <circle cx="690" cy="176" r="4" />
+                            <circle cx="786" cy="128" r="4" />
+                            <circle cx="846" cy="214" r="4" />
+                        </g>
+                    </svg>
+                </div>
                 <p class="landing-overline">Engineering Science Student</p>
                 <div class="landing-rule" aria-hidden="true"></div>
                 <h1 class="landing-title">
@@ -83,7 +104,7 @@
     </div>
 
     <script src="script.js?v=20260406-9"></script>
-    <script src="landing-scene.js?v=20260406-11"></script>
+    <script src="landing-scene.js?v=20260429-1"></script>
 </body>
 
 </html>
