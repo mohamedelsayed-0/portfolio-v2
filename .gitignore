@@ -1,3 +1,6 @@
 .DS_Store
 CLAUDE.md
 .gitignore
+node_modules/
+v2/package-lock.json
+v2/test.js

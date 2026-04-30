@@ -1213,7 +1213,7 @@ class AboutPageFlowScene {
     }
 }
 
-class CalculusVisualizer {
+class StellarSkillVisualizer {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
@@ -1226,11 +1226,23 @@ class CalculusVisualizer {
         this.time = 0;
         this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
         this.nodes = [];
-        this.arcs = [];
+        this.links = [];
+        this.anchors = [
+            { name: 'Physics', x: -1.15, y: -0.28, z: 0.55, weight: 1.14 },
+            { name: 'Systems', x: 1.08, y: -0.8, z: -0.18, weight: 1.02 },
+            { name: 'Backend', x: 1.2, y: 0.28, z: 0.58, weight: 1.16 },
+            { name: 'Simulation', x: -0.88, y: 0.74, z: -0.24, weight: 1.04 },
+            { name: 'Automation', x: 0.08, y: -1.12, z: 0.82, weight: 0.96 },
+            { name: '3D Tools', x: 0.22, y: 1.18, z: 0.22, weight: 1.08 }
+        ];
         this.resize();
         this.createSystem();
         this.bindEvents();
         this.animate();
+    }
+
+    seededRandom(seed) {
+        return Math.sin(seed * 137.42) * 0.5 + 0.5;
     }
 
     resize() {
@@ -1247,20 +1259,44 @@ class CalculusVisualizer {
     }
 
     createSystem() {
-        // Create nodes on a torus-like path
-        const count = 48;
+        this.nodes = this.anchors.map((anchor, index) => ({
+            ...anchor,
+            kind: 'anchor',
+            phase: index * 0.91,
+            size: 4.2 * anchor.weight
+        }));
+
+        const count = this.width < 760 ? 34 : 56;
+
         for (let i = 0; i < count; i++) {
+            const seed = i + 1;
+            const arm = i % this.anchors.length;
+            const anchor = this.anchors[arm];
+            const angle = this.seededRandom(seed) * Math.PI * 2;
+            const spread = 0.28 + this.seededRandom(seed + 8) * 0.46;
+
             this.nodes.push({
-                u: (i / count) * Math.PI * 2,
-                v: Math.random() * Math.PI * 2,
-                speed: 0.2 + Math.random() * 0.4,
-                radiusOff: Math.random() * 0.4 - 0.2
+                kind: 'field',
+                x: anchor.x + Math.cos(angle) * spread,
+                y: anchor.y + Math.sin(angle) * spread * 0.72,
+                z: anchor.z + (this.seededRandom(seed + 18) - 0.5) * 0.74,
+                phase: angle,
+                size: 1.1 + this.seededRandom(seed + 28) * 1.7,
+                orbit: 0.018 + this.seededRandom(seed + 34) * 0.03,
+                anchor: arm
             });
         }
+
+        this.links = [
+            [0, 4], [4, 1], [1, 2], [2, 5], [5, 3], [3, 0], [0, 2], [1, 5], [3, 4]
+        ];
     }
 
     bindEvents() {
-        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('resize', () => {
+            this.resize();
+            this.createSystem();
+        });
         window.addEventListener('pointermove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
             this.pointer.targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -1272,13 +1308,14 @@ class CalculusVisualizer {
         });
     }
 
-    project(x, y, z) {
-        // Add perspective projection
-        const rotX = this.time * 0.3 + this.pointer.y * 0.5;
-        const rotY = this.time * 0.4 + this.pointer.x * 0.5;
-        const rotZ = Math.sin(this.time * 0.1) * 0.2;
+    project(x, y, z, drift = 0) {
+        const rotX = -0.58 + Math.sin(this.time * 0.16) * 0.07 + this.pointer.y * 0.28;
+        const rotY = 0.68 + this.time * 0.16 + this.pointer.x * 0.34;
+        const rotZ = -0.1 + Math.sin(this.time * 0.12) * 0.08;
 
-        // Apply rotations
+        x += Math.cos(this.time * 0.7 + drift) * 0.025;
+        y += Math.sin(this.time * 0.58 + drift) * 0.022;
+
         let px = x * Math.cos(rotY) - z * Math.sin(rotY);
         let pz = x * Math.sin(rotY) + z * Math.cos(rotY);
         let py = y * Math.cos(rotX) - pz * Math.sin(rotX);
@@ -1287,12 +1324,12 @@ class CalculusVisualizer {
         let tx = px * Math.cos(rotZ) - py * Math.sin(rotZ);
         let ty = px * Math.sin(rotZ) + py * Math.cos(rotZ);
 
-        const depth = pz + 4;
-        const scale = 1 / Math.max(0.5, depth * 0.3);
+        const depth = pz + 5;
+        const scale = 1 / Math.max(0.58, depth * 0.24);
 
         const cx = this.width / 2;
-        const cy = this.height / 2;
-        const size = Math.min(this.width, this.height) * 0.45;
+        const cy = this.height * 0.51;
+        const size = Math.min(this.width, this.height) * 0.34;
 
         return {
             x: cx + tx * scale * size,
@@ -1302,55 +1339,101 @@ class CalculusVisualizer {
         };
     }
 
-    draw() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        this.ctx.globalCompositeOperation = 'lighter';
-        
-        // Draw rings/axes
-        for (let i = 0; i < 3; i++) {
-            this.ctx.beginPath();
-            for (let j = 0; j <= 60; j++) {
-                const a = (j / 60) * Math.PI * 2;
-                let x = Math.cos(a);
-                let y = Math.sin(a);
-                let z = 0;
-                
-                if (i === 1) { x = Math.cos(a); y = 0; z = Math.sin(a); }
-                if (i === 2) { x = 0; y = Math.cos(a); z = Math.sin(a); }
-                
-                const p = this.project(x, y, z);
-                if (j === 0) this.ctx.moveTo(p.x, p.y);
-                else this.ctx.lineTo(p.x, p.y);
-            }
-            this.ctx.strokeStyle = `rgba(200, 225, 245, ${0.1 + i * 0.05})`;
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
+    drawOrbit(tilt, radius, alpha) {
+        this.ctx.beginPath();
+
+        for (let step = 0; step <= 140; step += 1) {
+            const a = (step / 140) * Math.PI * 2;
+            const x = Math.cos(a) * radius;
+            const y = Math.sin(a) * radius * tilt;
+            const z = Math.sin(a) * radius * (1 - tilt * 0.38);
+            const p = this.project(x, y, z, a);
+
+            if (step === 0) this.ctx.moveTo(p.x, p.y);
+            else this.ctx.lineTo(p.x, p.y);
         }
 
-        // Draw nodes
-        const projectedNodes = this.nodes.map(node => {
-            node.v += node.speed * 0.02;
-            const r1 = 1.0;
-            const r2 = 0.3 + node.radiusOff;
-            const x = (r1 + r2 * Math.cos(node.v)) * Math.cos(node.u);
-            const y = (r1 + r2 * Math.cos(node.v)) * Math.sin(node.u);
-            const z = r2 * Math.sin(node.v);
-            return { point: this.project(x, y, z), node };
-        }).sort((a, b) => b.point.depth - a.point.depth);
+        this.ctx.strokeStyle = `rgba(220, 238, 247, ${alpha})`;
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+    }
 
-        projectedNodes.forEach(item => {
-            const alpha = Math.max(0.1, 1 - item.point.depth * 0.15);
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        const glow = this.ctx.createRadialGradient(
+            this.width * 0.5,
+            this.height * 0.5,
+            0,
+            this.width * 0.5,
+            this.height * 0.5,
+            Math.min(this.width, this.height) * 0.56
+        );
+        glow.addColorStop(0, 'rgba(232, 245, 250, 0.18)');
+        glow.addColorStop(0.48, 'rgba(202, 222, 232, 0.06)');
+        glow.addColorStop(1, 'rgba(202, 222, 232, 0)');
+        this.ctx.fillStyle = glow;
+        this.ctx.beginPath();
+        this.ctx.arc(this.width * 0.5, this.height * 0.5, Math.min(this.width, this.height) * 0.56, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.save();
+        this.ctx.globalCompositeOperation = 'lighter';
+        this.drawOrbit(0.24, 1.72, 0.11);
+        this.drawOrbit(0.48, 1.42, 0.08);
+        this.drawOrbit(0.66, 1.14, 0.07);
+
+        const projectedNodes = this.nodes.map(node => ({
+            node,
+            point: this.project(
+                node.x + (node.kind === 'field' ? Math.cos(this.time + node.phase) * node.orbit : 0),
+                node.y + (node.kind === 'field' ? Math.sin(this.time * 0.8 + node.phase) * node.orbit : 0),
+                node.z,
+                node.phase
+            )
+        }));
+
+        this.links.forEach(([from, to]) => {
+            const source = projectedNodes[from];
+            const target = projectedNodes[to];
+            const depthLight = Math.max(0.28, 1.12 - ((source.point.depth + target.point.depth) * 0.5) * 0.1);
+
+            this.ctx.strokeStyle = `rgba(232, 244, 250, ${0.16 * depthLight})`;
+            this.ctx.lineWidth = 1.1 * Math.max(0.62, source.point.scale);
             this.ctx.beginPath();
-            this.ctx.arc(item.point.x, item.point.y, 2 * item.point.scale, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            this.ctx.fill();
+            this.ctx.moveTo(source.point.x, source.point.y);
+            this.ctx.lineTo(target.point.x, target.point.y);
+            this.ctx.stroke();
         });
+
+        projectedNodes
+            .sort((a, b) => b.point.depth - a.point.depth)
+            .forEach(({ node, point }) => {
+                const depthLight = Math.max(0.24, 1.08 - point.depth * 0.1);
+                const pulse = node.kind === 'anchor' ? 0.75 + Math.sin(this.time * 1.8 + node.phase) * 0.16 : 0.42;
+                const size = node.size * point.scale;
+
+                this.ctx.fillStyle = `rgba(248, 252, 253, ${depthLight * pulse})`;
+                this.ctx.beginPath();
+                this.ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                if (node.kind === 'anchor') {
+                    this.ctx.strokeStyle = `rgba(235, 247, 252, ${0.22 * depthLight})`;
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.arc(point.x, point.y, size * 3.4, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+        });
+
+        this.ctx.restore();
     }
 
     animate() {
         this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.05;
         this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.05;
-        this.time += this.prefersReducedMotion ? 0 : 0.015;
+        this.time += this.prefersReducedMotion ? 0 : 0.012;
         this.draw();
 
         if (!this.prefersReducedMotion) {
@@ -1373,7 +1456,7 @@ function initAboutScene() {
     }
 
     if (calcCanvas) {
-        new CalculusVisualizer(calcCanvas);
+        new StellarSkillVisualizer(calcCanvas);
     }
 
     // Tilt hover logic for elements with data-tilt
