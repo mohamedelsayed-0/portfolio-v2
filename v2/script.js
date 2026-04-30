@@ -1219,21 +1219,24 @@ class StellarSkillVisualizer {
         this.ctx = canvas.getContext('2d');
         if (!this.ctx) return;
 
+        this.parent = canvas.parentElement;
         this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         this.width = 0;
         this.height = 0;
         this.dpr = 1;
         this.time = 0;
-        this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
-        this.nodes = [];
-        this.links = [];
-        this.anchors = [
-            { name: 'Physics', x: -1.15, y: -0.28, z: 0.55, weight: 1.14 },
-            { name: 'Systems', x: 1.08, y: -0.8, z: -0.18, weight: 1.02 },
-            { name: 'Backend', x: 1.2, y: 0.28, z: 0.58, weight: 1.16 },
-            { name: 'Simulation', x: -0.88, y: 0.74, z: -0.24, weight: 1.04 },
-            { name: 'Automation', x: 0.08, y: -1.12, z: 0.82, weight: 0.96 },
-            { name: '3D Tools', x: 0.22, y: 1.18, z: 0.22, weight: 1.08 }
+        this.hover = 0;
+        this.hoverTarget = 0;
+        this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0, screenX: 0, screenY: 0 };
+        this.dust = [];
+        this.satellites = [];
+        this.skills = [
+            { name: 'Physics', orbit: 0.72, angle: -2.72, speed: 0.54, tilt: 0.27, y: -0.03, z: 0.16, size: 5.8 },
+            { name: 'Systems', orbit: 0.93, angle: -0.72, speed: 0.39, tilt: 0.34, y: -0.08, z: -0.06, size: 5.2 },
+            { name: 'Backend', orbit: 1.05, angle: 0.18, speed: 0.34, tilt: 0.29, y: 0.01, z: 0.1, size: 5.7 },
+            { name: 'Simulation', orbit: 0.86, angle: 2.36, speed: 0.46, tilt: 0.36, y: 0.08, z: -0.12, size: 5.4 },
+            { name: 'Automation', orbit: 0.62, angle: -1.38, speed: 0.63, tilt: 0.22, y: -0.1, z: 0.2, size: 4.8 },
+            { name: '3D Tools', orbit: 1.14, angle: 1.35, speed: 0.31, tilt: 0.31, y: 0.11, z: 0.02, size: 5.5 }
         ];
         this.resize();
         this.createSystem();
@@ -1246,8 +1249,7 @@ class StellarSkillVisualizer {
     }
 
     resize() {
-        const parent = this.canvas.parentElement;
-        const rect = parent.getBoundingClientRect();
+        const rect = this.parent.getBoundingClientRect();
         this.width = rect.width;
         this.height = rect.height;
         this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1256,40 +1258,48 @@ class StellarSkillVisualizer {
         this.canvas.style.width = `${this.width}px`;
         this.canvas.style.height = `${this.height}px`;
         this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        this.center = {
+            x: this.width * 0.5,
+            y: this.height * 0.51
+        };
+        this.scale = Math.min(this.width, this.height) * (this.width < 760 ? 0.28 : 0.31);
     }
 
     createSystem() {
-        this.nodes = this.anchors.map((anchor, index) => ({
-            ...anchor,
-            kind: 'anchor',
-            phase: index * 0.91,
-            size: 4.2 * anchor.weight
-        }));
+        const dustCount = this.width < 760 ? 42 : 76;
+        this.dust = [];
+        this.satellites = [];
 
-        const count = this.width < 760 ? 34 : 56;
-
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < dustCount; i += 1) {
             const seed = i + 1;
-            const arm = i % this.anchors.length;
-            const anchor = this.anchors[arm];
             const angle = this.seededRandom(seed) * Math.PI * 2;
-            const spread = 0.28 + this.seededRandom(seed + 8) * 0.46;
+            const orbit = 0.42 + this.seededRandom(seed + 8) * 0.94;
 
-            this.nodes.push({
-                kind: 'field',
-                x: anchor.x + Math.cos(angle) * spread,
-                y: anchor.y + Math.sin(angle) * spread * 0.72,
-                z: anchor.z + (this.seededRandom(seed + 18) - 0.5) * 0.74,
+            this.dust.push({
+                orbit,
                 phase: angle,
-                size: 1.1 + this.seededRandom(seed + 28) * 1.7,
-                orbit: 0.018 + this.seededRandom(seed + 34) * 0.03,
-                anchor: arm
+                speed: 0.13 + this.seededRandom(seed + 14) * 0.22,
+                tilt: 0.2 + this.seededRandom(seed + 19) * 0.24,
+                size: 0.65 + this.seededRandom(seed + 24) * 1.15,
+                alpha: 0.18 + this.seededRandom(seed + 29) * 0.22
             });
         }
 
-        this.links = [
-            [0, 4], [4, 1], [1, 2], [2, 5], [5, 3], [3, 0], [0, 2], [1, 5], [3, 4]
-        ];
+        this.skills.forEach((skill, skillIndex) => {
+            const count = this.width < 760 ? 2 : 3;
+
+            for (let i = 0; i < count; i += 1) {
+                const seed = skillIndex * 10 + i + 1;
+
+                this.satellites.push({
+                    skillIndex,
+                    phase: this.seededRandom(seed) * Math.PI * 2,
+                    speed: 1.25 + this.seededRandom(seed + 3) * 1.35,
+                    orbit: 0.08 + this.seededRandom(seed + 6) * 0.07,
+                    size: 1.35 + this.seededRandom(seed + 9) * 1.1
+                });
+            }
+        });
     }
 
     bindEvents() {
@@ -1297,24 +1307,35 @@ class StellarSkillVisualizer {
             this.resize();
             this.createSystem();
         });
-        window.addEventListener('pointermove', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
+
+        this.parent.addEventListener('pointerenter', () => {
+            this.hoverTarget = 1;
+        }, { passive: true });
+
+        this.parent.addEventListener('pointermove', (e) => {
+            const rect = this.parent.getBoundingClientRect();
             this.pointer.targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
             this.pointer.targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-        });
-        window.addEventListener('pointerleave', () => {
+            this.pointer.screenX = e.clientX - rect.left;
+            this.pointer.screenY = e.clientY - rect.top;
+        }, { passive: true });
+
+        this.parent.addEventListener('pointerleave', () => {
+            this.hoverTarget = 0;
             this.pointer.targetX = 0;
             this.pointer.targetY = 0;
-        });
+            this.pointer.screenX = this.center.x;
+            this.pointer.screenY = this.center.y;
+        }, { passive: true });
     }
 
     project(x, y, z, drift = 0) {
-        const rotX = -0.58 + Math.sin(this.time * 0.16) * 0.07 + this.pointer.y * 0.28;
-        const rotY = 0.68 + this.time * 0.16 + this.pointer.x * 0.34;
-        const rotZ = -0.1 + Math.sin(this.time * 0.12) * 0.08;
+        const rotX = -0.72 + Math.sin(this.time * 0.12) * 0.05 + this.pointer.y * 0.2;
+        const rotY = 0.5 + Math.sin(this.time * 0.08) * 0.05 + this.pointer.x * 0.26;
+        const rotZ = -0.08 + Math.sin(this.time * 0.1) * 0.06;
 
-        x += Math.cos(this.time * 0.7 + drift) * 0.025;
-        y += Math.sin(this.time * 0.58 + drift) * 0.022;
+        x += Math.cos(this.time * 0.36 + drift) * 0.012;
+        y += Math.sin(this.time * 0.32 + drift) * 0.01;
 
         let px = x * Math.cos(rotY) - z * Math.sin(rotY);
         let pz = x * Math.sin(rotY) + z * Math.cos(rotY);
@@ -1324,108 +1345,189 @@ class StellarSkillVisualizer {
         let tx = px * Math.cos(rotZ) - py * Math.sin(rotZ);
         let ty = px * Math.sin(rotZ) + py * Math.cos(rotZ);
 
-        const depth = pz + 5;
-        const scale = 1 / Math.max(0.58, depth * 0.24);
-
-        const cx = this.width / 2;
-        const cy = this.height * 0.51;
-        const size = Math.min(this.width, this.height) * 0.34;
+        const depth = pz + 5.4;
+        const scale = 1 / Math.max(0.68, depth * 0.22);
+        const hoverPull = this.hover * 7;
 
         return {
-            x: cx + tx * scale * size,
-            y: cy + ty * scale * size,
+            x: this.center.x + tx * scale * this.scale + this.pointer.x * hoverPull,
+            y: this.center.y + ty * scale * this.scale + this.pointer.y * hoverPull * 0.65,
             scale,
             depth
         };
     }
 
-    drawOrbit(tilt, radius, alpha) {
+    orbitalPoint(skill, timeOffset = 0) {
+        const angle = skill.angle + this.time * skill.speed + timeOffset;
+        const hoverBreath = 1 + this.hover * 0.035 * Math.sin(this.time * 1.7 + skill.angle);
+        const radius = skill.orbit * hoverBreath;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius * skill.tilt + skill.y;
+        const z = Math.sin(angle) * radius * 0.82 + skill.z;
+
+        return {
+            angle,
+            point: this.project(x, y, z, skill.angle),
+            model: { x, y, z }
+        };
+    }
+
+    drawOrbit(skill, alpha) {
         this.ctx.beginPath();
 
-        for (let step = 0; step <= 140; step += 1) {
-            const a = (step / 140) * Math.PI * 2;
-            const x = Math.cos(a) * radius;
-            const y = Math.sin(a) * radius * tilt;
-            const z = Math.sin(a) * radius * (1 - tilt * 0.38);
-            const p = this.project(x, y, z, a);
+        for (let step = 0; step <= 180; step += 1) {
+            const a = (step / 180) * Math.PI * 2;
+            const x = Math.cos(a) * skill.orbit;
+            const y = Math.sin(a) * skill.orbit * skill.tilt + skill.y;
+            const z = Math.sin(a) * skill.orbit * 0.82 + skill.z;
+            const p = this.project(x, y, z, skill.angle + a);
 
             if (step === 0) this.ctx.moveTo(p.x, p.y);
             else this.ctx.lineTo(p.x, p.y);
         }
 
-        this.ctx.strokeStyle = `rgba(220, 238, 247, ${alpha})`;
-        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = `rgba(220, 238, 247, ${alpha + this.hover * 0.035})`;
+        this.ctx.lineWidth = 0.9 + this.hover * 0.25;
         this.ctx.stroke();
+    }
+
+    drawBackground() {
+        const radius = Math.min(this.width, this.height) * 0.58;
+        const glow = this.ctx.createRadialGradient(
+            this.center.x,
+            this.center.y,
+            0,
+            this.center.x,
+            this.center.y,
+            radius
+        );
+        glow.addColorStop(0, `rgba(232, 245, 250, ${0.2 + this.hover * 0.06})`);
+        glow.addColorStop(0.28, 'rgba(202, 222, 232, 0.075)');
+        glow.addColorStop(0.72, 'rgba(202, 222, 232, 0.028)');
+        glow.addColorStop(1, 'rgba(202, 222, 232, 0)');
+        this.ctx.fillStyle = glow;
+        this.ctx.beginPath();
+        this.ctx.arc(this.center.x, this.center.y, radius, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        if (this.hover > 0.02) {
+            const attractor = this.ctx.createRadialGradient(
+                this.pointer.screenX,
+                this.pointer.screenY,
+                0,
+                this.pointer.screenX,
+                this.pointer.screenY,
+                this.scale * 0.62
+            );
+            attractor.addColorStop(0, `rgba(246, 252, 254, ${0.1 * this.hover})`);
+            attractor.addColorStop(1, 'rgba(246, 252, 254, 0)');
+            this.ctx.fillStyle = attractor;
+            this.ctx.beginPath();
+            this.ctx.arc(this.pointer.screenX, this.pointer.screenY, this.scale * 0.62, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
-
-        const glow = this.ctx.createRadialGradient(
-            this.width * 0.5,
-            this.height * 0.5,
-            0,
-            this.width * 0.5,
-            this.height * 0.5,
-            Math.min(this.width, this.height) * 0.56
-        );
-        glow.addColorStop(0, 'rgba(232, 245, 250, 0.18)');
-        glow.addColorStop(0.48, 'rgba(202, 222, 232, 0.06)');
-        glow.addColorStop(1, 'rgba(202, 222, 232, 0)');
-        this.ctx.fillStyle = glow;
-        this.ctx.beginPath();
-        this.ctx.arc(this.width * 0.5, this.height * 0.5, Math.min(this.width, this.height) * 0.56, 0, Math.PI * 2);
-        this.ctx.fill();
+        this.drawBackground();
 
         this.ctx.save();
         this.ctx.globalCompositeOperation = 'lighter';
-        this.drawOrbit(0.24, 1.72, 0.11);
-        this.drawOrbit(0.48, 1.42, 0.08);
-        this.drawOrbit(0.66, 1.14, 0.07);
 
-        const projectedNodes = this.nodes.map(node => ({
-            node,
-            point: this.project(
-                node.x + (node.kind === 'field' ? Math.cos(this.time + node.phase) * node.orbit : 0),
-                node.y + (node.kind === 'field' ? Math.sin(this.time * 0.8 + node.phase) * node.orbit : 0),
-                node.z,
-                node.phase
-            )
+        this.skills.forEach((skill, index) => {
+            this.drawOrbit(skill, index % 2 ? 0.055 : 0.075);
+        });
+
+        const planetNodes = this.skills.map(skill => ({
+            skill,
+            ...this.orbitalPoint(skill)
         }));
 
-        this.links.forEach(([from, to]) => {
-            const source = projectedNodes[from];
-            const target = projectedNodes[to];
-            const depthLight = Math.max(0.28, 1.12 - ((source.point.depth + target.point.depth) * 0.5) * 0.1);
+        const dustNodes = this.dust.map(dust => {
+            const angle = dust.phase + this.time * dust.speed;
+            return {
+                dust,
+                point: this.project(
+                    Math.cos(angle) * dust.orbit,
+                    Math.sin(angle) * dust.orbit * dust.tilt,
+                    Math.sin(angle) * dust.orbit * 0.75,
+                    dust.phase
+                )
+            };
+        });
 
-            this.ctx.strokeStyle = `rgba(232, 244, 250, ${0.16 * depthLight})`;
-            this.ctx.lineWidth = 1.1 * Math.max(0.62, source.point.scale);
+        dustNodes
+            .sort((a, b) => b.point.depth - a.point.depth)
+            .forEach(({ dust, point }) => {
+                const depthLight = Math.max(0.2, 1.08 - point.depth * 0.1);
+                this.ctx.fillStyle = `rgba(238, 248, 252, ${dust.alpha * depthLight * (0.7 + this.hover * 0.45)})`;
+                this.ctx.beginPath();
+                this.ctx.arc(point.x, point.y, dust.size * point.scale, 0, Math.PI * 2);
+                this.ctx.fill();
+            });
+
+        planetNodes.forEach(({ point }) => {
+            const depthLight = Math.max(0.28, 1.14 - point.depth * 0.1);
+            this.ctx.strokeStyle = `rgba(232, 244, 250, ${(0.14 + this.hover * 0.08) * depthLight})`;
+            this.ctx.lineWidth = 0.95 * Math.max(0.68, point.scale);
             this.ctx.beginPath();
-            this.ctx.moveTo(source.point.x, source.point.y);
-            this.ctx.lineTo(target.point.x, target.point.y);
+            this.ctx.moveTo(this.center.x, this.center.y);
+            this.ctx.lineTo(point.x, point.y);
             this.ctx.stroke();
         });
 
-        projectedNodes
+        for (let i = 0; i < planetNodes.length; i += 1) {
+            const current = planetNodes[i];
+            const next = planetNodes[(i + 1) % planetNodes.length];
+            const depthLight = Math.max(0.22, 1.12 - ((current.point.depth + next.point.depth) * 0.5) * 0.1);
+            this.ctx.strokeStyle = `rgba(232, 244, 250, ${(0.055 + this.hover * 0.035) * depthLight})`;
+            this.ctx.lineWidth = 0.8;
+            this.ctx.beginPath();
+            this.ctx.moveTo(current.point.x, current.point.y);
+            this.ctx.lineTo(next.point.x, next.point.y);
+            this.ctx.stroke();
+        }
+
+        const satelliteNodes = this.satellites.map(satellite => {
+            const planet = planetNodes[satellite.skillIndex];
+            const angle = satellite.phase + this.time * satellite.speed;
+            const satellitePoint = this.project(
+                planet.model.x + Math.cos(angle) * satellite.orbit,
+                planet.model.y + Math.sin(angle) * satellite.orbit * 0.54,
+                planet.model.z + Math.sin(angle) * satellite.orbit,
+                satellite.phase
+            );
+
+            return { satellite, planet, point: satellitePoint };
+        });
+
+        [...satelliteNodes, ...planetNodes]
             .sort((a, b) => b.point.depth - a.point.depth)
-            .forEach(({ node, point }) => {
+            .forEach((item) => {
+                const { point } = item;
                 const depthLight = Math.max(0.24, 1.08 - point.depth * 0.1);
-                const pulse = node.kind === 'anchor' ? 0.75 + Math.sin(this.time * 1.8 + node.phase) * 0.16 : 0.42;
-                const size = node.size * point.scale;
+                const isPlanet = Boolean(item.skill);
+                const pulse = isPlanet
+                    ? 0.82 + Math.sin(this.time * 2.1 + item.skill.angle) * 0.12
+                    : 0.52 + Math.sin(this.time * 2.6 + item.satellite.phase) * 0.1;
+                const baseSize = isPlanet ? item.skill.size : item.satellite.size;
+                const size = baseSize * point.scale * (1 + this.hover * (isPlanet ? 0.18 : 0.08));
 
                 this.ctx.fillStyle = `rgba(248, 252, 253, ${depthLight * pulse})`;
                 this.ctx.beginPath();
                 this.ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
                 this.ctx.fill();
 
-                if (node.kind === 'anchor') {
-                    this.ctx.strokeStyle = `rgba(235, 247, 252, ${0.22 * depthLight})`;
-                    this.ctx.lineWidth = 1;
+                if (isPlanet) {
+                    const ringAlpha = (0.2 + this.hover * 0.12) * depthLight;
+                    this.ctx.strokeStyle = `rgba(235, 247, 252, ${ringAlpha})`;
+                    this.ctx.lineWidth = 0.9;
                     this.ctx.beginPath();
-                    this.ctx.arc(point.x, point.y, size * 3.4, 0, Math.PI * 2);
+                    this.ctx.ellipse(point.x, point.y, size * 3.3, size * 1.3, item.angle * 0.28, 0, Math.PI * 2);
                     this.ctx.stroke();
                 }
-        });
+            });
 
         this.ctx.restore();
     }
@@ -1433,7 +1535,8 @@ class StellarSkillVisualizer {
     animate() {
         this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.05;
         this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.05;
-        this.time += this.prefersReducedMotion ? 0 : 0.012;
+        this.hover += (this.hoverTarget - this.hover) * 0.06;
+        this.time += this.prefersReducedMotion ? 0 : 0.01 + this.hover * 0.018;
         this.draw();
 
         if (!this.prefersReducedMotion) {
@@ -1991,7 +2094,7 @@ const projectData = [
         title: 'Gaussian Simulations',
         desc: 'Independent research project deriving closed-form entanglement survival conditions for two-mode squeezed vacuum states in symmetric phase-insensitive Gaussian channels. Uses symplectic-invariant reduction to convert PPT checks into explicit, analytically invertible thresholds for thermal-loss and symmetric quantum-limited amplification settings.',
         tags: ['Python', 'Quantum Information'],
-        date: 'Ongoing',
+        date: 'Until Feb 2026',
         assignment: null,
         linkedin: null,
         repo: 'https://github.com/mohamedelsayed-0/gaussian_simulations/tree/main',
@@ -2024,7 +2127,7 @@ const projectData = [
         title: 'Lumina — LaTeX Notetaker',
         desc: 'Web-based tool that converts handwritten, typed, and audio notes into structured LaTeX documents optimized for notation-heavy coursework and technical writing. Implements OCR, parsing, and automation pipelines to generate compilable LaTeX with support for equations, figures, and modular document organization.',
         tags: ['TypeScript', 'JavaScript', 'CSS', 'Python'],
-        date: 'Dec 2025 – Present',
+        date: 'Until Dec 2025',
         assignment: null,
         linkedin: null,
         repo: null,
