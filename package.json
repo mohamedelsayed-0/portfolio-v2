@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "npx serve v2 -l 8083",
+    "start": "npx serve . -l 8083",
     "start:v2": "npx serve v2 -l 8083",
     "start:v1": "npx serve v1 -l 8084"
   }
