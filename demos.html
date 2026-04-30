@@ -14,25 +14,30 @@
     <meta property="og:url" content="https://elsayedmohamed.com/demos.html">
     <meta property="og:image" content="https://elsayedmohamed.com/assets/profile.png">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap" rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/profile.png">
+    <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg?v=20260406-7">
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#9d4edd">
+    <meta name="theme-color" content="#050505">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260406-11">
 </head>
 
 <body>
     <div class="transition-overlay"></div>
+    <div class="page-atmosphere" aria-hidden="true">
+        <span class="page-atmosphere__orb page-atmosphere__orb--a"></span>
+        <span class="page-atmosphere__orb page-atmosphere__orb--b"></span>
+        <span class="page-atmosphere__orb page-atmosphere__orb--c"></span>
+        <span class="page-atmosphere__mesh"></span>
+    </div>
+    <div class="section-indicator" data-section-indicator aria-label="Section navigation"></div>
     <div class="demos-page">
         <!-- Page Header -->
         <header class="page-header sticky-header transparent-header">
@@ -51,17 +56,27 @@
         </header>
 
         <!-- Page Title -->
-        <section class="page-title-section">
+        <section class="page-title-section demos-intro-section" data-page-reveal data-tone="frost" data-label="Intro">
             <div class="container">
+                <p class="page-kicker">Selected Work</p>
                 <h1 class="section-title" style="margin-bottom: var(--spacing-xs);">Demos</h1>
-                <p style="color: var(--text-muted); font-size: 1.1rem; text-align: center;">Project showcases and live previews</p>
-                <p style="color: var(--text-secondary); font-size: 0.95rem; text-align: center; margin-top: 0.5rem;">Slowly but surely adding everything</p>
+                <p class="page-intro-copy">Project showcases, simulation studies, and interactive production work.</p>
+                <p class="page-note">A tighter archive is still being assembled.</p>
             </div>
         </section>
 
         <!-- Demos Grid -->
-        <section class="demos-section">
+        <section class="demos-section" data-page-reveal data-tone="steel" data-label="Showcase">
             <div class="container">
+                <div class="section-head reveal-on-scroll">
+                    <div>
+                        <p class="section-kicker">Motion Archive</p>
+                        <h2 class="section-title">Showcase</h2>
+                    </div>
+                    <p class="section-copy">
+                        Selected builds across gameplay systems, scientific tools, and interactive visual interfaces.
+                    </p>
+                </div>
                 <div class="demos-grid">
 
                     <!-- Demo Card 1: Roblox Game Dev (featured, full-width) -->
@@ -170,7 +185,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260217-1"></script>
+    <script src="script.js?v=20260406-10"></script>
 </body>
 
 </html>

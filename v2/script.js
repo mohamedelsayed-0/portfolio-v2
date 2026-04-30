@@ -1227,6 +1227,7 @@ class StellarSkillVisualizer {
         this.time = 0;
         this.hover = 0;
         this.hoverTarget = 0;
+        this.activeSkill = -1;
         this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0, screenX: 0, screenY: 0 };
         this.dust = [];
         this.satellites = [];
@@ -1238,6 +1239,7 @@ class StellarSkillVisualizer {
             { name: 'Automation', orbit: 0.62, angle: -1.38, speed: 0.63, tilt: 0.22, y: -0.1, z: 0.2, size: 4.8 },
             { name: '3D Tools', orbit: 1.14, angle: 1.35, speed: 0.31, tilt: 0.31, y: 0.11, z: 0.02, size: 5.5 }
         ];
+        this.labelEls = Array.from(this.parent.querySelectorAll('.skill-star'));
         this.resize();
         this.createSystem();
         this.bindEvents();
@@ -1322,11 +1324,23 @@ class StellarSkillVisualizer {
 
         this.parent.addEventListener('pointerleave', () => {
             this.hoverTarget = 0;
+            this.activeSkill = -1;
             this.pointer.targetX = 0;
             this.pointer.targetY = 0;
             this.pointer.screenX = this.center.x;
             this.pointer.screenY = this.center.y;
         }, { passive: true });
+
+        this.labelEls.forEach((label, index) => {
+            label.addEventListener('pointerenter', () => {
+                this.activeSkill = index;
+                this.hoverTarget = 1;
+            }, { passive: true });
+
+            label.addEventListener('pointerleave', () => {
+                this.activeSkill = -1;
+            }, { passive: true });
+        });
     }
 
     project(x, y, z, drift = 0) {
@@ -1372,23 +1386,38 @@ class StellarSkillVisualizer {
         };
     }
 
-    drawOrbit(skill, alpha) {
-        this.ctx.beginPath();
+    orbitModelPoint(skill, angle) {
+        return {
+            x: Math.cos(angle) * skill.orbit,
+            y: Math.sin(angle) * skill.orbit * skill.tilt + skill.y,
+            z: Math.sin(angle) * skill.orbit * 0.82 + skill.z
+        };
+    }
 
-        for (let step = 0; step <= 180; step += 1) {
+    drawOrbit(skill, index, alpha) {
+        const activeBoost = this.activeSkill === index ? 1 : 0;
+
+        for (let step = 0; step < 180; step += 1) {
             const a = (step / 180) * Math.PI * 2;
-            const x = Math.cos(a) * skill.orbit;
-            const y = Math.sin(a) * skill.orbit * skill.tilt + skill.y;
-            const z = Math.sin(a) * skill.orbit * 0.82 + skill.z;
-            const p = this.project(x, y, z, skill.angle + a);
+            const b = ((step + 1) / 180) * Math.PI * 2;
+            const fromModel = this.orbitModelPoint(skill, a);
+            const toModel = this.orbitModelPoint(skill, b);
+            const from = this.project(fromModel.x, fromModel.y, fromModel.z, skill.angle + a);
+            const to = this.project(toModel.x, toModel.y, toModel.z, skill.angle + b);
+            const front = Math.max(0, ((fromModel.z + toModel.z) * 0.5 + skill.orbit) / (skill.orbit * 2));
+            const segmentAlpha = alpha * (0.28 + front * 0.9) + this.hover * 0.018 + activeBoost * 0.08;
 
-            if (step === 0) this.ctx.moveTo(p.x, p.y);
-            else this.ctx.lineTo(p.x, p.y);
+            if (segmentAlpha < 0.012) {
+                continue;
+            }
+
+            this.ctx.strokeStyle = `rgba(220, 238, 247, ${segmentAlpha})`;
+            this.ctx.lineWidth = (0.42 + front * 0.92 + activeBoost * 0.34) * Math.max(0.78, from.scale);
+            this.ctx.beginPath();
+            this.ctx.moveTo(from.x, from.y);
+            this.ctx.lineTo(to.x, to.y);
+            this.ctx.stroke();
         }
-
-        this.ctx.strokeStyle = `rgba(220, 238, 247, ${alpha + this.hover * 0.035})`;
-        this.ctx.lineWidth = 0.9 + this.hover * 0.25;
-        this.ctx.stroke();
     }
 
     drawBackground() {
@@ -1428,6 +1457,61 @@ class StellarSkillVisualizer {
         }
     }
 
+    drawSphere(point, size, alpha, phase, activeBoost = 0) {
+        const radius = Math.max(1, size);
+        const highlightX = point.x - radius * (0.42 + this.pointer.x * 0.08);
+        const highlightY = point.y - radius * (0.46 + this.pointer.y * 0.06);
+        const glowSize = radius * (2.1 + activeBoost * 0.8);
+        const glow = this.ctx.createRadialGradient(point.x, point.y, radius * 0.3, point.x, point.y, glowSize);
+
+        glow.addColorStop(0, `rgba(246, 252, 253, ${0.16 * alpha + activeBoost * 0.04})`);
+        glow.addColorStop(1, 'rgba(246, 252, 253, 0)');
+        this.ctx.fillStyle = glow;
+        this.ctx.beginPath();
+        this.ctx.arc(point.x, point.y, glowSize, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        const sphere = this.ctx.createRadialGradient(
+            highlightX,
+            highlightY,
+            radius * 0.12,
+            point.x,
+            point.y,
+            radius * 1.18
+        );
+        sphere.addColorStop(0, `rgba(255, 255, 255, ${Math.min(0.98, alpha + 0.18 + activeBoost * 0.12)})`);
+        sphere.addColorStop(0.36, `rgba(220, 238, 247, ${Math.min(0.78, alpha * 0.72 + activeBoost * 0.08)})`);
+        sphere.addColorStop(0.72, `rgba(126, 145, 155, ${Math.min(0.34, alpha * 0.36)})`);
+        sphere.addColorStop(1, `rgba(14, 18, 21, ${Math.min(0.48, alpha * 0.44)})`);
+
+        this.ctx.fillStyle = sphere;
+        this.ctx.beginPath();
+        this.ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.strokeStyle = `rgba(239, 249, 253, ${0.2 * alpha + activeBoost * 0.16})`;
+        this.ctx.lineWidth = 0.7;
+        this.ctx.beginPath();
+        this.ctx.arc(point.x, point.y, radius + 0.45, 0, Math.PI * 2);
+        this.ctx.stroke();
+
+        if (radius > 3.2) {
+            this.ctx.strokeStyle = `rgba(239, 249, 253, ${(0.16 + activeBoost * 0.1) * alpha})`;
+            this.ctx.lineWidth = 0.8;
+            this.ctx.beginPath();
+            this.ctx.ellipse(
+                point.x,
+                point.y,
+                radius * (2.55 + activeBoost * 0.4),
+                radius * 0.82,
+                phase * 0.34 + this.pointer.x * 0.12,
+                0,
+                Math.PI * 2
+            );
+            this.ctx.stroke();
+        }
+    }
+
     draw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.drawBackground();
@@ -1436,7 +1520,7 @@ class StellarSkillVisualizer {
         this.ctx.globalCompositeOperation = 'lighter';
 
         this.skills.forEach((skill, index) => {
-            this.drawOrbit(skill, index % 2 ? 0.055 : 0.075);
+            this.drawOrbit(skill, index, index % 2 ? 0.055 : 0.075);
         });
 
         const planetNodes = this.skills.map(skill => ({
@@ -1508,25 +1592,20 @@ class StellarSkillVisualizer {
                 const { point } = item;
                 const depthLight = Math.max(0.24, 1.08 - point.depth * 0.1);
                 const isPlanet = Boolean(item.skill);
+                const activeBoost = isPlanet && this.skills.indexOf(item.skill) === this.activeSkill ? 1 : 0;
                 const pulse = isPlanet
                     ? 0.82 + Math.sin(this.time * 2.1 + item.skill.angle) * 0.12
                     : 0.52 + Math.sin(this.time * 2.6 + item.satellite.phase) * 0.1;
                 const baseSize = isPlanet ? item.skill.size : item.satellite.size;
-                const size = baseSize * point.scale * (1 + this.hover * (isPlanet ? 0.18 : 0.08));
+                const size = baseSize * point.scale * (1 + this.hover * (isPlanet ? 0.18 : 0.08) + activeBoost * 0.22);
 
-                this.ctx.fillStyle = `rgba(248, 252, 253, ${depthLight * pulse})`;
-                this.ctx.beginPath();
-                this.ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
-                this.ctx.fill();
-
-                if (isPlanet) {
-                    const ringAlpha = (0.2 + this.hover * 0.12) * depthLight;
-                    this.ctx.strokeStyle = `rgba(235, 247, 252, ${ringAlpha})`;
-                    this.ctx.lineWidth = 0.9;
-                    this.ctx.beginPath();
-                    this.ctx.ellipse(point.x, point.y, size * 3.3, size * 1.3, item.angle * 0.28, 0, Math.PI * 2);
-                    this.ctx.stroke();
-                }
+                this.drawSphere(
+                    point,
+                    size,
+                    depthLight * pulse,
+                    isPlanet ? item.angle : item.satellite.phase,
+                    activeBoost
+                );
             });
 
         this.ctx.restore();

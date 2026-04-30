@@ -14,24 +14,24 @@
     <meta property="og:url" content="https://elsayedmohamed.com/about.html">
     <meta property="og:image" content="https://elsayedmohamed.com/assets/profile.png">
 
-    <!-- fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap" rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/profile.png">
+    <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg?v=20260406-7">
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#9d4edd">
+    <meta name="theme-color" content="#050505">
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260430-3">
 </head>
 
 <body class="about-page">
     <div class="transition-overlay"></div>
+    <canvas id="about-flow-canvas" class="about-flow-canvas" aria-hidden="true"></canvas>
+    <div class="section-indicator" data-section-indicator aria-label="Section navigation"></div>
     <div id="error-toast" class="error-toast"></div>
 
     <!-- Page header -->
@@ -60,54 +60,91 @@
         </div>
     </header>
 
-    <!-- About Section with Header Background -->
-    <section class="about-section-wrapper">
-        <!-- Subtle atmospheric header background -->
-        <div class="about-header-bg">
-            <div class="about-header-overlay"></div>
-        </div>
+    <!-- About Section -->
+    <section class="about-section-wrapper" data-tone="frost" data-label="Profile">
+        <canvas id="about-orbit-canvas" class="about-orbit-canvas" aria-hidden="true"></canvas>
 
-        <!-- About Title -->
-        <div class="about-title-container">
-            <h2 class="about-section-title slide-in-about" data-about-animate>About Me</h2>
-        </div>
-
-        <!-- About Content - Zoomed Out Container -->
         <div class="about-inner-container">
             <div class="about-content-grid">
-                <!-- Text slides from left -->
                 <div class="about-text-block slide-in-left" data-about-animate>
-                    <h3 class="about-headline">Engineering Science · Software & Systems · Physics</h3>
-                    <p>
-                        I'm Mohamed, an Engineering Science student at the University of Toronto planning to pursuing
-                        Engineering Physics. I'm often intrigued by problems that revolve around mathematics, and find
-                        myself very passionate towards them.
-                        I also love building and seeing tools that connect theory with applictions in the real world.
+                    <p class="about-kicker">Profile / Engineering Science</p>
+                    <h1 class="about-section-title">
+                        <span>About Me</span>
+                    </h1>
+                    <p class="about-lead">
+                        I am Mohamed, an Engineering Science student at UofT. I like turning physics, math, and software
+                        into tools you can see, test, and ship.
                     </p>
-                    <ul class="about-highlights">
-                        <li>I'm interested in applied physics, number theory, and abstract geometry</li>
-                        <li>Experience spanning embedded systems, backend automation, and game development</li>
-                    </ul>
+                    <div class="about-focus-grid" aria-label="Working modes">
+                        <article class="about-focus-card">
+                            <span>01</span>
+                            <strong>Physics</strong>
+                        </article>
+                        <article class="about-focus-card">
+                            <span>02</span>
+                            <strong>Systems</strong>
+                        </article>
+                        <article class="about-focus-card">
+                            <span>03</span>
+                            <strong>3D Tools</strong>
+                        </article>
+                    </div>
+                    <p class="about-availability">Toronto / Cairo · internships + research</p>
                 </div>
-                <!-- Image slides from right -->
-                <div class="about-image-block slide-in-right" data-about-animate>
-                    <img src="assets/profile.png" alt="Mohamed Elsayed" class="about-profile-image">
-                </div>
+
+                <aside class="about-visual-system slide-in-right" data-about-animate data-about-tilt>
+                    <div class="stellar-skill-map" aria-hidden="true">
+                        <span class="skill-star skill-star--physics">Physics</span>
+                        <span class="skill-star skill-star--systems">Systems</span>
+                        <span class="skill-star skill-star--backend">Backend</span>
+                        <span class="skill-star skill-star--simulation">Simulation</span>
+                        <span class="skill-star skill-star--automation">Automation</span>
+                        <span class="skill-star skill-star--three-d">3D Tools</span>
+                    </div>
+                    <div class="stellar-core" aria-hidden="true">
+                        <span>Skills</span>
+                    </div>
+
+                    <canvas id="calculus-canvas" class="stellar-canvas" aria-hidden="true"></canvas>
+                </aside>
             </div>
         </div>
     </section>
 
     <!-- experience Section -->
-    <section id="experience" class="experience-section">
+    <section id="experience" class="experience-section" data-tone="steel" data-label="Experience">
         <div class="container">
-            <h2 class="section-title">Experience</h2>
-            <div class="experience-grid">
-                <!-- al mannar NGO -->
-                <div class="glass-card experience-card">
-                    <h3>Technical Lead</h3>
-                    <div class="experience-meta">
-                        <span>Al Mannar NGO · Permanent Part-time</span>
-                        <span>Jul 2021 – Mar 2026 · Luxor, Egypt · Hybrid</span>
+            <div class="experience-section-header reveal-on-scroll">
+                <div>
+                    <p class="section-kicker">Selected Experience</p>
+                    <h2 class="section-title">Experience</h2>
+                </div>
+                <p class="experience-section-copy">
+                    Work spanning nonprofit infrastructure, research automation, financial systems, and
+                    large-scale interactive production.
+                </p>
+            </div>
+            <div class="experience-timeline-wrapper">
+                <div class="experience-timeline">
+                    <div class="experience-timeline-progress"></div>
+                </div>
+                <div class="experience-grid">
+                    <!-- al mannar NGO -->
+                    <article class="glass-card experience-card" data-index="01" data-tilt>
+                    <div class="experience-card__eyebrow">
+                        <span class="experience-index">01</span>
+                        <span class="experience-track">Leadership / Systems</span>
+                    </div>
+                    <div class="experience-card__header">
+                        <div class="experience-card__title-group">
+                            <p class="experience-company">Al Mannar NGO</p>
+                            <h3>Technical Lead</h3>
+                        </div>
+                        <div class="experience-meta">
+                            <span>Permanent Part-time</span>
+                            <span>Jul 2021 – Mar 2026</span>
+                            <span>Luxor, Egypt · Hybrid</span>
+                        </div>
                     </div>
                     <ul>
                         <li>Lead all technology strategy and software infrastructure for a regional charity serving
@@ -119,14 +156,24 @@
                         <li>Coordinate with organizational leadership to align technology initiatives with operational
                             needs and long-term growth plans.</li>
                     </ul>
-                </div>
+                </article>
 
                 <!-- auc research -->
-                <div class="glass-card experience-card">
-                    <h3>Undergraduate Research Assistant</h3>
-                    <div class="experience-meta">
-                        <span>The American University in Cairo · Internship</span>
-                        <span>Jul 2025 – Sep 2025 · Cairo, Egypt · Hybrid</span>
+                <article class="glass-card experience-card" data-index="02" data-tilt>
+                    <div class="experience-card__eyebrow">
+                        <span class="experience-index">02</span>
+                        <span class="experience-track">Research / Control</span>
+                    </div>
+                    <div class="experience-card__header">
+                        <div class="experience-card__title-group">
+                            <p class="experience-company">The American University in Cairo</p>
+                            <h3>Undergraduate Research Assistant</h3>
+                        </div>
+                        <div class="experience-meta">
+                            <span>Internship</span>
+                            <span>Jul 2025 – Sep 2025</span>
+                            <span>Cairo, Egypt · Hybrid</span>
+                        </div>
                     </div>
                     <ul>
                         <li>Developed a custom electronic control system using microcontrollers to automate a precision
@@ -138,14 +185,24 @@
                         <li>Produced detailed technical documentation covering system architecture, calibration
                             procedures, and operating protocols.</li>
                     </ul>
-                </div>
+                </article>
 
                 <!-- evision -->
-                <div class="glass-card experience-card">
-                    <h3>Backend Intern</h3>
-                    <div class="experience-meta">
-                        <span>eVision (Digital Financial Systems) · Full-time</span>
-                        <span>Jul 2024 – Aug 2024 · Cairo, Egypt · On-site</span>
+                <article class="glass-card experience-card" data-index="03" data-tilt>
+                    <div class="experience-card__eyebrow">
+                        <span class="experience-index">03</span>
+                        <span class="experience-track">Backend / Data</span>
+                    </div>
+                    <div class="experience-card__header">
+                        <div class="experience-card__title-group">
+                            <p class="experience-company">eVision</p>
+                            <h3>Backend Intern</h3>
+                        </div>
+                        <div class="experience-meta">
+                            <span>Full-time</span>
+                            <span>Jul 2024 – Aug 2024</span>
+                            <span>Cairo, Egypt · On-site</span>
+                        </div>
                     </div>
                     <ul>
                         <li>Built a scalable file-parsing automation system in Java that processed structured financial
@@ -157,14 +214,24 @@
                         <li>Gained hands-on experience across the full software development lifecycle, from design and
                             implementation to testing and deployment.</li>
                     </ul>
-                </div>
+                </article>
 
                 <!-- self-employed -->
-                <div class="glass-card experience-card">
-                    <h3>Software Developer & Animator</h3>
-                    <div class="experience-meta">
-                        <span>Self-Employed</span>
-                        <span>Oct 2021 – Jul 2023 · Remote</span>
+                <article class="glass-card experience-card" data-index="04" data-tilt>
+                    <div class="experience-card__eyebrow">
+                        <span class="experience-index">04</span>
+                        <span class="experience-track">Interactive / Production</span>
+                    </div>
+                    <div class="experience-card__header">
+                        <div class="experience-card__title-group">
+                            <p class="experience-company">Self-Employed</p>
+                            <h3>Software Developer & Animator</h3>
+                        </div>
+                        <div class="experience-meta">
+                            <span>Contract</span>
+                            <span>Oct 2021 – Jul 2023</span>
+                            <span>Remote</span>
+                        </div>
                     </div>
                     <ul>
                         <li>Collaborated with Roblox game development studios on projects that collectively surpassed
@@ -177,18 +244,28 @@
                         <li>Managed client relationships and project timelines independently, delivering contracted work
                             on schedule across simultaneous engagements.</li>
                     </ul>
+                </article>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- projects Section -->
-    <section id="projects" class="projects-section">
+    <section id="projects" class="projects-section" data-tone="graphite" data-label="Projects">
         <div class="container">
-            <h2 class="section-title">Projects</h2>
+            <div class="section-head reveal-on-scroll">
+                <div>
+                    <p class="section-kicker">Selected Work</p>
+                    <h2 class="section-title">Projects</h2>
+                    <p class="project-expand-hint">Click to Expand</p>
+                </div>
+                <p class="section-copy">
+                    Mathematical simulations, structural tools, and software systems built with a research-first bias.
+                </p>
+            </div>
             <div class="projects-grid">
                 <!-- Gaussian simulations -->
-                <div class="glass-card project-card from-left" onclick="openProjectModal(0)">
+                <div class="glass-card project-card from-left" data-tilt onclick="openProjectModal(0)">
                     <h3>Gaussian Simulations</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
@@ -196,11 +273,11 @@
                     </div>
                     <p>Independent research deriving closed-form entanglement survival thresholds for two-mode
                         squeezed vacuum states in symmetric phase-insensitive Gaussian channels.</p>
-                    <div class="project-date">Ongoing</div>
+                    <div class="project-date">Until Feb 2026</div>
                 </div>
 
                 <!--  beam sim -->
-                <div class="glass-card project-card from-left" onclick="openProjectModal(1)">
+                <div class="glass-card project-card from-left" data-tilt onclick="openProjectModal(1)">
                     <h3>Structural Beam Simulation</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
@@ -212,7 +289,7 @@
                 </div>
 
                 <!-- Pong AI -->
-                <div class="glass-card project-card from-left" onclick="openProjectModal(2)">
+                <div class="glass-card project-card from-left" data-tilt onclick="openProjectModal(2)">
                     <h3>Pong AI</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
@@ -227,7 +304,7 @@
                 </div>
 
                 <!-- Lumina -->
-                <div class="glass-card project-card from-right" onclick="openProjectModal(3)">
+                <div class="glass-card project-card from-right" data-tilt onclick="openProjectModal(3)">
                     <h3>Lumina — LaTeX Notetaker</h3>
                     <div class="project-tech">
                         <span class="tech-tag">TypeScript</span>
@@ -237,16 +314,24 @@
                     </div>
                     <p>Web tool that converts handwritten, typed, and audio notes into structured LaTeX documents
                         optimized for notation-heavy coursework.</p>
-                    <div class="project-date">Dec 2025 – Present</div>
+                    <div class="project-date">Until Dec 2025</div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Demos Section -->
-    <section id="demos" class="demos-link-section">
+    <section id="demos" class="demos-link-section" data-tone="silver" data-label="Demos">
         <div class="container">
-            <h2 class="section-title">Demos</h2>
+            <div class="section-head section-head--centered reveal-on-scroll">
+                <div>
+                    <p class="section-kicker">Motion + Interaction</p>
+                    <h2 class="section-title">Demos</h2>
+                </div>
+                <p class="section-copy">
+                    Gameplay systems, interactive previews, and production-facing work collected into one focused page.
+                </p>
+            </div>
             <div class="glass-card demos-link-card">
                 <h3>Interactive Work Samples</h3>
                 <p>See gameplay systems, animations, and software demo previews in one place.</p>
@@ -256,37 +341,57 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="contact-section">
+    <section id="contact" class="contact-section" data-tone="glow" data-label="Contact">
         <div class="container">
-            <h2 class="section-title">Get in Touch</h2>
-            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
-                Open to collaborations, research opportunities, and interesting conversations.
-            </p>
-            <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-primary"
-                style="margin-bottom: var(--spacing-md);">
-                Send me an email
-            </a>
-            <div class="contact-buttons" style="justify-content: center;">
-                <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-icon" title="Email">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                        <polyline points="22,6 12,13 2,6" />
-                    </svg>
+            <div class="section-head section-head--centered reveal-on-scroll">
+                <div>
+                    <p class="section-kicker">Open Channel</p>
+                    <h2 class="section-title">Get in Contact</h2>
+                </div>
+                <p class="section-copy">
+                    Open to internships, collaborations, research opportunities, and technically ambitious work.
+                </p>
+            </div>
+            <div class="contact-methods">
+                <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
+                    class="contact-method" title="GitHub">
+                    <span class="contact-method__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                        </svg>
+                    </span>
+                    <span>
+                        <strong>GitHub</strong>
+                        <em>mohamedelsayed-0</em>
+                    </span>
                 </a>
                 <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" target="_blank"
-                    rel="noopener noreferrer" class="btn btn-icon" title="LinkedIn">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
+                    rel="noopener noreferrer" class="contact-method" title="LinkedIn">
+                    <span class="contact-method__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                    </span>
+                    <span>
+                        <strong>LinkedIn</strong>
+                        <em>Mohamed Elsayed</em>
+                    </span>
                 </a>
-                <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
-                    class="btn btn-icon" title="GitHub">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                    </svg>
+                <a href="mailto:mohamedessam.elsayed07@gmail.com" class="contact-method" title="Email">
+                    <span class="contact-method__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                    </span>
+                    <span>
+                        <strong>Email</strong>
+                        <em>mohamedessam.elsayed07@gmail.com</em>
+                    </span>
                 </a>
             </div>
         </div>
@@ -309,7 +414,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260217-1"></script>
+    <script src="script.js?v=20260430-3"></script>
 </body>
 
 </html>
