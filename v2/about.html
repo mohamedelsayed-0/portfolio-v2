@@ -25,17 +25,12 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050505">
 
-    <link rel="stylesheet" href="styles.css?v=20260406-11">
+    <link rel="stylesheet" href="styles.css?v=20260429-8">
 </head>
 
 <body class="about-page">
     <div class="transition-overlay"></div>
-    <div class="page-atmosphere" aria-hidden="true">
-        <span class="page-atmosphere__orb page-atmosphere__orb--a"></span>
-        <span class="page-atmosphere__orb page-atmosphere__orb--b"></span>
-        <span class="page-atmosphere__orb page-atmosphere__orb--c"></span>
-        <span class="page-atmosphere__mesh"></span>
-    </div>
+    <canvas id="about-flow-canvas" class="about-flow-canvas" aria-hidden="true"></canvas>
     <div class="section-indicator" data-section-indicator aria-label="Section navigation"></div>
     <div id="error-toast" class="error-toast"></div>
 
@@ -65,58 +60,48 @@
         </div>
     </header>
 
-    <!-- About Section with Header Background -->
+    <!-- About Section -->
     <section class="about-section-wrapper" data-tone="frost" data-label="Profile">
-        <!-- Subtle atmospheric header background -->
-        <div class="about-header-bg">
-            <div class="about-header-overlay"></div>
-        </div>
+        <canvas id="about-orbit-canvas" class="about-orbit-canvas" aria-hidden="true"></canvas>
 
-        <!-- About Title -->
-        <div class="about-title-container">
-            <p class="page-kicker slide-in-about" data-about-animate>Profile</p>
-            <h2 class="about-section-title slide-in-about" data-about-animate>About</h2>
-        </div>
-
-        <!-- About Content - Zoomed Out Container -->
         <div class="about-inner-container">
             <div class="about-content-grid">
-                <!-- Text slides from left -->
                 <div class="about-text-block slide-in-left" data-about-animate>
-                    <p class="about-kicker">Engineering Science / Physics / Systems</p>
-                    <h3 class="about-hero-title">Engineering Science student bringing technical rigor, calm execution, and strong systems judgment.</h3>
+                    <p class="about-kicker">Profile / Engineering Science</p>
+                    <h1 class="about-section-title">
+                        <span>About Me</span>
+                    </h1>
                     <p class="about-lead">
-                        I work across backend tooling, applied mathematics, embedded control, and interactive 3D with
-                        a bias toward precise thinking and reliable implementation.
+                        I am Mohamed, an Engineering Science student at UofT. I like turning physics, math, and software
+                        into tools you can see, test, and ship.
                     </p>
-                    <div class="about-capability-row" aria-label="Core areas">
-                        <span class="about-capability">Backend systems</span>
-                        <span class="about-capability">Research tooling</span>
-                        <span class="about-capability">Embedded + controls</span>
-                        <span class="about-capability">Interactive 3D</span>
+                    <div class="about-focus-grid" aria-label="Working modes">
+                        <article class="about-focus-card">
+                            <span>01</span>
+                            <strong>Physics</strong>
+                        </article>
+                        <article class="about-focus-card">
+                            <span>02</span>
+                            <strong>Systems</strong>
+                        </article>
+                        <article class="about-focus-card">
+                            <span>03</span>
+                            <strong>3D Tools</strong>
+                        </article>
                     </div>
-                    <p class="about-availability">Open to internships, research roles, and technically demanding product work.</p>
+                    <p class="about-availability">Toronto / Cairo · internships + research</p>
                 </div>
-                <div class="about-side-panel slide-in-right" data-about-animate>
-                    <article class="about-side-card">
-                        <span class="about-side-kicker">What teams get</span>
-                        <h3 class="about-side-title">A builder who can move between theory, implementation, and presentation without losing technical depth.</h3>
-                    </article>
-                    <article class="about-side-card about-side-card--metrics">
-                        <div class="about-side-metric">
-                            <span>Base</span>
-                            <strong>Toronto / Cairo</strong>
-                        </div>
-                        <div class="about-side-metric">
-                            <span>Direction</span>
-                            <strong>Engineering Physics</strong>
-                        </div>
-                        <div class="about-side-metric">
-                            <span>Working style</span>
-                            <strong>Clear documentation, disciplined systems thinking, and deliberate execution</strong>
-                        </div>
-                    </article>
-                </div>
+
+                <aside class="about-visual-system slide-in-right" data-about-animate data-about-tilt>
+                    <div class="about-equation-field" aria-hidden="true">
+                        <span class="about-equation about-equation--a">∂ψ/∂t = ∇²ψ</span>
+                        <span class="about-equation about-equation--b">∫γ F · dr</span>
+                        <span class="about-equation about-equation--c">det(Jφ) ≠ 0</span>
+                        <span class="about-equation about-equation--d">x(u,v,t)</span>
+                    </div>
+
+                    <canvas id="calculus-canvas" class="calculus-canvas" aria-hidden="true"></canvas>
+                </aside>
             </div>
         </div>
     </section>
@@ -134,9 +119,13 @@
                     large-scale interactive production.
                 </p>
             </div>
-            <div class="experience-grid">
-                <!-- al mannar NGO -->
-                <article class="glass-card experience-card experience-card--featured" data-index="01">
+            <div class="experience-timeline-wrapper">
+                <div class="experience-timeline">
+                    <div class="experience-timeline-progress"></div>
+                </div>
+                <div class="experience-grid">
+                    <!-- al mannar NGO -->
+                    <article class="glass-card experience-card" data-index="01" data-tilt>
                     <div class="experience-card__eyebrow">
                         <span class="experience-index">01</span>
                         <span class="experience-track">Leadership / Systems</span>
@@ -165,7 +154,7 @@
                 </article>
 
                 <!-- auc research -->
-                <article class="glass-card experience-card" data-index="02">
+                <article class="glass-card experience-card" data-index="02" data-tilt>
                     <div class="experience-card__eyebrow">
                         <span class="experience-index">02</span>
                         <span class="experience-track">Research / Control</span>
@@ -194,7 +183,7 @@
                 </article>
 
                 <!-- evision -->
-                <article class="glass-card experience-card" data-index="03">
+                <article class="glass-card experience-card" data-index="03" data-tilt>
                     <div class="experience-card__eyebrow">
                         <span class="experience-index">03</span>
                         <span class="experience-track">Backend / Data</span>
@@ -223,7 +212,7 @@
                 </article>
 
                 <!-- self-employed -->
-                <article class="glass-card experience-card" data-index="04">
+                <article class="glass-card experience-card" data-index="04" data-tilt>
                     <div class="experience-card__eyebrow">
                         <span class="experience-index">04</span>
                         <span class="experience-track">Interactive / Production</span>
@@ -251,6 +240,7 @@
                             on schedule across simultaneous engagements.</li>
                     </ul>
                 </article>
+                </div>
             </div>
         </div>
     </section>
@@ -269,7 +259,7 @@
             </div>
             <div class="projects-grid">
                 <!-- Gaussian simulations -->
-                <div class="glass-card project-card from-left" onclick="openProjectModal(0)">
+                <div class="glass-card project-card from-left" data-tilt onclick="openProjectModal(0)">
                     <h3>Gaussian Simulations</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
@@ -281,7 +271,7 @@
                 </div>
 
                 <!--  beam sim -->
-                <div class="glass-card project-card from-left" onclick="openProjectModal(1)">
+                <div class="glass-card project-card from-left" data-tilt onclick="openProjectModal(1)">
                     <h3>Structural Beam Simulation</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
@@ -293,7 +283,7 @@
                 </div>
 
                 <!-- Pong AI -->
-                <div class="glass-card project-card from-left" onclick="openProjectModal(2)">
+                <div class="glass-card project-card from-left" data-tilt onclick="openProjectModal(2)">
                     <h3>Pong AI</h3>
                     <div class="project-tech">
                         <span class="tech-tag">Python</span>
@@ -308,7 +298,7 @@
                 </div>
 
                 <!-- Lumina -->
-                <div class="glass-card project-card from-right" onclick="openProjectModal(3)">
+                <div class="glass-card project-card from-right" data-tilt onclick="openProjectModal(3)">
                     <h3>Lumina — LaTeX Notetaker</h3>
                     <div class="project-tech">
                         <span class="tech-tag">TypeScript</span>
@@ -350,37 +340,52 @@
             <div class="section-head reveal-on-scroll">
                 <div>
                     <p class="section-kicker">Open Channel</p>
-                    <h2 class="section-title">Get in Touch</h2>
+                    <h2 class="section-title">Get in Contact</h2>
                 </div>
                 <p class="section-copy">
                     Open to internships, collaborations, research opportunities, and technically ambitious work.
                 </p>
             </div>
-            <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-primary"
-                style="margin-bottom: var(--spacing-md);">
-                Send me an email
-            </a>
-            <div class="contact-buttons" style="justify-content: center;">
-                <a href="mailto:mohamedessam.elsayed07@gmail.com" class="btn btn-icon" title="Email">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                        <polyline points="22,6 12,13 2,6" />
-                    </svg>
+            <div class="contact-methods">
+                <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
+                    class="contact-method" title="GitHub">
+                    <span class="contact-method__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                        </svg>
+                    </span>
+                    <span>
+                        <strong>GitHub</strong>
+                        <em>mohamedelsayed-0</em>
+                    </span>
                 </a>
                 <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" target="_blank"
-                    rel="noopener noreferrer" class="btn btn-icon" title="LinkedIn">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
+                    rel="noopener noreferrer" class="contact-method" title="LinkedIn">
+                    <span class="contact-method__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                    </span>
+                    <span>
+                        <strong>LinkedIn</strong>
+                        <em>Mohamed Elsayed</em>
+                    </span>
                 </a>
-                <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
-                    class="btn btn-icon" title="GitHub">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                    </svg>
+                <a href="mailto:mohamedessam.elsayed07@gmail.com" class="contact-method" title="Email">
+                    <span class="contact-method__icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                    </span>
+                    <span>
+                        <strong>Email</strong>
+                        <em>mohamedessam.elsayed07@gmail.com</em>
+                    </span>
                 </a>
             </div>
         </div>
@@ -403,7 +408,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260406-9"></script>
+    <script src="script.js?v=20260429-4"></script>
 </body>
 
 </html>

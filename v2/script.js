@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // specific page logics
     if (document.getElementById('blackhole-canvas')) {
         new BlackHole(document.getElementById('blackhole-canvas'));
-    } else if (document.querySelector('.about-page') || document.querySelector('.notes-page') || document.querySelector('.demos-page')) {
+    } else if (document.querySelector('.notes-page') || document.querySelector('.demos-page')) {
         const canvas = document.createElement('canvas');
         canvas.id = 'bg-canvas';
         canvas.style.position = 'fixed';
@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
     initPageEntrance();
     initSectionAtmosphere();
+    initAboutScene();
 });
 
 // SCROLL system
@@ -791,6 +792,644 @@ function toggleCourse(header) {
 // global scope for HTML onclick attributes
 window.toggleSemester = toggleSemester;
 window.toggleCourse = toggleCourse;
+
+// ABOUT HERO - canvas field and 3D stage interaction
+class AboutOrbitScene {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.section = canvas.closest('.about-section-wrapper');
+        this.ctx = canvas.getContext('2d');
+
+        if (!this.section || !this.ctx) {
+            return;
+        }
+
+        this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        this.nodes = [];
+        this.links = [];
+        this.columns = 0;
+        this.rows = 0;
+        this.scroll = { current: 0, target: 0 };
+        this.time = 0;
+        this.frame = null;
+        this.resize();
+        this.createField();
+        this.bindEvents();
+        this.animate();
+    }
+
+    seededRandom(seed) {
+        return Math.sin(seed * 9283.21) * 0.5 + 0.5;
+    }
+
+    resize() {
+        const rect = this.section.getBoundingClientRect();
+        this.width = Math.max(1, rect.width);
+        this.height = Math.max(1, rect.height);
+        this.isMobile = this.width < 760;
+        this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        this.canvas.width = Math.round(this.width * this.dpr);
+        this.canvas.height = Math.round(this.height * this.dpr);
+        this.canvas.style.width = `${this.width}px`;
+        this.canvas.style.height = `${this.height}px`;
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        this.center = {
+            x: this.width * (this.isMobile ? 0.5 : 0.66),
+            y: this.height * (this.isMobile ? 0.54 : 0.47)
+        };
+        this.scale = Math.min(this.width, this.height) * (this.isMobile ? 0.38 : 0.53);
+    }
+
+    createField() {
+        const columns = this.isMobile ? 9 : 19;
+        const rows = this.isMobile ? 7 : 13;
+        this.columns = columns;
+        this.rows = rows;
+        this.nodes = [];
+        this.links = [];
+
+        for (let row = 0; row < rows; row += 1) {
+            for (let column = 0; column < columns; column += 1) {
+                const index = row * columns + column;
+                const u = (column / (columns - 1)) * 2 - 1;
+                const v = (row / (rows - 1)) * 2 - 1;
+                const radius = Math.sqrt(u * u + v * v);
+
+                this.nodes.push({
+                    u,
+                    v,
+                    radius,
+                    row,
+                    column,
+                    phase: this.seededRandom(index + 1) * Math.PI * 2,
+                    size: 1 + this.seededRandom(index + 4) * 1.65,
+                    alpha: 0.34 + this.seededRandom(index + 9) * 0.52
+                });
+
+                if (column > 0) {
+                    this.links.push([index - 1, index]);
+                }
+
+                if (row > 0) {
+                    this.links.push([index - columns, index]);
+                }
+            }
+        }
+    }
+
+    bindEvents() {
+        window.addEventListener('resize', () => {
+            this.resize();
+            this.createField();
+            this.updateScroll();
+            if (this.prefersReducedMotion) {
+                this.draw(0);
+            }
+        });
+        window.addEventListener('scroll', () => this.updateScroll(), { passive: true });
+        this.updateScroll();
+
+        if (!this.prefersReducedMotion) {
+            window.addEventListener('pointermove', (event) => {
+                this.pointer.targetX = (event.clientX / window.innerWidth - 0.5) * 2;
+                this.pointer.targetY = (event.clientY / window.innerHeight - 0.5) * 2;
+            }, { passive: true });
+
+            window.addEventListener('pointerleave', () => {
+                this.pointer.targetX = 0;
+                this.pointer.targetY = 0;
+            }, { passive: true });
+        }
+    }
+
+    updateScroll() {
+        const rect = this.section.getBoundingClientRect();
+        const travel = window.innerHeight + rect.height;
+        this.scroll.target = Math.min(Math.max((window.innerHeight - rect.top) / travel, 0), 1);
+    }
+
+    project(node, time) {
+        const scrollLift = this.scroll.current;
+        const radiusFalloff = Math.max(0.18, 1.15 - node.radius * 0.28);
+        const saddle = (node.u * node.u - node.v * node.v) * 0.26;
+        const waveA = Math.sin(node.u * (3.4 + scrollLift * 1.4) + time * 1.15 + node.phase) * Math.cos(node.v * 2.8 - time * 0.82);
+        const waveB = Math.sin((node.u - node.v) * 4.1 - time * (0.68 + scrollLift * 0.9)) * 0.24;
+        let x = node.u * 2.22 + Math.sin(node.v * 2.2 + time * 0.45) * 0.08;
+        let y = (waveA * 0.54 + waveB + saddle + Math.sin(scrollLift * Math.PI + node.phase) * 0.12) * radiusFalloff;
+        let z = node.v * 1.58 + Math.cos(node.u * 2.4 + time * 0.38 + node.phase) * 0.18;
+
+        const rotX = -0.8 + this.pointer.y * 0.1 + Math.sin(time * 0.18) * 0.04 + scrollLift * 0.12;
+        const rotY = 0.72 + this.pointer.x * 0.13 + Math.cos(time * 0.14) * 0.06 + scrollLift * 0.18;
+        const cosY = Math.cos(rotY);
+        const sinY = Math.sin(rotY);
+        const cosX = Math.cos(rotX);
+        const sinX = Math.sin(rotX);
+        const rx = x * cosY - z * sinY;
+        const rz = x * sinY + z * cosY;
+        const ry = y * cosX - rz * sinX;
+        const depth = y * sinX + rz * cosX + 5.5;
+        const perspective = 1 / Math.max(0.7, depth * 0.22);
+
+        return {
+            x: this.center.x + rx * this.scale * perspective,
+            y: this.center.y + ry * this.scale * perspective,
+            depth,
+            perspective
+        };
+    }
+
+    drawGuideLines(time) {
+        const ctx = this.ctx;
+        const sweep = (Math.sin(time * 0.45) + 1) * 0.5;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineWidth = 1;
+
+        for (let index = 0; index < 6; index += 1) {
+            const offset = index * 0.095;
+            const y = this.height * (0.24 + offset + sweep * 0.024);
+            const alpha = 0.065 - index * 0.006;
+            ctx.strokeStyle = `rgba(235, 244, 248, ${alpha})`;
+            ctx.beginPath();
+            ctx.moveTo(this.width * 0.02, y);
+            ctx.bezierCurveTo(
+                this.width * 0.34,
+                y - 72,
+                this.width * 0.62,
+                y + 96,
+                this.width * 0.99,
+                y - 34
+            );
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    drawSurface(projected) {
+        if (!this.columns || !this.rows) {
+            return;
+        }
+
+        const cells = [];
+
+        for (let row = 0; row < this.rows - 1; row += 1) {
+            for (let column = 0; column < this.columns - 1; column += 1) {
+                const a = projected[row * this.columns + column];
+                const b = projected[row * this.columns + column + 1];
+                const c = projected[(row + 1) * this.columns + column + 1];
+                const d = projected[(row + 1) * this.columns + column];
+                const centerRadius = (a.node.radius + b.node.radius + c.node.radius + d.node.radius) * 0.25;
+
+                cells.push({
+                    points: [a.point, b.point, c.point, d.point],
+                    depth: (a.point.depth + b.point.depth + c.point.depth + d.point.depth) * 0.25,
+                    alpha: Math.max(0, 0.06 - centerRadius * 0.022),
+                    parity: (row + column) % 2
+                });
+            }
+        }
+
+        this.ctx.save();
+        this.ctx.globalCompositeOperation = 'lighter';
+        cells
+            .sort((a, b) => b.depth - a.depth)
+            .forEach((cell) => {
+                const depthLight = Math.max(0.18, 1.08 - cell.depth * 0.09);
+                const alpha = cell.alpha * depthLight * (cell.parity ? 0.55 : 1);
+
+                if (alpha <= 0.002) {
+                    return;
+                }
+
+                this.ctx.fillStyle = `rgba(190, 224, 238, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.moveTo(cell.points[0].x, cell.points[0].y);
+                this.ctx.lineTo(cell.points[1].x, cell.points[1].y);
+                this.ctx.lineTo(cell.points[2].x, cell.points[2].y);
+                this.ctx.lineTo(cell.points[3].x, cell.points[3].y);
+                this.ctx.closePath();
+                this.ctx.fill();
+            });
+        this.ctx.restore();
+    }
+
+    draw(time) {
+        const ctx = this.ctx;
+        const projected = this.nodes.map((node) => ({
+            node,
+            point: this.project(node, time)
+        }));
+
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        const glow = ctx.createRadialGradient(
+            this.center.x,
+            this.center.y,
+            0,
+            this.center.x,
+            this.center.y,
+            this.scale * 1.8
+        );
+        glow.addColorStop(0, 'rgba(237, 246, 250, 0.18)');
+        glow.addColorStop(0.32, 'rgba(190, 208, 218, 0.08)');
+        glow.addColorStop(1, 'rgba(190, 208, 218, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(this.center.x, this.center.y, this.scale * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        this.drawGuideLines(time);
+        this.drawSurface(projected);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+
+        this.links.forEach(([fromIndex, toIndex]) => {
+            const from = projected[fromIndex];
+            const to = projected[toIndex];
+            const depthLight = Math.max(0.18, 1.08 - ((from.point.depth + to.point.depth) * 0.5) * 0.12);
+            const rim = Math.max(0, 1 - (from.node.radius + to.node.radius) * 0.32);
+            const alpha = 0.09 * depthLight * rim;
+
+            if (alpha < 0.006) {
+                return;
+            }
+
+            ctx.strokeStyle = `rgba(230, 241, 247, ${alpha})`;
+            ctx.lineWidth = 1.05 * Math.max(0.52, from.point.perspective);
+            ctx.beginPath();
+            ctx.moveTo(from.point.x, from.point.y);
+            ctx.lineTo(to.point.x, to.point.y);
+            ctx.stroke();
+        });
+
+        projected
+            .sort((a, b) => b.point.depth - a.point.depth)
+            .forEach(({ node, point }) => {
+                const alpha = node.alpha * Math.max(0.18, 1.06 - point.depth * 0.1);
+                const size = node.size * Math.max(0.55, point.perspective);
+                ctx.fillStyle = `rgba(246, 250, 252, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+        ctx.restore();
+    }
+
+    animate() {
+        this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.045;
+        this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.045;
+        this.scroll.current += (this.scroll.target - this.scroll.current) * 0.045;
+        this.time += this.prefersReducedMotion ? 0 : 0.01 + Math.abs(this.scroll.target - this.scroll.current) * 0.035;
+        this.draw(this.time);
+
+        if (!this.prefersReducedMotion) {
+            this.frame = requestAnimationFrame(() => this.animate());
+        }
+    }
+}
+
+class AboutPageFlowScene {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+
+        if (!this.ctx) {
+            return;
+        }
+
+        this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.points = [];
+        this.scroll = { current: 0, target: 0 };
+        this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        this.time = 0;
+        this.resize();
+        this.createPoints();
+        this.bindEvents();
+        this.animate();
+    }
+
+    resize() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.dpr = Math.min(window.devicePixelRatio || 1, 1.4);
+        this.canvas.width = Math.round(this.width * this.dpr);
+        this.canvas.height = Math.round(this.height * this.dpr);
+        this.canvas.style.width = `${this.width}px`;
+        this.canvas.style.height = `${this.height}px`;
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    }
+
+    createPoints() {
+        const count = this.width < 760 ? 34 : 72;
+        this.points = Array.from({ length: count }, (_, index) => ({
+            seed: index * 1.73 + 0.31,
+            radius: 0.14 + (index % 11) * 0.032,
+            speed: 0.22 + (index % 7) * 0.04,
+            size: 0.8 + (index % 5) * 0.28
+        }));
+    }
+
+    bindEvents() {
+        window.addEventListener('resize', () => {
+            this.resize();
+            this.createPoints();
+        });
+        window.addEventListener('scroll', () => this.updateScroll(), { passive: true });
+        window.addEventListener('pointermove', (event) => {
+            this.pointer.targetX = (event.clientX / this.width - 0.5) * 2;
+            this.pointer.targetY = (event.clientY / this.height - 0.5) * 2;
+        }, { passive: true });
+        this.updateScroll();
+    }
+
+    updateScroll() {
+        const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        this.scroll.target = window.scrollY / maxScroll;
+    }
+
+    drawCurve(offset, alpha, widthScale) {
+        const ctx = this.ctx;
+        const scroll = this.scroll.current;
+        const phase = this.time * 0.42 + offset + scroll * Math.PI * 3.2;
+        const yBase = this.height * (0.18 + ((offset * 0.17 + scroll * 0.86) % 0.72));
+
+        ctx.beginPath();
+        ctx.moveTo(-this.width * 0.08, yBase);
+
+        for (let step = 0; step <= 7; step += 1) {
+            const x = this.width * (step / 7);
+            const y = yBase
+                + Math.sin(step * 0.92 + phase) * this.height * 0.055
+                + Math.cos(step * 0.48 - phase * 0.8) * this.height * 0.025;
+            const cx = x - this.width * 0.07;
+            ctx.quadraticCurveTo(cx, y, x, y);
+        }
+
+        ctx.strokeStyle = `rgba(227, 241, 248, ${alpha})`;
+        ctx.lineWidth = widthScale;
+        ctx.stroke();
+    }
+
+    animate() {
+        this.scroll.current += (this.scroll.target - this.scroll.current) * 0.06;
+        this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.04;
+        this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.04;
+        this.time += this.prefersReducedMotion ? 0 : 0.009 + Math.abs(this.scroll.target - this.scroll.current) * 0.05;
+
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.width, this.height);
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+
+        for (let i = 0; i < 5; i += 1) {
+            this.drawCurve(i * 0.87, 0.035 + i * 0.004, 0.7 + i * 0.08);
+        }
+
+        this.points.forEach((point) => {
+            const angle = this.time * point.speed + point.seed + this.scroll.current * Math.PI * 5;
+            const drift = Math.sin(point.seed + this.scroll.current * Math.PI * 2);
+            const x = this.width * (0.5 + Math.cos(angle) * point.radius + this.pointer.x * 0.012 + drift * 0.03);
+            const y = this.height * (0.5 + Math.sin(angle * 0.83) * point.radius * 0.72 + this.pointer.y * 0.014);
+            const pulse = 0.45 + Math.sin(this.time * 2 + point.seed) * 0.25;
+
+            ctx.fillStyle = `rgba(242, 249, 252, ${0.08 + pulse * 0.08})`;
+            ctx.beginPath();
+            ctx.arc(x, y, point.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.restore();
+
+        if (!this.prefersReducedMotion) {
+            requestAnimationFrame(() => this.animate());
+        }
+    }
+}
+
+class CalculusVisualizer {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        if (!this.ctx) return;
+
+        this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.width = 0;
+        this.height = 0;
+        this.dpr = 1;
+        this.time = 0;
+        this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        this.nodes = [];
+        this.arcs = [];
+        this.resize();
+        this.createSystem();
+        this.bindEvents();
+        this.animate();
+    }
+
+    resize() {
+        const parent = this.canvas.parentElement;
+        const rect = parent.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        this.canvas.width = this.width * this.dpr;
+        this.canvas.height = this.height * this.dpr;
+        this.canvas.style.width = `${this.width}px`;
+        this.canvas.style.height = `${this.height}px`;
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    }
+
+    createSystem() {
+        // Create nodes on a torus-like path
+        const count = 48;
+        for (let i = 0; i < count; i++) {
+            this.nodes.push({
+                u: (i / count) * Math.PI * 2,
+                v: Math.random() * Math.PI * 2,
+                speed: 0.2 + Math.random() * 0.4,
+                radiusOff: Math.random() * 0.4 - 0.2
+            });
+        }
+    }
+
+    bindEvents() {
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('pointermove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            this.pointer.targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+            this.pointer.targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        });
+        window.addEventListener('pointerleave', () => {
+            this.pointer.targetX = 0;
+            this.pointer.targetY = 0;
+        });
+    }
+
+    project(x, y, z) {
+        // Add perspective projection
+        const rotX = this.time * 0.3 + this.pointer.y * 0.5;
+        const rotY = this.time * 0.4 + this.pointer.x * 0.5;
+        const rotZ = Math.sin(this.time * 0.1) * 0.2;
+
+        // Apply rotations
+        let px = x * Math.cos(rotY) - z * Math.sin(rotY);
+        let pz = x * Math.sin(rotY) + z * Math.cos(rotY);
+        let py = y * Math.cos(rotX) - pz * Math.sin(rotX);
+        pz = y * Math.sin(rotX) + pz * Math.cos(rotX);
+
+        let tx = px * Math.cos(rotZ) - py * Math.sin(rotZ);
+        let ty = px * Math.sin(rotZ) + py * Math.cos(rotZ);
+
+        const depth = pz + 4;
+        const scale = 1 / Math.max(0.5, depth * 0.3);
+
+        const cx = this.width / 2;
+        const cy = this.height / 2;
+        const size = Math.min(this.width, this.height) * 0.45;
+
+        return {
+            x: cx + tx * scale * size,
+            y: cy + ty * scale * size,
+            scale,
+            depth
+        };
+    }
+
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.globalCompositeOperation = 'lighter';
+        
+        // Draw rings/axes
+        for (let i = 0; i < 3; i++) {
+            this.ctx.beginPath();
+            for (let j = 0; j <= 60; j++) {
+                const a = (j / 60) * Math.PI * 2;
+                let x = Math.cos(a);
+                let y = Math.sin(a);
+                let z = 0;
+                
+                if (i === 1) { x = Math.cos(a); y = 0; z = Math.sin(a); }
+                if (i === 2) { x = 0; y = Math.cos(a); z = Math.sin(a); }
+                
+                const p = this.project(x, y, z);
+                if (j === 0) this.ctx.moveTo(p.x, p.y);
+                else this.ctx.lineTo(p.x, p.y);
+            }
+            this.ctx.strokeStyle = `rgba(200, 225, 245, ${0.1 + i * 0.05})`;
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+        }
+
+        // Draw nodes
+        const projectedNodes = this.nodes.map(node => {
+            node.v += node.speed * 0.02;
+            const r1 = 1.0;
+            const r2 = 0.3 + node.radiusOff;
+            const x = (r1 + r2 * Math.cos(node.v)) * Math.cos(node.u);
+            const y = (r1 + r2 * Math.cos(node.v)) * Math.sin(node.u);
+            const z = r2 * Math.sin(node.v);
+            return { point: this.project(x, y, z), node };
+        }).sort((a, b) => b.point.depth - a.point.depth);
+
+        projectedNodes.forEach(item => {
+            const alpha = Math.max(0.1, 1 - item.point.depth * 0.15);
+            this.ctx.beginPath();
+            this.ctx.arc(item.point.x, item.point.y, 2 * item.point.scale, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            this.ctx.fill();
+        });
+    }
+
+    animate() {
+        this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.05;
+        this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.05;
+        this.time += this.prefersReducedMotion ? 0 : 0.015;
+        this.draw();
+
+        if (!this.prefersReducedMotion) {
+            requestAnimationFrame(() => this.animate());
+        }
+    }
+}
+
+function initAboutScene() {
+    const flowCanvas = document.getElementById('about-flow-canvas');
+    const canvas = document.getElementById('about-orbit-canvas');
+    const calcCanvas = document.getElementById('calculus-canvas');
+
+    if (flowCanvas) {
+        new AboutPageFlowScene(flowCanvas);
+    }
+
+    if (canvas) {
+        new AboutOrbitScene(canvas);
+    }
+
+    if (calcCanvas) {
+        new CalculusVisualizer(calcCanvas);
+    }
+
+    // Tilt hover logic for elements with data-tilt
+    const tiltTargets = document.querySelectorAll('[data-tilt], [data-about-tilt]');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (tiltTargets.length > 0 && !prefersReducedMotion) {
+        tiltTargets.forEach(target => {
+            target.addEventListener('pointermove', (event) => {
+                const rect = target.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width - 0.5;
+                const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+                // Use CSS variables for tilt
+                target.style.setProperty('--about-tilt-x', `${(-y * 8).toFixed(2)}deg`);
+                target.style.setProperty('--about-tilt-y', `${(x * 10).toFixed(2)}deg`);
+                target.style.setProperty('--about-light-x', `${(50 + x * 34).toFixed(1)}%`);
+                target.style.setProperty('--about-light-y', `${(42 + y * 30).toFixed(1)}%`);
+                
+                // Add mouse tracking for glass cards
+                if (target.classList.contains('glass-card')) {
+                    target.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
+                    target.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
+                    target.style.transform = `perspective(1000px) rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${ (x * 6).toFixed(2)}deg) scale(1.02)`;
+                }
+            }, { passive: true });
+
+            target.addEventListener('pointerleave', () => {
+                target.style.setProperty('--about-tilt-x', '0deg');
+                target.style.setProperty('--about-tilt-y', '0deg');
+                target.style.setProperty('--about-light-x', '62%');
+                target.style.setProperty('--about-light-y', '36%');
+                
+                if (target.classList.contains('glass-card')) {
+                    target.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+                }
+            }, { passive: true });
+        });
+    }
+
+    // Timeline scroll tracking
+    const timeline = document.querySelector('.experience-timeline-progress');
+    const experienceGrid = document.querySelector('.experience-grid');
+    if (timeline && experienceGrid) {
+        window.addEventListener('scroll', () => {
+            const rect = experienceGrid.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Calculate progress (0 to 1) based on scroll position within the grid
+            let progress = (viewportHeight / 2 - rect.top) / rect.height;
+            progress = Math.max(0, Math.min(1, progress));
+            
+            timeline.style.transform = `scaleY(${progress})`;
+        }, { passive: true });
+    }
+}
 
 // ============================================
 // ABOUT SECTION - Repeating Slide-In Animations

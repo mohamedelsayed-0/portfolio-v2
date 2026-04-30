@@ -83,7 +83,7 @@
             this.contourDuration = this.prefersReducedMotion ? 420 : 760;
             this.handoffStart = this.prefersReducedMotion ? 860 : 3150;
             this.handoffDuration = this.prefersReducedMotion ? 430 : 900;
-            this.revealStart = this.prefersReducedMotion ? 1050 : 3900;
+            this.revealStart = this.handoffStart + this.handoffDuration + (this.prefersReducedMotion ? 320 : 1100);
             this.revealDuration = this.prefersReducedMotion ? 850 : 1600;
             this.introDuration = this.revealStart + 240;
             this.uiDelay = this.prefersReducedMotion ? 40 : 180;
@@ -302,11 +302,11 @@
 
         buildCubes() {
             const configs = [
-                { size: 122, x: -1.65, y: -0.88, z: -140, rx: -18, ry: 24, rz: 12, delay: 0.02, drift: 0.18, sx: 1.0, sy: 1.0, sz: 1.0, sourceU: -0.82, sourceV: 0.46 },
-                { size: 96, x: 1.68, y: -0.78, z: -80, rx: 14, ry: -26, rz: -8, delay: 0.11, drift: 0.22, sx: 0.86, sy: 1.22, sz: 0.86, sourceU: 0.74, sourceV: 0.36 },
-                { size: 138, x: -1.44, y: 0.95, z: -220, rx: 32, ry: 18, rz: -22, delay: 0.19, drift: 0.15, sx: 1.18, sy: 0.62, sz: 1.18, sourceU: -0.58, sourceV: -0.74 },
-                { size: 104, x: 1.78, y: 0.92, z: -110, rx: -26, ry: 28, rz: 16, delay: 0.27, drift: 0.2, sx: 0.92, sy: 0.92, sz: 0.92, sourceU: 0.68, sourceV: -0.66 },
-                { size: 88, x: 0.24, y: -1.3, z: -40, rx: 18, ry: -14, rz: 34, delay: 0.22, drift: 0.16, sx: 0.78, sy: 1.1, sz: 0.78, sourceU: 0.08, sourceV: 0.86 }
+                { size: 116, depth: 42, radius: 24, x: -1.72, y: -0.88, z: -150, rx: -18, ry: 27, rz: 10, delay: 0.02, drift: 0.14, sx: 1.08, sy: 0.9, sz: 0.58, opacity: 0.72, mobileOpacity: 0.4, glint: 0.92, sourceU: -0.82, sourceV: 0.46 },
+                { size: 94, depth: 34, radius: 22, x: 1.7, y: -0.82, z: -92, rx: 16, ry: -28, rz: -9, delay: 0.11, drift: 0.18, sx: 0.86, sy: 1.18, sz: 0.54, opacity: 0.68, mobileOpacity: 0.36, glint: 0.84, sourceU: 0.74, sourceV: 0.36 },
+                { size: 134, depth: 38, radius: 26, x: -1.48, y: 0.98, z: -230, rx: 31, ry: 18, rz: -21, delay: 0.19, drift: 0.12, sx: 1.26, sy: 0.56, sz: 0.48, opacity: 0.62, mobileOpacity: 0.34, glint: 0.76, sourceU: -0.58, sourceV: -0.74 },
+                { size: 102, depth: 36, radius: 23, x: 1.58, y: 0.9, z: -118, rx: -23, ry: 20, rz: 12, delay: 0.27, drift: 0.16, sx: 0.94, sy: 0.9, sz: 0.52, opacity: 0.66, mobileOpacity: 0.36, glint: 0.86, sourceU: 0.68, sourceV: -0.66 },
+                { size: 86, depth: 30, radius: 21, x: 0.22, y: -1.3, z: -52, rx: 17, ry: -13, rz: 33, delay: 0.22, drift: 0.13, sx: 0.78, sy: 1.08, sz: 0.5, opacity: 0.7, mobileOpacity: 0.38, glint: 0.9, sourceU: 0.08, sourceV: 0.86 }
             ];
 
             const faces = ["front", "back", "left", "right", "top", "bottom"];
@@ -315,8 +315,17 @@
             this.cubes = configs.map((config, index) => {
                 const cube = document.createElement("div");
                 cube.className = `ice-cube ice-cube--${index + 1}`;
+                const depth = config.depth ?? config.size * 0.42;
+                const radius = config.radius ?? 22;
+
                 cube.style.setProperty("--cube-size", `${config.size}px`);
-                cube.style.setProperty("--cube-depth", `${config.size * 0.5}px`);
+                cube.style.setProperty("--cube-depth", `${depth}px`);
+                cube.style.setProperty("--cube-radius", `${radius}px`);
+                cube.style.setProperty("--cube-inner-radius", `${Math.max(12, radius * 0.72)}px`);
+                cube.style.setProperty("--cube-halo-z", `${depth * -0.75}px`);
+                cube.style.setProperty("--cube-core-z", `${depth * 0.24}px`);
+                cube.style.setProperty("--cube-glint-z", `${depth * 0.58}px`);
+                cube.style.setProperty("--cube-glint", config.glint.toString());
 
                 const inner = document.createElement("div");
                 inner.className = "ice-cube__inner";
@@ -921,11 +930,11 @@
                 const x = lerp(sourceX, targetX, motionProgress) + driftX + this.pointer.x * 16;
                 const y = lerp(sourceY, targetY, motionProgress) + driftY + this.pointer.y * 10;
                 const z = lerp(-180 + source.depth * -8, config.z, motionProgress);
-                const opacity = settled * (this.isMobile ? 0.46 : 0.88);
+                const opacity = settled * (this.isMobile ? config.mobileOpacity : config.opacity);
                 const scale = lerp(0.12, this.isMobile ? 0.72 : 1, clamp(motionProgress, 0, 1));
-                const rotateX = config.rx + time * (4.2 + config.drift * 4.8) + this.pointer.y * 6;
-                const rotateY = config.ry + time * (6.5 + config.drift * 5.4) + this.pointer.x * 12;
-                const rotateZ = config.rz + Math.sin(time * 0.48 + config.delay * 12) * 5;
+                const rotateX = config.rx + time * (3.1 + config.drift * 3.6) + this.pointer.y * 5;
+                const rotateY = config.ry + time * (4.8 + config.drift * 4.2) + this.pointer.x * 10;
+                const rotateZ = config.rz + Math.sin(time * 0.42 + config.delay * 12) * 3.8;
 
                 cube.element.style.left = `${this.center.x + x}px`;
                 cube.element.style.top = `${this.center.y + y}px`;
