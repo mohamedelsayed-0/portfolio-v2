@@ -53,8 +53,9 @@
 
             this.prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             this.isMobile = window.innerWidth < 900;
-            this.lineCount = this.isMobile ? 10 : 12;
-            this.trailLength = this.isMobile ? 8 : 11;
+            this.fastMobile = this.isMobile;
+            this.lineCount = this.isMobile ? 7 : 12;
+            this.trailLength = this.isMobile ? 6 : 11;
             this.trails = [];
             this.cubes = [];
             this.bootNodes = [];
@@ -66,51 +67,55 @@
             this.scale = 0;
             this.uiActivated = false;
 
-            this.nodeBirthStart = this.prefersReducedMotion ? 20 : 80;
-            this.nodeBirthDuration = this.prefersReducedMotion ? 460 : 1200;
-            this.nodeBirthSpread = this.prefersReducedMotion ? 120 : 760;
-            this.nodeBirthJitter = this.prefersReducedMotion ? 100 : 520;
-            this.formStart = this.prefersReducedMotion ? 80 : 360;
-            this.formDuration = this.prefersReducedMotion ? 650 : 1450;
-            this.formSpread = this.prefersReducedMotion ? 180 : 650;
-            this.formJitter = this.prefersReducedMotion ? 120 : 420;
-            this.connectionStart = this.prefersReducedMotion ? 260 : 1720;
-            this.connectionDuration = this.prefersReducedMotion ? 620 : 1300;
-            this.connectionSpread = this.prefersReducedMotion ? 160 : 560;
-            this.connectionJitter = this.prefersReducedMotion ? 100 : 280;
+            const compactIntro = this.isMobile && !this.prefersReducedMotion;
+            this.nodeBirthStart = this.prefersReducedMotion ? 20 : compactIntro ? 20 : 80;
+            this.nodeBirthDuration = this.prefersReducedMotion ? 460 : compactIntro ? 320 : 1200;
+            this.nodeBirthSpread = this.prefersReducedMotion ? 120 : compactIntro ? 100 : 760;
+            this.nodeBirthJitter = this.prefersReducedMotion ? 100 : compactIntro ? 80 : 520;
+            this.formStart = this.prefersReducedMotion ? 80 : compactIntro ? 70 : 360;
+            this.formDuration = this.prefersReducedMotion ? 650 : compactIntro ? 430 : 1450;
+            this.formSpread = this.prefersReducedMotion ? 180 : compactIntro ? 110 : 650;
+            this.formJitter = this.prefersReducedMotion ? 120 : compactIntro ? 70 : 420;
+            this.connectionStart = this.prefersReducedMotion ? 260 : compactIntro ? 300 : 1720;
+            this.connectionDuration = this.prefersReducedMotion ? 620 : compactIntro ? 360 : 1300;
+            this.connectionSpread = this.prefersReducedMotion ? 160 : compactIntro ? 90 : 560;
+            this.connectionJitter = this.prefersReducedMotion ? 100 : compactIntro ? 50 : 280;
             this.connectionEnd = this.connectionStart + this.connectionDuration;
             this.contourStart = this.connectionStart + this.connectionDuration * (this.prefersReducedMotion ? 0.25 : 0.35);
-            this.contourDuration = this.prefersReducedMotion ? 420 : 760;
-            this.handoffStart = this.prefersReducedMotion ? 860 : 3150;
-            this.handoffDuration = this.prefersReducedMotion ? 430 : 900;
-            this.revealStart = this.handoffStart + this.handoffDuration + (this.prefersReducedMotion ? 320 : 1100);
-            this.revealDuration = this.prefersReducedMotion ? 850 : 1600;
+            this.contourDuration = this.prefersReducedMotion ? 420 : compactIntro ? 320 : 760;
+            this.handoffStart = this.prefersReducedMotion ? 860 : compactIntro ? 560 : 3150;
+            this.handoffDuration = this.prefersReducedMotion ? 430 : compactIntro ? 260 : 900;
+            this.revealStart = this.handoffStart + this.handoffDuration + (this.prefersReducedMotion ? 320 : compactIntro ? 40 : 1100);
+            this.revealDuration = this.prefersReducedMotion ? 850 : compactIntro ? 520 : 1600;
             this.introDuration = this.revealStart + 240;
-            this.uiDelay = this.prefersReducedMotion ? 40 : 180;
-            this.uiRevealDuration = this.prefersReducedMotion ? 750 : 1420;
+            this.uiDelay = this.prefersReducedMotion ? 40 : compactIntro ? 0 : 180;
+            this.uiRevealDuration = this.prefersReducedMotion ? 750 : compactIntro ? 480 : 1420;
             this.bootConnectDuration = this.connectionEnd;
             this.startTime = this.lastFrame;
 
-            document.body.classList.add("landing-sequenced");
-            document.body.style.setProperty("--landing-ui-progress", "0");
-            document.body.style.setProperty("--landing-drop-progress", "0");
-            document.body.style.setProperty("--landing-reveal-progress", "0");
-            document.body.style.setProperty("--landing-shell-opacity", "0");
-            document.body.style.setProperty("--landing-drop-y", "-18vh");
-            document.body.style.setProperty("--landing-drop-blur", "14px");
-            document.body.style.setProperty("--landing-drop-clip", "100%");
-            document.body.style.setProperty("--landing-ui-y", "-34px");
-            document.body.style.setProperty("--landing-header-y", "-46px");
-            document.body.style.setProperty("--landing-ui-blur", "12px");
-            document.body.style.setProperty("--landing-header-blur", "10px");
-            document.body.style.setProperty("--landing-copy-rotate-x", "-3deg");
-            document.body.style.setProperty("--landing-copy-scale", "0.98");
-            document.body.style.setProperty("--landing-main-mask-opacity", "1");
-            document.body.style.setProperty("--landing-main-mask-scale", "1.06");
-            document.body.style.setProperty("--landing-main-glow-opacity", "0.9");
-            document.body.style.setProperty("--landing-main-glow-scale", "1");
-            document.body.style.setProperty("--landing-cube-field-opacity", "0");
-            document.body.style.setProperty("--landing-instrument-opacity", "0");
+            if (!this.fastMobile) {
+                document.body.classList.add("landing-sequenced");
+            }
+
+            document.body.style.setProperty("--landing-ui-progress", this.fastMobile ? "1" : "0");
+            document.body.style.setProperty("--landing-drop-progress", this.fastMobile ? "1" : "0");
+            document.body.style.setProperty("--landing-reveal-progress", this.fastMobile ? "1" : "0");
+            document.body.style.setProperty("--landing-shell-opacity", this.fastMobile ? "1" : "0");
+            document.body.style.setProperty("--landing-drop-y", this.fastMobile ? "0vh" : this.isMobile ? "-5vh" : "-18vh");
+            document.body.style.setProperty("--landing-drop-blur", this.fastMobile ? "0px" : this.isMobile ? "5px" : "14px");
+            document.body.style.setProperty("--landing-drop-clip", this.fastMobile || this.isMobile ? "0%" : "100%");
+            document.body.style.setProperty("--landing-ui-y", this.fastMobile ? "0px" : this.isMobile ? "-12px" : "-34px");
+            document.body.style.setProperty("--landing-header-y", this.fastMobile ? "0px" : this.isMobile ? "-14px" : "-46px");
+            document.body.style.setProperty("--landing-ui-blur", this.fastMobile ? "0px" : this.isMobile ? "4px" : "12px");
+            document.body.style.setProperty("--landing-header-blur", this.fastMobile ? "0px" : this.isMobile ? "4px" : "10px");
+            document.body.style.setProperty("--landing-copy-rotate-x", this.fastMobile ? "0deg" : "-3deg");
+            document.body.style.setProperty("--landing-copy-scale", this.fastMobile ? "1" : "0.98");
+            document.body.style.setProperty("--landing-main-mask-opacity", this.fastMobile ? "0.08" : "1");
+            document.body.style.setProperty("--landing-main-mask-scale", this.fastMobile ? "1" : "1.06");
+            document.body.style.setProperty("--landing-main-glow-opacity", this.fastMobile ? "0.16" : "0.9");
+            document.body.style.setProperty("--landing-main-glow-scale", this.fastMobile ? "0.84" : "1");
+            document.body.style.setProperty("--landing-cube-field-opacity", this.fastMobile ? "0.52" : "0");
+            document.body.style.setProperty("--landing-instrument-opacity", this.fastMobile ? "0.38" : "0");
             document.body.style.setProperty("--landing-instrument-x", "0px");
             document.body.style.setProperty("--landing-instrument-y", "0px");
             document.body.style.setProperty("--landing-card-tilt-x", "0deg");
@@ -119,6 +124,7 @@
             document.body.style.setProperty("--landing-light-y", "44%");
             document.body.style.setProperty("--landing-pointer-x", "0");
             document.body.style.setProperty("--landing-pointer-y", "0");
+            this.uiActivated = this.fastMobile;
             document.body.classList.remove("landing-preload");
 
             this.resize();
@@ -945,6 +951,29 @@
         }
 
         updateUi(uiProgress, revealProgress) {
+            if (this.fastMobile) {
+                document.body.style.setProperty("--landing-ui-progress", "1");
+                document.body.style.setProperty("--landing-drop-progress", "1");
+                document.body.style.setProperty("--landing-reveal-progress", "1");
+                document.body.style.setProperty("--landing-shell-opacity", "1");
+                document.body.style.setProperty("--landing-drop-y", "0vh");
+                document.body.style.setProperty("--landing-drop-blur", "0px");
+                document.body.style.setProperty("--landing-drop-clip", "0%");
+                document.body.style.setProperty("--landing-ui-y", "0px");
+                document.body.style.setProperty("--landing-header-y", "0px");
+                document.body.style.setProperty("--landing-ui-blur", "0px");
+                document.body.style.setProperty("--landing-header-blur", "0px");
+                document.body.style.setProperty("--landing-copy-rotate-x", "0deg");
+                document.body.style.setProperty("--landing-copy-scale", "1");
+                document.body.style.setProperty("--landing-main-mask-opacity", "0.08");
+                document.body.style.setProperty("--landing-main-mask-scale", "1");
+                document.body.style.setProperty("--landing-main-glow-opacity", "0.16");
+                document.body.style.setProperty("--landing-main-glow-scale", "0.84");
+                document.body.style.setProperty("--landing-cube-field-opacity", "0.52");
+                document.body.style.setProperty("--landing-instrument-opacity", "0.38");
+                return;
+            }
+
             const eased = easeOutCubic(uiProgress);
             const drop = easeInOutCubic(revealProgress);
             const hidden = 1 - drop;
@@ -952,13 +981,13 @@
             document.body.style.setProperty("--landing-drop-progress", drop.toFixed(4));
             document.body.style.setProperty("--landing-reveal-progress", easeInOutCubic(revealProgress).toFixed(4));
             document.body.style.setProperty("--landing-shell-opacity", clamp((drop - 0.02) / 0.98, 0, 1).toFixed(4));
-            document.body.style.setProperty("--landing-drop-y", `${lerp(-18, 0, drop).toFixed(3)}vh`);
-            document.body.style.setProperty("--landing-drop-blur", `${lerp(14, 0, drop).toFixed(3)}px`);
-            document.body.style.setProperty("--landing-drop-clip", `${(hidden * 100).toFixed(3)}%`);
-            document.body.style.setProperty("--landing-ui-y", `${lerp(-34, 0, eased).toFixed(3)}px`);
-            document.body.style.setProperty("--landing-header-y", `${lerp(-46, 0, eased).toFixed(3)}px`);
-            document.body.style.setProperty("--landing-ui-blur", `${lerp(12, 0, eased).toFixed(3)}px`);
-            document.body.style.setProperty("--landing-header-blur", `${lerp(10, 0, eased).toFixed(3)}px`);
+            document.body.style.setProperty("--landing-drop-y", `${lerp(this.isMobile ? -5 : -18, 0, drop).toFixed(3)}vh`);
+            document.body.style.setProperty("--landing-drop-blur", `${lerp(this.isMobile ? 5 : 14, 0, drop).toFixed(3)}px`);
+            document.body.style.setProperty("--landing-drop-clip", `${(hidden * (this.isMobile ? 0 : 100)).toFixed(3)}%`);
+            document.body.style.setProperty("--landing-ui-y", `${lerp(this.isMobile ? -12 : -34, 0, eased).toFixed(3)}px`);
+            document.body.style.setProperty("--landing-header-y", `${lerp(this.isMobile ? -14 : -46, 0, eased).toFixed(3)}px`);
+            document.body.style.setProperty("--landing-ui-blur", `${lerp(this.isMobile ? 4 : 12, 0, eased).toFixed(3)}px`);
+            document.body.style.setProperty("--landing-header-blur", `${lerp(this.isMobile ? 4 : 10, 0, eased).toFixed(3)}px`);
             document.body.style.setProperty("--landing-copy-rotate-x", `${lerp(-3, 0, eased).toFixed(3)}deg`);
             document.body.style.setProperty("--landing-copy-scale", lerp(0.98, 1, eased).toFixed(4));
             document.body.style.setProperty("--landing-main-mask-opacity", (1 - drop * 0.92).toFixed(4));

@@ -1510,6 +1510,74 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+    .page-header {
+        overflow: hidden;
+        scrollbar-width: none;
+    }
+
+    .page-header .container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .page-header .container {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        overflow: hidden;
+        padding: 0 0.9rem;
+        scrollbar-width: none;
+    }
+
+    .header-content {
+        width: 100%;
+        min-width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.65rem 1rem;
+    }
+
+    .nav-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        width: 100%;
+        gap: 0.7rem;
+        overflow-x: auto;
+        padding-bottom: 0.1rem;
+        flex: 1 1 100%;
+        scrollbar-width: none;
+    }
+
+    .nav-buttons::-webkit-scrollbar {
+        display: none;
+    }
+
+    .back-link,
+    .nav-header {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .nav-header {
+        padding: 0.55rem 0;
+        font-size: 0.68rem;
+        letter-spacing: 0.045em;
+    }
+
+    .back-link {
+        font-size: 0.72rem;
+    }
+
+    .project-card.from-left,
+    .project-card.from-right {
+        transform: translateY(24px);
+    }
+
+    .project-card.revealed {
+        transform: translateY(0);
+    }
+
     .about-section-wrapper {
         min-height: auto;
         padding: 4.5rem 0 5rem;
@@ -1562,14 +1630,86 @@ a:hover {
     }
 
     .about-visual-system {
-        min-height: 470px;
+        min-height: auto;
+        padding: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)),
+            rgba(7, 8, 9, 0.5);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.07),
+            0 18px 46px rgba(0, 0, 0, 0.26);
+        perspective: none;
+        transform-style: flat;
+    }
+
+    .about-visual-system::before {
+        inset: 0;
+        border-radius: 8px;
+        border: 0;
+        background:
+            linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+            linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        background-size: 28px 28px;
+        opacity: 0.45;
+        transform: none;
+        animation: none;
+        box-shadow: none;
+    }
+
+    .about-visual-system::after {
+        inset: 0;
+        border-radius: 8px;
+        background:
+            radial-gradient(circle at 82% 12%, rgba(238, 248, 252, 0.12), transparent 7rem),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.075), transparent 44%);
+        opacity: 0.75;
+        transform: none;
+        animation: none;
+    }
+
+    .stellar-skill-map {
+        position: relative;
+        z-index: 5;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+        transform: none;
+    }
+
+    .skill-star,
+    .skill-star--physics,
+    .skill-star--systems,
+    .skill-star--backend,
+    .skill-star--simulation,
+    .skill-star--automation,
+    .skill-star--three-d {
+        position: relative;
+        left: auto;
+        top: auto;
+        width: 100%;
+        min-width: 0;
+        min-height: 3.1rem;
+        padding: 0.72rem 0.62rem;
+        border-radius: 8px;
+        transform: none;
+        animation: none;
+        font-size: 0.61rem;
+        letter-spacing: 0.11em;
+        line-height: 1.25;
+        text-align: center;
+        overflow-wrap: anywhere;
+        --skill-depth: 0px;
+        --skill-scale: 1;
+    }
+
+    .stellar-core {
+        display: none;
     }
 
     .stellar-canvas {
-        left: -5%;
-        top: -5%;
-        width: 110%;
-        height: 110%;
+        display: none;
     }
 
     .slide-in-left,
@@ -1608,10 +1748,6 @@ a:hover {
         letter-spacing: 0.16em;
     }
 
-    .about-visual-system {
-        min-height: 420px;
-    }
-
     .about-focus-card {
         padding: 0.9rem;
     }
@@ -1622,8 +1758,16 @@ a:hover {
         overflow-wrap: anywhere;
     }
 
-    .stellar-canvas {
-        width: 110%;
+    .skill-star,
+    .skill-star--physics,
+    .skill-star--systems,
+    .skill-star--backend,
+    .skill-star--simulation,
+    .skill-star--automation,
+    .skill-star--three-d {
+        min-height: 2.9rem;
+        padding: 0.66rem 0.5rem;
+        font-size: 0.57rem;
     }
 }
 
@@ -3739,6 +3883,63 @@ body.portfolio-landing::after {
 }
 
 @media (max-width: 900px) {
+    #landing-scene-canvas {
+        opacity: 0.48;
+    }
+
+    .landing-preload .landing-shell,
+    .landing-preload .landing-header,
+    .landing-preload .landing-copy,
+    .landing-preload .footer-links {
+        opacity: 1;
+    }
+
+    .landing-preload .landing-shell,
+    .landing-preload .landing-copy,
+    .landing-preload .footer-links {
+        transform: none;
+        clip-path: none;
+        filter: none;
+    }
+
+    .portfolio-landing.landing-sequenced .landing-shell {
+        clip-path: none;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-overline,
+    .portfolio-landing.landing-ui-live .landing-rule,
+    .portfolio-landing.landing-ui-live .landing-title span,
+    .portfolio-landing.landing-ui-live .landing-deck,
+    .portfolio-landing.landing-ui-live .landing-meta-row,
+    .portfolio-landing.landing-ui-live .landing-actions {
+        animation-duration: 0.62s;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-overline,
+    .portfolio-landing.landing-ui-live .landing-rule {
+        animation-delay: 0s;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-title span:nth-child(1) {
+        animation-delay: 0.08s;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-title span:nth-child(2) {
+        animation-delay: 0.16s;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-deck {
+        animation-delay: 0.3s;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-meta-row {
+        animation-delay: 0.4s;
+    }
+
+    .portfolio-landing.landing-ui-live .landing-actions {
+        animation-delay: 0.5s;
+    }
+
     .landing-shell {
         padding: 1rem 1rem 1.4rem;
     }
@@ -3779,6 +3980,7 @@ body.portfolio-landing::after {
         max-width: min(100%, 20rem);
         font-size: 0.84rem;
         line-height: 1.58;
+        overflow-wrap: anywhere;
     }
 
     .landing-meta-row {
@@ -3826,6 +4028,10 @@ body.portfolio-landing::after {
 }
 
 @media (max-width: 600px) {
+    .landing-deck {
+        width: min(100%, 15.5rem);
+    }
+
     .landing-meta-row {
         flex-direction: column;
         align-items: center;

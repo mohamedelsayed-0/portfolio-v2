@@ -1637,7 +1637,7 @@ function initAboutScene() {
         new AboutOrbitScene(canvas);
     }
 
-    if (calcCanvas) {
+    if (calcCanvas && !window.matchMedia('(max-width: 768px)').matches) {
         new StellarSkillVisualizer(calcCanvas);
     }
 
