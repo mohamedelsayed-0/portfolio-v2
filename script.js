@@ -722,7 +722,7 @@ function initTypingEffects() {
     }
     if (bio) {
         setTimeout(() => {
-            typeWriter(bio, "I'm a passionate physics lover, currently pursuing a bachelors in Engineering Science. I'm interested in Math, Physics, Reading, and Space!", 40);
+            typeWriter(bio, "I'm a passionate physics lover studying Engineering @ UofT. I wish to pursue photonics and use my software and AI/ML skills to build tools for simulation, automation, and research.", 40);
         }, 1200);
     }
 }
