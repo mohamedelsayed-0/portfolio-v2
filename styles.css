@@ -490,6 +490,11 @@ a:hover {
     pointer-events: all;
 }
 
+.transition-overlay.subtle {
+    background: rgba(5, 5, 5, 0.34);
+    transition-duration: 180ms;
+}
+
 /* Floating Blocks (replacing stars) */
 .stars-container {
     position: fixed;
@@ -3737,6 +3742,15 @@ body.portfolio-landing::after {
     transform: translate3d(0, var(--landing-drop-y, -18vh), 0);
     clip-path: inset(0 0 var(--landing-drop-clip, 100%) 0);
     filter: blur(var(--landing-drop-blur, 14px));
+}
+
+.portfolio-landing.landing-balanced .landing-shell {
+    clip-path: none;
+}
+
+.portfolio-landing.landing-balanced .landing-header,
+.portfolio-landing.landing-balanced .landing-copy {
+    filter: none;
 }
 
 .portfolio-landing.landing-sequenced .landing-copy,

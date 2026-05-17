@@ -1,12 +1,53 @@
 // TRANSITIONS
 
+const LANDING_VISITED_SESSION_KEY = 'portfolio-landing-visited';
+const LANDING_RETURN_SESSION_KEY = 'portfolio-landing-return';
+
+function readSessionFlag(key) {
+    try {
+        return sessionStorage.getItem(key) === '1';
+    } catch (error) {
+        return false;
+    }
+}
+
+function writeSessionFlag(key, value) {
+    try {
+        if (value) {
+            sessionStorage.setItem(key, '1');
+        } else {
+            sessionStorage.removeItem(key);
+        }
+    } catch (error) {
+        // Ignore storage access issues.
+    }
+}
+
+function isLandingTarget(targetUrl) {
+    if (!targetUrl) return false;
+
+    const normalizedUrl = targetUrl.split('#')[0].split('?')[0].toLowerCase();
+
+    return normalizedUrl === '' ||
+        normalizedUrl === '/' ||
+        normalizedUrl === 'index.html' ||
+        normalizedUrl.endsWith('/index.html');
+}
+
 function handleTransition(targetUrl) {
     const overlay = document.querySelector('.transition-overlay');
+    const isLandingTargetUrl = isLandingTarget(targetUrl);
+
+    if (isLandingTargetUrl) {
+        writeSessionFlag(LANDING_RETURN_SESSION_KEY, true);
+    }
+
     if (overlay) {
+        overlay.classList.toggle('subtle', isLandingTargetUrl);
         overlay.classList.add('active');
         setTimeout(() => {
             window.location.href = targetUrl;
-        }, 320);
+        }, isLandingTargetUrl ? 140 : 320);
     } else {
         window.location.href = targetUrl;
     }
@@ -17,6 +58,7 @@ window.addEventListener('pageshow', (event) => {
     const overlay = document.querySelector('.transition-overlay');
     if (overlay) {
         overlay.classList.remove('active');
+        overlay.classList.remove('subtle');
     }
 
     if (document.body.classList.contains('portfolio-landing')) {
@@ -25,7 +67,15 @@ window.addEventListener('pageshow', (event) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.body.classList.contains('portfolio-landing')) {
+    const isLandingPage = document.body.classList.contains('portfolio-landing');
+
+    if (isLandingPage) {
+        const useCompactLanding = readSessionFlag(LANDING_VISITED_SESSION_KEY) || readSessionFlag(LANDING_RETURN_SESSION_KEY);
+
+        document.body.classList.toggle('landing-compact', useCompactLanding);
+        writeSessionFlag(LANDING_VISITED_SESSION_KEY, true);
+        writeSessionFlag(LANDING_RETURN_SESSION_KEY, false);
+
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
@@ -40,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (overlay) {
         setTimeout(() => {
             overlay.classList.remove('active');
+            overlay.classList.remove('subtle');
         }, 100);
     }
 

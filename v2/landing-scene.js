@@ -1,5 +1,6 @@
 (function () {
     const TAU = Math.PI * 2;
+    const LANDING_VISITED_SESSION_KEY = "portfolio-landing-visited";
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
@@ -35,6 +36,14 @@
         return (Math.exp(power * t) - 1) / (Math.exp(power) - 1);
     }
 
+    function readLandingSessionFlag(key) {
+        try {
+            return sessionStorage.getItem(key) === "1";
+        } catch (error) {
+            return false;
+        }
+    }
+
     class PortfolioLandingSequence {
         constructor() {
             this.canvas = document.getElementById("landing-scene-canvas");
@@ -45,7 +54,7 @@
                 return;
             }
 
-            this.ctx = this.canvas.getContext("2d");
+            this.ctx = this.canvas.getContext("2d", { alpha: true, desynchronized: true });
 
             if (!this.ctx) {
                 return;
@@ -53,9 +62,12 @@
 
             this.prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             this.isMobile = window.innerWidth < 900;
+            this.isWindows = /win/i.test(navigator.userAgentData?.platform || navigator.platform || navigator.userAgent);
+            this.balancedDesktop = this.isWindows && !this.isMobile && !this.prefersReducedMotion;
             this.fastMobile = this.isMobile;
-            this.lineCount = this.isMobile ? 7 : 12;
-            this.trailLength = this.isMobile ? 6 : 11;
+            this.isRepeatVisit = document.body.classList.contains("landing-compact") || readLandingSessionFlag(LANDING_VISITED_SESSION_KEY);
+            this.lineCount = this.isMobile ? 7 : this.balancedDesktop ? 8 : 12;
+            this.trailLength = this.isMobile ? 6 : this.balancedDesktop ? 7 : 11;
             this.trails = [];
             this.cubes = [];
             this.bootNodes = [];
@@ -67,7 +79,7 @@
             this.scale = 0;
             this.uiActivated = false;
 
-            const compactIntro = this.isMobile && !this.prefersReducedMotion;
+            const compactIntro = (this.isMobile || this.isRepeatVisit) && !this.prefersReducedMotion;
             this.nodeBirthStart = this.prefersReducedMotion ? 20 : compactIntro ? 20 : 80;
             this.nodeBirthDuration = this.prefersReducedMotion ? 460 : compactIntro ? 320 : 1200;
             this.nodeBirthSpread = this.prefersReducedMotion ? 120 : compactIntro ? 100 : 760;
@@ -96,26 +108,27 @@
             if (!this.fastMobile) {
                 document.body.classList.add("landing-sequenced");
             }
+            document.body.classList.toggle("landing-balanced", this.balancedDesktop);
 
             document.body.style.setProperty("--landing-ui-progress", this.fastMobile ? "1" : "0");
             document.body.style.setProperty("--landing-drop-progress", this.fastMobile ? "1" : "0");
             document.body.style.setProperty("--landing-reveal-progress", this.fastMobile ? "1" : "0");
             document.body.style.setProperty("--landing-shell-opacity", this.fastMobile ? "1" : "0");
-            document.body.style.setProperty("--landing-drop-y", this.fastMobile ? "0vh" : this.isMobile ? "-5vh" : "-18vh");
-            document.body.style.setProperty("--landing-drop-blur", this.fastMobile ? "0px" : this.isMobile ? "5px" : "14px");
-            document.body.style.setProperty("--landing-drop-clip", this.fastMobile || this.isMobile ? "0%" : "100%");
-            document.body.style.setProperty("--landing-ui-y", this.fastMobile ? "0px" : this.isMobile ? "-12px" : "-34px");
-            document.body.style.setProperty("--landing-header-y", this.fastMobile ? "0px" : this.isMobile ? "-14px" : "-46px");
-            document.body.style.setProperty("--landing-ui-blur", this.fastMobile ? "0px" : this.isMobile ? "4px" : "12px");
-            document.body.style.setProperty("--landing-header-blur", this.fastMobile ? "0px" : this.isMobile ? "4px" : "10px");
-            document.body.style.setProperty("--landing-copy-rotate-x", this.fastMobile ? "0deg" : "-3deg");
-            document.body.style.setProperty("--landing-copy-scale", this.fastMobile ? "1" : "0.98");
-            document.body.style.setProperty("--landing-main-mask-opacity", this.fastMobile ? "0.08" : "1");
+            document.body.style.setProperty("--landing-drop-y", this.fastMobile ? "0vh" : compactIntro ? "-4vh" : this.isMobile ? "-5vh" : "-18vh");
+            document.body.style.setProperty("--landing-drop-blur", this.fastMobile ? "0px" : compactIntro ? "4px" : this.isMobile ? "5px" : "14px");
+            document.body.style.setProperty("--landing-drop-clip", this.fastMobile || this.isMobile || compactIntro ? "0%" : "100%");
+            document.body.style.setProperty("--landing-ui-y", this.fastMobile ? "0px" : compactIntro ? "-8px" : this.isMobile ? "-12px" : "-34px");
+            document.body.style.setProperty("--landing-header-y", this.fastMobile ? "0px" : compactIntro ? "-10px" : this.isMobile ? "-14px" : "-46px");
+            document.body.style.setProperty("--landing-ui-blur", this.fastMobile ? "0px" : compactIntro ? "3px" : this.isMobile ? "4px" : "12px");
+            document.body.style.setProperty("--landing-header-blur", this.fastMobile ? "0px" : compactIntro ? "3px" : this.isMobile ? "4px" : "10px");
+            document.body.style.setProperty("--landing-copy-rotate-x", this.fastMobile ? "0deg" : compactIntro ? "-1deg" : "-3deg");
+            document.body.style.setProperty("--landing-copy-scale", this.fastMobile ? "1" : compactIntro ? "0.992" : "0.98");
+            document.body.style.setProperty("--landing-main-mask-opacity", this.fastMobile ? "0.08" : compactIntro ? "0.18" : "1");
             document.body.style.setProperty("--landing-main-mask-scale", this.fastMobile ? "1" : "1.06");
-            document.body.style.setProperty("--landing-main-glow-opacity", this.fastMobile ? "0.16" : "0.9");
+            document.body.style.setProperty("--landing-main-glow-opacity", this.fastMobile ? "0.16" : compactIntro ? "0.26" : "0.9");
             document.body.style.setProperty("--landing-main-glow-scale", this.fastMobile ? "0.84" : "1");
-            document.body.style.setProperty("--landing-cube-field-opacity", this.fastMobile ? "0.52" : "0");
-            document.body.style.setProperty("--landing-instrument-opacity", this.fastMobile ? "0.38" : "0");
+            document.body.style.setProperty("--landing-cube-field-opacity", this.fastMobile ? "0.52" : compactIntro ? "0.18" : "0");
+            document.body.style.setProperty("--landing-instrument-opacity", this.fastMobile ? "0.38" : compactIntro ? "0.14" : "0");
             document.body.style.setProperty("--landing-instrument-x", "0px");
             document.body.style.setProperty("--landing-instrument-y", "0px");
             document.body.style.setProperty("--landing-card-tilt-x", "0deg");
@@ -139,7 +152,7 @@
         resize() {
             this.width = window.innerWidth;
             this.height = window.innerHeight;
-            this.dpr = Math.min(window.devicePixelRatio || 1, 1.2);
+            this.dpr = Math.min(window.devicePixelRatio || 1, this.balancedDesktop ? 1 : 1.2);
             this.canvas.width = Math.round(this.width * this.dpr);
             this.canvas.height = Math.round(this.height * this.dpr);
             this.canvas.style.width = `${this.width}px`;
@@ -185,7 +198,7 @@
             this.bootNodes = [];
             this.bootLinks = [];
 
-            const gridSize = this.isMobile ? 13 : 21;
+            const gridSize = this.isMobile ? 13 : this.balancedDesktop ? 17 : 21;
             this.gridSize = gridSize;
             const maxRadius = Math.sqrt(2);
 
@@ -598,7 +611,7 @@
         }
 
         drawSurfaceFacets(projectedNodes, manifoldAlpha, revealProgress, elapsedMs) {
-            if (this.isMobile || !this.gridSize) {
+            if (this.isMobile || this.balancedDesktop || !this.gridSize) {
                 return;
             }
 
@@ -660,7 +673,7 @@
         }
 
         drawSurfaceContours(projectedNodes, manifoldAlpha, revealProgress, elapsedMs) {
-            if (this.isMobile || !this.gridSize) {
+            if (this.isMobile || this.balancedDesktop || !this.gridSize) {
                 return;
             }
 
