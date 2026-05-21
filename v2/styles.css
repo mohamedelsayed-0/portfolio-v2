@@ -3744,15 +3744,6 @@ body.portfolio-landing::after {
     filter: blur(var(--landing-drop-blur, 14px));
 }
 
-.portfolio-landing.landing-balanced .landing-shell {
-    clip-path: none;
-}
-
-.portfolio-landing.landing-balanced .landing-header,
-.portfolio-landing.landing-balanced .landing-copy {
-    filter: none;
-}
-
 .portfolio-landing.landing-sequenced .landing-copy,
 .portfolio-landing.landing-sequenced .footer-links {
     opacity: var(--landing-ui-progress, 0);

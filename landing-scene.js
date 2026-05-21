@@ -62,12 +62,10 @@
 
             this.prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             this.isMobile = window.innerWidth < 900;
-            this.isWindows = /win/i.test(navigator.userAgentData?.platform || navigator.platform || navigator.userAgent);
-            this.balancedDesktop = this.isWindows && !this.isMobile && !this.prefersReducedMotion;
             this.fastMobile = this.isMobile;
             this.isRepeatVisit = document.body.classList.contains("landing-compact") || readLandingSessionFlag(LANDING_VISITED_SESSION_KEY);
-            this.lineCount = this.isMobile ? 7 : this.balancedDesktop ? 8 : 12;
-            this.trailLength = this.isMobile ? 6 : this.balancedDesktop ? 7 : 11;
+            this.lineCount = this.isMobile ? 7 : 12;
+            this.trailLength = this.isMobile ? 6 : 11;
             this.trails = [];
             this.cubes = [];
             this.bootNodes = [];
@@ -108,7 +106,6 @@
             if (!this.fastMobile) {
                 document.body.classList.add("landing-sequenced");
             }
-            document.body.classList.toggle("landing-balanced", this.balancedDesktop);
 
             document.body.style.setProperty("--landing-ui-progress", this.fastMobile ? "1" : "0");
             document.body.style.setProperty("--landing-drop-progress", this.fastMobile ? "1" : "0");
@@ -152,7 +149,7 @@
         resize() {
             this.width = window.innerWidth;
             this.height = window.innerHeight;
-            this.dpr = Math.min(window.devicePixelRatio || 1, this.balancedDesktop ? 1 : 1.2);
+            this.dpr = Math.min(window.devicePixelRatio || 1, 1.2);
             this.canvas.width = Math.round(this.width * this.dpr);
             this.canvas.height = Math.round(this.height * this.dpr);
             this.canvas.style.width = `${this.width}px`;
@@ -198,7 +195,7 @@
             this.bootNodes = [];
             this.bootLinks = [];
 
-            const gridSize = this.isMobile ? 13 : this.balancedDesktop ? 17 : 21;
+            const gridSize = this.isMobile ? 13 : 21;
             this.gridSize = gridSize;
             const maxRadius = Math.sqrt(2);
 
@@ -611,7 +608,7 @@
         }
 
         drawSurfaceFacets(projectedNodes, manifoldAlpha, revealProgress, elapsedMs) {
-            if (this.isMobile || this.balancedDesktop || !this.gridSize) {
+            if (this.isMobile || !this.gridSize) {
                 return;
             }
 
@@ -673,7 +670,7 @@
         }
 
         drawSurfaceContours(projectedNodes, manifoldAlpha, revealProgress, elapsedMs) {
-            if (this.isMobile || this.balancedDesktop || !this.gridSize) {
+            if (this.isMobile || !this.gridSize) {
                 return;
             }
 

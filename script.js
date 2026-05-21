@@ -2263,6 +2263,50 @@ const projectData = [
         repo: null,
         project: null,
         demo: null
+    },
+    {
+        title: 'Robotic Arm',
+        desc: 'Robotic arm project centered on perception-first tooling. The computer vision stack for detection, calibration, and scene understanding has been built, while the physical hardware integration, actuation, and control pipeline are still in progress.',
+        tags: ['Computer Vision', 'Robotics'],
+        date: 'In Progress',
+        assignment: null,
+        linkedin: null,
+        repo: 'https://github.com/mohamedelsayed-0/robotic_arm',
+        project: null,
+        demo: null
+    },
+    {
+        title: 'ESC102 — Engineering Design Portfolio',
+        desc: 'Capstone project for ESC102 built as a portfolio from an engineering design perspective. Frames the work around design process, iteration, requirements, and communication rather than treating it as a standard showcase alone.',
+        tags: ['Engineering Design', 'Portfolio'],
+        date: 'Capstone Project',
+        assignment: null,
+        linkedin: null,
+        repo: null,
+        project: 'https://github.com/mohamedelsayed-0/ESC102/tree/main/esc102-design-portfolio',
+        demo: null
+    },
+    {
+        title: 'VFX v2',
+        desc: 'Private, in-progress machine learning project focused on fine-tuning a model to learn how to generate Roblox VFX. The work is centered on teaching the model the structure and style of effect generation workflows for reusable output.',
+        tags: ['Machine Learning', 'Roblox', 'VFX'],
+        date: 'In Progress',
+        assignment: null,
+        linkedin: null,
+        repo: 'https://github.com/mohamedelsayed-0/vfx_v2',
+        project: null,
+        demo: null
+    },
+    {
+        title: 'Visualizing Math',
+        desc: 'Work-in-progress project building tools that help visualize mathematics more clearly. The goal is to turn abstract concepts into representations that are easier to inspect, reason about, and communicate.',
+        tags: ['Mathematics', 'Visualization'],
+        date: 'In Progress',
+        assignment: null,
+        linkedin: null,
+        repo: 'https://github.com/mohamedelsayed-0/visualizing-math',
+        project: null,
+        demo: null
     }
 ];
 
