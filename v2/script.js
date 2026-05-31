@@ -2003,8 +2003,8 @@ const demoData = [
     },
     {
         title: 'Structural Beam Simulation',
-        desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations under moving and distributed loads.',
-        tags: ['Python', 'MATLAB'],
+        desc: 'CIV102 capstone project built as a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations under moving and distributed loads.',
+        tags: ['Python', 'MATLAB', 'Capstone'],
         preview: null,
         assignment: null,
         gallery: [],
@@ -2233,9 +2233,9 @@ const projectData = [
     },
     {
         title: 'Structural Beam Simulation',
-        desc: 'Built a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations including deflection animations under moving and distributed loads. Validated predictions against physical tests.',
-        tags: ['Python', 'MATLAB'],
-        date: 'Nov 2025',
+        desc: 'CIV102 capstone project built as a general beam deflection calculator for arbitrary cross sections by computing section properties directly from geometry. Generates deflection curves, factor of safety metrics, and 3D stress/deformation visualizations including deflection animations under moving and distributed loads. Validated predictions against physical tests and used the results to connect mechanics theory with a working design workflow.',
+        tags: ['Python', 'MATLAB', 'Capstone'],
+        date: 'Capstone Project',
         assignment: null,
         linkedin: null,
         repo: 'https://github.com/mohamedelsayed-0/CIV102',
@@ -2294,17 +2294,6 @@ const projectData = [
         assignment: null,
         linkedin: null,
         repo: 'https://github.com/mohamedelsayed-0/vfx_v2',
-        project: null,
-        demo: null
-    },
-    {
-        title: 'Visualizing Math',
-        desc: 'Work-in-progress project building tools that help visualize mathematics more clearly. The goal is to turn abstract concepts into representations that are easier to inspect, reason about, and communicate.',
-        tags: ['Mathematics', 'Visualization'],
-        date: 'In Progress',
-        assignment: null,
-        linkedin: null,
-        repo: 'https://github.com/mohamedelsayed-0/visualizing-math',
         project: null,
         demo: null
     }

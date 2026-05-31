@@ -277,6 +277,10 @@ body {
     transition-delay: 0.3s;
 }
 
+.experience-card:nth-child(5) {
+    transition-delay: 0.4s;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 10px;
