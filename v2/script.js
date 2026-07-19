@@ -1,4 +1,4 @@
-// Mohamed Elsayed — portfolio v2. Wigner-surface hero + palette/theme/clock.
+// Mohamed Elsayed — portfolio v2. Chladni-particle hero + palette/theme/clock.
 
 (function () {
   "use strict";
@@ -61,281 +61,208 @@
   window.addEventListener("resize", updateProgress);
   updateProgress();
 
-  // ---------- Hero: 3D Wigner surface of a finite-energy GKP qubit ----------
+  // ---------- Hero: Chladni resonance particles ----------
+  // Sand on a vibrating plate. Particles descend grad|phi|^2 toward nodal lines of
+  // phi(x,y) = cos(m*pi*u)cos(n*pi*v) - cos(n*pi*u)cos(m*pi*v), u=x/L v=y/W in [0,1].
   var canvas = document.getElementById("wave");
   if (canvas) {
     var ctx = canvas.getContext("2d");
     var readout = document.getElementById("wave-readout");
+    var PI = Math.PI;
 
-    var S = Math.sqrt(Math.PI);
-    var GX = 48, GY = 36;
-    var HALF = 3.2 * S;
-    var SIG = 0.22 * S, DELTA0 = 0.30;
-    var SWFAC = 1.8;
-    var ZAMP = 0.62;
-    var PITCH = 0.5, YAWMAX = 1.22, CAM = 4.0;
-    var NEG = [192, 80, 77];
+    // 3,000 particles; drop to 2,200 on very high-dpr screens (pattern stays dense).
+    var N = (window.devicePixelRatio || 1) > 2 ? 2200 : 3000;
+    var NLABEL = N.toLocaleString("en-US");
+    // Tuning (settle test: mean|phi| drops ~98% in 500 steps — see verify report).
+    var K = 0.0005, JIT = 0.0006, DAMP = 0.9, SPD = 0.02, SLOW2 = 0.0016 * 0.0016;
+    var STRIKE = 22, SRAD = 300, TAU = 0.6, SZ = 1.25;
 
     function cssRGB(name, fb) {
-      var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-      if (v.charAt(0) === "#") {
-        var hx = v.slice(1);
+      var s = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      if (s.charAt(0) === "#") {
+        var hx = s.slice(1);
         if (hx.length === 3) hx = hx[0] + hx[0] + hx[1] + hx[1] + hx[2] + hx[2];
         var num = parseInt(hx, 16);
         if (!isNaN(num)) return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
       }
-      var mm = v.match(/\d+/g);
+      var mm = s.match(/\d+/g);
       if (mm && mm.length >= 3) return [+mm[0], +mm[1], +mm[2]];
       return fb;
     }
 
-    var siteR2 = [], siteSign = [];
-    for (var m0 = -3; m0 <= 3; m0++)
-      for (var n0 = -3; n0 <= 3; n0++) {
-        siteR2.push(m0 * m0 + n0 * n0);
-        siteSign.push(((m0 & 1) && (n0 & 1)) ? -1 : 1);
-      }
-    var NS = siteR2.length;
+    // Positions/velocities in NORMALIZED [0,1] coords so resize is proportional.
+    var ux = new Float32Array(N), uy = new Float32Array(N);
+    var vx = new Float32Array(N), vy = new Float32Array(N);
+    function seed() {
+      for (var i = 0; i < N; i++) { ux[i] = Math.random(); uy[i] = Math.random(); vx[i] = 0; vy[i] = 0; }
+    }
+    seed();
 
-    var NV = GX * GY;
-    var mx = new Float32Array(NV), my = new Float32Array(NV);
-    var gauss = new Float32Array(NV * NS);
-    var gaussW = new Float32Array(NV * NS);
-    (function build() {
-      var s2 = 2 * SIG * SIG, sw = SIG * SWFAC, s2w = 2 * sw * sw, k = 0;
-      for (var j = 0; j < GY; j++) {
-        var p = HALF - (2 * HALF) * j / (GY - 1);
-        for (var i = 0; i < GX; i++, k++) {
-          var q = -HALF + (2 * HALF) * i / (GX - 1);
-          mx[k] = q / HALF; my[k] = p / HALF;
-          var t = 0;
-          for (var mm = -3; mm <= 3; mm++)
-            for (var nn = -3; nn <= 3; nn++, t++) {
-              var dq = q - mm * S, dp = p - nn * S, r2 = dq * dq + dp * dp;
-              gauss[k * NS + t] = Math.exp(-r2 / s2);
-              gaussW[k * NS + t] = Math.exp(-r2 / s2w);
-            }
-        }
-      }
-    })();
+    // Continuous modes m in [2,7], n in [1,6]; LERPed toward targets (never snap).
+    var m = 3.2, n = 2.4, mT = m, nT = n;
 
-    var zc = new Float32Array(NV);
-    var hn = new Float32Array(NV);
-    var amp = new Float64Array(NS);
-    var invWmax = 1;
-
-    function envAmps(delta, ns) {
-      var f = 2 * delta * delta; ns = ns == null ? 1 : ns;
-      for (var t = 0; t < NS; t++) {
-        var a = siteSign[t] * Math.exp(-siteR2[t] * f);
-        amp[t] = siteSign[t] < 0 ? a * ns : a;
+    function step() {
+      var mp = m * PI, np = n * PI, j = JIT;
+      for (var i = 0; i < N; i++) {
+        var a = ux[i], b = uy[i];
+        var cmu = Math.cos(mp * a), cnv = Math.cos(np * b);
+        var cnu = Math.cos(np * a), cmv = Math.cos(mp * b);
+        var smu = Math.sin(mp * a), snv = Math.sin(np * b);
+        var snu = Math.sin(np * a), smv = Math.sin(mp * b);
+        var phi = cmu * cnv - cnu * cmv;
+        var dpu = -mp * smu * cnv + np * snu * cmv;   // d phi / du (analytic)
+        var dpv = -np * cmu * snv + mp * cnu * smv;   // d phi / dv (analytic)
+        var f = 2 * phi;                               // grad|phi|^2 = 2*phi*grad phi
+        var nvx = (vx[i] - f * dpu * K + (Math.random() - 0.5) * j) * DAMP;
+        var nvy = (vy[i] - f * dpv * K + (Math.random() - 0.5) * j) * DAMP;
+        var sp = nvx * nvx + nvy * nvy;
+        if (sp > SPD * SPD) { var sc = SPD / Math.sqrt(sp); nvx *= sc; nvy *= sc; }
+        vx[i] = nvx; vy[i] = nvy;
+        var na = a + nvx, nb = b + nvy;               // reflect at plate edges
+        if (na < 0) { na = -na; vx[i] = -vx[i]; } else if (na > 1) { na = 2 - na; vx[i] = -vx[i]; }
+        if (nb < 0) { nb = -nb; vy[i] = -vy[i]; } else if (nb > 1) { nb = 2 - nb; vy[i] = -vy[i]; }
+        ux[i] = na; uy[i] = nb;
       }
     }
 
-    function computeHeights(delta, sw, ns) {
-      envAmps(delta, ns);
-      for (var k = 0; k < NV; k++) {
-        var W = 0, base = k * NS, t;
-        if (sw > 0) for (t = 0; t < NS; t++) { var g = gauss[base + t]; W += amp[t] * (g + (gaussW[base + t] - g) * sw); }
-        else for (t = 0; t < NS; t++) W += amp[t] * gauss[base + t];
-        var v = W * invWmax; hn[k] = v; zc[k] = v * ZAMP;
+    // Strike: radial impulse ~ (1 - dist/300px), clamped >= 0; impulses add.
+    function strike(cx, cy) {
+      var r = canvas.getBoundingClientRect(), W = r.width || 1, H = r.height || 1;
+      var tx = cx - r.left, ty = cy - r.top;
+      for (var i = 0; i < N; i++) {
+        var dx = ux[i] * W - tx, dy = uy[i] * H - ty;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        var mag = STRIKE * (1 - d / SRAD);
+        if (mag <= 0) continue;
+        if (d < 0.01) { var t = Math.random() * 6.283; vx[i] += Math.cos(t) * mag / W; vy[i] += Math.sin(t) * mag / H; }
+        else { vx[i] += (dx / d) * mag / W; vy[i] += (dy / d) * mag / H; }
       }
     }
 
-    (function baseline() {
-      envAmps(DELTA0);
-      var wmax = 1e-6;
-      for (var k = 0; k < NV; k++) {
-        var W = 0, base = k * NS;
-        for (var t = 0; t < NS; t++) W += amp[t] * gauss[base + t];
-        var a = W < 0 ? -W : W;
-        if (a > wmax) wmax = a;
-      }
-      invWmax = 1 / wmax;
-    })();
-
-    var sa = [], sb = [];
-    for (var jj = 0; jj < GY; jj++)
-      for (var ii = 0; ii < GX - 1; ii++) { sa.push(jj * GX + ii); sb.push(jj * GX + ii + 1); }
-    for (var j2 = 0; j2 < GY - 1; j2++)
-      for (var i2 = 0; i2 < GX; i2++) { sa.push(j2 * GX + i2); sb.push(j2 * GX + i2 + GX); }
-    var segA = Int32Array.from(sa), segB = Int32Array.from(sb);
-    var NSEG = segA.length;
-    var order = new Int32Array(NSEG);
-    for (var so = 0; so < NSEG; so++) order[so] = so;
-    var segD = new Float32Array(NSEG);
-
-    var px = new Float32Array(NV), py = new Float32Array(NV);
-    var pf = new Float32Array(NV), dep = new Float32Array(NV);
-
-    var w = 0, h = 0, scaleX = 1, scaleY = 1, ox = 0, oy = 0;
+    var w = 0, h = 0;
     function size() {
-      var rect = canvas.getBoundingClientRect();
+      var r = canvas.getBoundingClientRect();
       var dpr = window.devicePixelRatio || 1;
-      w = rect.width || 600; h = rect.height || 150;
+      w = r.width || 600; h = r.height || 180;
       canvas.width = Math.max(1, Math.round(w * dpr));
       canvas.height = Math.max(1, Math.round(h * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      scaleY = (h * 0.5 - 8) / 1.1;
-      var fitX = (w * 0.5 - 8) / 2.3;
-      scaleX = Math.min(fitX, scaleY * 1.7);
-      ox = w * 0.5; oy = h * 0.5 + 6;
     }
 
-    function project(yaw) {
-      var cy = Math.cos(yaw), sy = Math.sin(yaw);
-      var cp = Math.cos(PITCH), sp = Math.sin(PITCH);
-      for (var k = 0; k < NV; k++) {
-        var X = mx[k], Y = my[k], Z = zc[k];
-        var x1 = X * cy - Y * sy;
-        var y1 = X * sy + Y * cy;
-        var y2 = y1 * cp - Z * sp;
-        var z2 = y1 * sp + Z * cp;
-        var persp = CAM / (CAM + y2);
-        px[k] = ox + x1 * persp * scaleX;
-        py[k] = oy - z2 * persp * scaleY;
-        dep[k] = y2;
-        pf[k] = persp;
-      }
-    }
-
-    var ACC, MUT, delta = DELTA0;
-    function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
-    function colorStr(hh, fade) {
-      var mag = hh < 0 ? -hh : hh, r, g, bl, f;
-      if (hh >= 0) { f = Math.min(1, hh / 0.45); r = lerp(MUT[0], ACC[0], f); g = lerp(MUT[1], ACC[1], f); bl = lerp(MUT[2], ACC[2], f); }
-      else { f = Math.min(1, mag / 0.30); r = lerp(MUT[0], NEG[0], f); g = lerp(MUT[1], NEG[1], f); bl = lerp(MUT[2], NEG[2], f); }
-      var alpha = (0.20 + 0.75 * Math.min(1, mag / 0.45)) * fade;
-      return "rgba(" + r + "," + g + "," + bl + "," + alpha.toFixed(3) + ")";
-    }
-
-    function drawFrame(yaw) {
-      ACC = cssRGB("--accent", [31, 63, 191]);
-      MUT = cssRGB("--muted", [107, 107, 102]);
-      project(yaw);
-
+    // Two alpha buckets, one filled path each: slow (settled, crisp) 0.9, fast 0.45.
+    function draw() {
+      var acc = cssRGB("--accent", [31, 63, 191]);
+      var base = "rgba(" + acc[0] + "," + acc[1] + "," + acc[2] + ",";
+      var o = SZ * 0.5, i, sp;
       ctx.clearRect(0, 0, w, h);
-      ctx.lineWidth = 1;
-
-      var cp = Math.cos(PITCH), sp = Math.sin(PITCH), cyw = Math.cos(yaw), syw = Math.sin(yaw);
-      ctx.strokeStyle = "rgba(" + MUT[0] + "," + MUT[1] + "," + MUT[2] + ",0.15)";
       ctx.beginPath();
-      for (var d = 0; d < NV; d++) {
-        if (hn[d] < 0.62) continue;
-        var X = mx[d], Y = my[d];
-        var x1 = X * cyw - Y * syw, y1 = X * syw + Y * cyw;
-        var y2b = y1 * cp, pb = CAM / (CAM + y2b);
-        ctx.moveTo(px[d], py[d]);
-        ctx.lineTo(ox + x1 * pb * scaleX, oy - (y1 * sp) * pb * scaleY);
+      for (i = 0; i < N; i++) {
+        sp = vx[i] * vx[i] + vy[i] * vy[i];
+        if (sp >= SLOW2) continue;
+        ctx.rect(ux[i] * w - o, uy[i] * h - o, SZ, SZ);
       }
-      ctx.stroke();
-
-      for (var s = 0; s < NSEG; s++) segD[s] = (dep[segA[s]] + dep[segB[s]]) * 0.5;
-      Array.prototype.sort.call(order, function (a, b) { return segD[b] - segD[a]; });
-
-      var cache = {};
-      for (var oi = 0; oi < NSEG; oi++) {
-        var si = order[oi], a = segA[si], b = segB[si];
-        var hh = (hn[a] + hn[b]) * 0.5;
-        var fade = ((pf[a] + pf[b]) * 0.5 - 0.72) / 0.9;
-        if (fade < 0) fade = 0; else if (fade > 1) fade = 1;
-        fade = 0.45 + 0.55 * fade;
-        var key = Math.round(hh * 40) + "_" + Math.round(fade * 16);
-        var col = cache[key] || (cache[key] = colorStr(hh, fade));
-        ctx.strokeStyle = col;
-        ctx.beginPath();
-        ctx.moveTo(px[a], py[a]);
-        ctx.lineTo(px[b], py[b]);
-        ctx.stroke();
+      ctx.fillStyle = base + "0.9)";
+      ctx.fill();
+      ctx.beginPath();
+      for (i = 0; i < N; i++) {
+        sp = vx[i] * vx[i] + vy[i] * vy[i];
+        if (sp < SLOW2) continue;
+        ctx.rect(ux[i] * w - o, uy[i] * h - o, SZ, SZ);
       }
-
-      if (readout) readout.textContent = pulsing
-        ? "thermal pulse · negativity " + negVal.toFixed(2)
-        : "W(q,p) · GKP |0⟩ · Δ = " + delta.toFixed(2);
+      ctx.fillStyle = base + "0.45)";
+      ctx.fill();
     }
 
-    var yaw = reduceMotion ? 0.6 : 0;
-    var autoDir = 1, lastDrag = -1e9, dragging = false, dragX0 = 0, yaw0 = 0;
-    var TAPMS = 200, TAPPX = 6, downT = 0, downX = 0, downY = 0, downMax = 0;
-    var DECOH = 400, HOLD = 600, REC = 1200, STEP = 0.9, DCAP = 1, NEGFLOOR = 0.05;
-    var S_BACK = 1.3, NEG0 = 0.41;
-    var pulsing = false, deg = 0, degMax = 0, degAtTap = 0, tapTime = 0, negVal = NEG0, rmTimer = 0, breathPhase = 0;
+    var lastRO = "";
+    function updateReadout() {
+      if (!readout) return;
+      var s = "mode " + m.toFixed(1) + " · " + n.toFixed(1) + " — " + NLABEL + " particles";
+      if (s !== lastRO) { readout.textContent = s; lastRO = s; }
+    }
+
     function now() { return window.performance && performance.now ? performance.now() : Date.now(); }
 
-    function pulseDeg(t) {
-      var e = t - tapTime, f, u;
-      if (e < DECOH) { f = e / DECOH; f = f * f * (3 - 2 * f); return degAtTap + (degMax - degAtTap) * f; }
-      if ((e -= DECOH) < HOLD) return degMax;
-      if ((e -= HOLD) < REC) { u = e / REC - 1; return degMax * -(u * u * ((S_BACK + 1) * u + S_BACK)); }
-      pulsing = false; return 0;
+    // Cursor (or drag) maps to continuous m,n targets; falls back to idle wander.
+    var lastTune = -1e9;
+    function tune(cx, cy, force) {
+      var r = canvas.getBoundingClientRect();
+      var fx = (cx - r.left) / (r.width || 1), fy = (cy - r.top) / (r.height || 1);
+      if (!force && (fx < 0 || fx > 1 || fy < 0 || fy > 1)) return;
+      if (fx < 0) fx = 0; else if (fx > 1) fx = 1;
+      if (fy < 0) fy = 0; else if (fy > 1) fy = 1;
+      mT = 2 + 5 * fx; nT = 1 + 5 * fy; lastTune = now();
     }
-
-    function fireTap() {
-      if (reduceMotion) {
-        pulsing = true; deg = 1; negVal = 0;
-        computeHeights(DELTA0, 1, NEGFLOOR); drawFrame(yaw);
-        if (rmTimer) clearTimeout(rmTimer);
-        rmTimer = setTimeout(function () { pulsing = false; deg = 0; computeHeights(DELTA0); drawFrame(yaw); }, 800);
-        return;
-      }
-      degAtTap = deg;
-      degMax = Math.min(DCAP, (pulsing ? degMax : 0) + STEP);
-      tapTime = now(); pulsing = true;
-    }
-
-    function onDown(e) {
-      dragging = true; dragX0 = e.clientX; yaw0 = yaw;
-      downT = now(); downX = e.clientX; downY = e.clientY; downMax = 0;
-      if (canvas.setPointerCapture && e.pointerId != null) { try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
-    }
-    function onMove(e) {
-      if (!dragging) return;
-      if (e.cancelable) e.preventDefault();
-      var dx = e.clientX - downX, dy = e.clientY - downY, d = Math.sqrt(dx * dx + dy * dy);
-      if (d > downMax) downMax = d;
-      yaw = yaw0 + (e.clientX - dragX0) * 0.006;
-      if (yaw > YAWMAX) yaw = YAWMAX; else if (yaw < -YAWMAX) yaw = -YAWMAX;
-      if (reduceMotion) drawFrame(yaw);
-    }
-    function onUp() {
-      if (!dragging) return;
-      dragging = false; lastDrag = now();
-      if ((now() - downT) <= TAPMS && downMax < TAPPX) fireTap();
-    }
-    canvas.addEventListener("pointerdown", onDown);
-    window.addEventListener("pointermove", onMove, { passive: false });
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
 
     if (reduceMotion) {
+      // Pre-settled static pattern; tap = instant re-render at a new random mode.
       size();
-      computeHeights(DELTA0);
-      drawFrame(yaw);
-      window.addEventListener("resize", function () { size(); computeHeights(DELTA0); drawFrame(yaw); });
+      function rmRender() {
+        m = mT = 2 + Math.round(Math.random() * 5);
+        n = nT = 1 + Math.round(Math.random() * 5);
+        seed();
+        for (var s = 0; s < 300; s++) step();
+        draw(); updateReadout();
+      }
+      rmRender();
+      window.addEventListener("resize", function () { size(); draw(); });
+      canvas.addEventListener("pointerdown", function (e) {
+        if (e.cancelable) e.preventDefault();
+        rmRender();
+      });
     } else {
       size();
       window.addEventListener("resize", size);
-      computeHeights(DELTA0);
-      var last = now();
-      (function loop() {
-        var t = now(), dt = Math.min(0.05, (t - last) / 1000); last = t;
-        if (!dragging && (t - lastDrag) > 3000) {
-          yaw += autoDir * 0.18 * dt;
-          if (yaw > 0.55) autoDir = -1; else if (yaw < -0.55) autoDir = 1;
-        }
-        if (pulsing) {
-          deg = pulseDeg(t);
-          negVal = NEG0 * (1 - deg); if (negVal < 0) negVal = 0;
-          var swv = deg < 0 ? 0 : (deg > 1 ? 1 : deg);
-          computeHeights(DELTA0, swv, 1 - deg * (1 - NEGFLOOR));
+
+      // Pointer: down starts a possible strike/drag; move tunes; quick tap = strike.
+      var down = false, downT = 0, dx0 = 0, dy0 = 0, moved = 0, ptype = "";
+      canvas.addEventListener("pointerdown", function (e) {
+        down = true; downT = now(); dx0 = e.clientX; dy0 = e.clientY; moved = 0; ptype = e.pointerType;
+        if (canvas.setPointerCapture && e.pointerId != null) { try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
+      });
+      window.addEventListener("pointermove", function (e) {
+        if (down) {
+          var ddx = e.clientX - dx0, ddy = e.clientY - dy0, d = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (d > moved) moved = d;
+          tune(e.clientX, e.clientY, true);
+          // Only hijack scroll during an ACTIVE canvas drag (touch that has moved).
+          if (ptype === "touch" && moved > 6 && e.cancelable) e.preventDefault();
         } else {
-          breathPhase += dt;
-          delta = DELTA0 * (1 + 0.10 * Math.sin(breathPhase * (2 * Math.PI / 6)));
-          computeHeights(delta);
+          tune(e.clientX, e.clientY, false);
         }
-        drawFrame(yaw);
+      }, { passive: false });
+      function endPointer(e) {
+        if (!down) return;
+        down = false;
+        if ((now() - downT) <= 250 && moved < 6) strike(e.clientX, e.clientY);
+      }
+      window.addEventListener("pointerup", endPointer);
+      window.addEventListener("pointercancel", function () { down = false; });
+
+      var running = true, last = now();
+      function loop() {
+        if (!running) return;
+        var t = now(), dt = Math.min(0.05, (t - last) / 1000); last = t;
+        if (t - lastTune > 2500) {           // idle: modes wander slowly, never freeze
+          var tt = t / 1000;
+          mT = 4.5 + 2.5 * Math.sin(tt * 0.11);
+          nT = 3.5 + 2.5 * Math.sin(tt * 0.07 + 1.3);
+        }
+        var a = 1 - Math.exp(-dt / TAU);      // soft ~0.6s time constant, butter-smooth
+        m += (mT - m) * a; n += (nT - n) * a;
+        step();
+        draw();
+        updateReadout();
         requestAnimationFrame(loop);
-      })();
+      }
+
+      if ("IntersectionObserver" in window) {   // pause when hero off-screen
+        new IntersectionObserver(function (en) {
+          var vis = en[0].isIntersecting;
+          if (vis && !running) { running = true; last = now(); requestAnimationFrame(loop); }
+          else running = vis;
+        }).observe(canvas);
+      }
+      requestAnimationFrame(loop);
     }
   }
 
