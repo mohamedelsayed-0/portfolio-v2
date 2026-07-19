@@ -75,7 +75,8 @@
     var NLABEL = N.toLocaleString("en-US");
     // Tuning (settle test: mean|phi| drops ~98% in 500 steps — see verify report).
     var K = 0.0005, JIT = 0.0006, DAMP = 0.9, SPD = 0.02, SLOW2 = 0.0016 * 0.0016;
-    var STRIKE = 22, SRAD = 300, TAU = 0.6, SZ = 1.25;
+    var STRIKE = 22, SRAD = 300, TAU = 0.6;
+    var RING_MS = 500, RING_R = 280, rings = [];   // strike shockwave rings (cap 4)
 
     function cssRGB(name, fb) {
       var s = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -97,6 +98,13 @@
       for (var i = 0; i < N; i++) { ux[i] = Math.random(); uy[i] = Math.random(); vx[i] = 0; vy[i] = 0; }
     }
     seed();
+
+    // Fixed per-particle size in [0.9,1.6) — deterministic hash of index, not per frame.
+    var psz = new Float32Array(N);
+    for (var pz = 0; pz < N; pz++) {
+      var hz = Math.sin(pz * 12.9898) * 43758.5453;
+      psz[pz] = 0.9 + 0.7 * (hz - Math.floor(hz));
+    }
 
     // Continuous modes m in [2,7], n in [1,6]; LERPed toward targets (never snap).
     var m = 3.2, n = 2.4, mT = m, nT = n;
@@ -129,6 +137,8 @@
     function strike(cx, cy) {
       var r = canvas.getBoundingClientRect(), W = r.width || 1, H = r.height || 1;
       var tx = cx - r.left, ty = cy - r.top;
+      rings.push({ x: tx, y: ty, t0: now() });      // one expanding ring per strike
+      if (rings.length > 4) rings.shift();
       for (var i = 0; i < N; i++) {
         var dx = ux[i] * W - tx, dy = uy[i] * H - ty;
         var d = Math.sqrt(dx * dx + dy * dy);
@@ -149,28 +159,52 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    // Two alpha buckets, one filled path each: slow (settled, crisp) 0.9, fast 0.45.
+    // Motion trails: wash the plate with the current --bg at 0.35 alpha each frame so
+    // movers streak while settled dots (redrawn at 0.95) stay crisp. Two tones for
+    // depth: settled/slow -> --accent (0.95), fast grains -> --muted (0.5, "sand in air").
     function draw() {
       var acc = cssRGB("--accent", [31, 63, 191]);
-      var base = "rgba(" + acc[0] + "," + acc[1] + "," + acc[2] + ",";
-      var o = SZ * 0.5, i, sp;
-      ctx.clearRect(0, 0, w, h);
+      var mut = cssRGB("--muted", [107, 107, 102]);
+      var accS = acc[0] + "," + acc[1] + "," + acc[2];
+      var mutS = mut[0] + "," + mut[1] + "," + mut[2];
+      var i, sp, o;
+      if (reduceMotion) {
+        ctx.clearRect(0, 0, w, h);           // static path: full clear, no trails
+      } else {
+        var bg = cssRGB("--bg", [250, 250, 247]);
+        ctx.fillStyle = "rgba(" + bg[0] + "," + bg[1] + "," + bg[2] + ",0.35)";
+        ctx.fillRect(0, 0, w, h);            // trail wash in the live theme's bg
+      }
       ctx.beginPath();
       for (i = 0; i < N; i++) {
         sp = vx[i] * vx[i] + vy[i] * vy[i];
         if (sp >= SLOW2) continue;
-        ctx.rect(ux[i] * w - o, uy[i] * h - o, SZ, SZ);
+        o = psz[i] * 0.5;
+        ctx.rect(ux[i] * w - o, uy[i] * h - o, psz[i], psz[i]);
       }
-      ctx.fillStyle = base + "0.9)";
+      ctx.fillStyle = "rgba(" + accS + ",0.95)";
       ctx.fill();
       ctx.beginPath();
       for (i = 0; i < N; i++) {
         sp = vx[i] * vx[i] + vy[i] * vy[i];
         if (sp < SLOW2) continue;
-        ctx.rect(ux[i] * w - o, uy[i] * h - o, SZ, SZ);
+        o = psz[i] * 0.5;
+        ctx.rect(ux[i] * w - o, uy[i] * h - o, psz[i], psz[i]);
       }
-      ctx.fillStyle = base + "0.45)";
+      ctx.fillStyle = "rgba(" + mutS + ",0.5)";
       ctx.fill();
+      if (!reduceMotion && rings.length) {   // expanding hairline shockwave per strike
+        var tn = now();
+        ctx.lineWidth = 1;
+        for (i = rings.length - 1; i >= 0; i--) {
+          var age = (tn - rings[i].t0) / RING_MS;
+          if (age >= 1) { rings.splice(i, 1); continue; }
+          ctx.beginPath();
+          ctx.arc(rings[i].x, rings[i].y, age * RING_R, 0, 6.283185);
+          ctx.strokeStyle = "rgba(" + accS + "," + (0.5 * (1 - age)) + ")";
+          ctx.stroke();
+        }
+      }
     }
 
     var lastRO = "";
