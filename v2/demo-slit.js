@@ -8,7 +8,6 @@
   var cv = document.createElement("canvas");
   cv.width = 960;
   cv.height = 420;
-  cv.style.touchAction = "none";
   cv.setAttribute("aria-hidden", "true");
   mount.appendChild(cv);
   var controls = document.createElement("div");
@@ -45,7 +44,7 @@
   var w = 0, h = 0;
   function size() {
     var rect = cv.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     w = rect.width || cv.width;
     h = rect.height || cv.height;
     cv.width = Math.max(1, Math.round(w * dpr));
@@ -126,11 +125,12 @@
     }
     return null;
   }
+  var hitR = 16;
   function hitTest(px, py) {
     var d1 = Math.hypot(px - p1.x, py - p1.y);
     var d2 = Math.hypot(px - p2.x, py - p2.y);
-    if (d1 <= 16 && d1 <= d2) return 0;
-    if (d2 <= 16) return 1;
+    if (d1 <= hitR && d1 <= d2) return 0;
+    if (d2 <= hitR) return 1;
     return -1;
   }
   var t = 0;
@@ -255,6 +255,7 @@
   });
   cv.addEventListener("pointerdown", function (e) {
     var rect = cv.getBoundingClientRect();
+    hitR = e.pointerType === "touch" ? 22 : 16;
     var idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
     if (idx < 0) return;
     drag = idx;
@@ -266,6 +267,7 @@
     var rect = cv.getBoundingClientRect();
     var px = e.clientX - rect.left, py = e.clientY - rect.top;
     if (drag >= 0) {
+      e.preventDefault();
       var cx = Math.max(6, Math.min(w * 0.4, px));
       var cy = Math.max(6, Math.min(h - 6, py));
       var s = drag === 0 ? s1 : s2;
@@ -273,6 +275,7 @@
       schedHeat(false);
       draw();
     } else {
+      hitR = e.pointerType === "touch" ? 22 : 16;
       var next = hitTest(px, py);
       if (next !== hover) {
         hover = next;

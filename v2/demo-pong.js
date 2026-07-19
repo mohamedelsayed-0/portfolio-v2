@@ -45,7 +45,7 @@
   }
   function sizeCv() {
     var rect = canvas.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     cw = rect.width || mount.clientWidth || 300;
     ch = cw * H;
     canvas.width = Math.round(cw * dpr);
@@ -266,19 +266,15 @@
     if (state !== "play") { player.y = pTarget; render(); }
   }
   canvas.addEventListener("click", activate);
-  canvas.addEventListener("mousemove", function (e) {
+  canvas.addEventListener("pointerdown", function (e) {
+    if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointermove", function (e) {
     var rect = canvas.getBoundingClientRect();
     if (!rect.width) return;
+    if (state === "play" && e.pointerType !== "mouse") e.preventDefault();
     setY((e.clientY - rect.top) / rect.width);
   });
-  canvas.addEventListener("touchmove", function (e) {
-    if (state === "play") e.preventDefault();
-    var t = e.touches && e.touches[0];
-    if (!t) return;
-    var rect = canvas.getBoundingClientRect();
-    if (!rect.width) return;
-    setY((t.clientY - rect.top) / rect.width);
-  }, { passive: false });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) pause();
   });

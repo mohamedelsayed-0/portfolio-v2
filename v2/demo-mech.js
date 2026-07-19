@@ -140,7 +140,7 @@
   // ---- canvas sizing (devicePixelRatio-aware) ----
   function size() {
     var rect = canvas.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     var w = rect.width || 960, h = rect.height || 420;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
