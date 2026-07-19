@@ -1,6 +1,8 @@
 // Beam bench — 3D box-girder bridge, orbitable, CIV102 matboard bridge under a moving train.
 // Geometry from github.com/mohamedelsayed-0/CIV102: span 1200mm, 6-wheel 400N train
 // (spacing 176/164mm), box girder 100mm top / 80mm bottom flange, 75mm deep, 1.27mm matboard.
+// Failure: repo's main.py FOS analysis — governing mode is top-flange plate buckling between
+// webs (E=4000MPa, k=4.0), capacity 44410.8 N*mm (weaker than tension/compression/web buckling).
 
 (function () {
   "use strict";
@@ -46,7 +48,8 @@
   // ---- mechanics (L = 1, EI = 1) — superposed simply-supported point loads (reused) ----
   var NSEG = 24;                 // extrusion segments along the span
   var VREF = 1 / 48;             // single unit load at midspan — deflection reference
-  var OFF = [0, 176, 340, 516, 680, 856].map(function (m) { return m / 1200; }); // real wheels
+  var SPAN_MM = 1200, TOTAL_LOAD = 400, CAP = 44410.8; // real mm/N + governing-mode capacity
+  var OFF = [0, 176, 340, 516, 680, 856].map(function (m) { return m / SPAN_MM; }); // real wheels
   var TRAINLEN = OFF[5];
   var TMIN = -0.1, TMAX = 1.75;  // lead-wheel travel: off-left to off-right
   var DUR = 4000;
@@ -63,20 +66,27 @@
   var envelope = new Array(NSEG + 1).fill(0);
   var maxAbs = 0;
   var rafId = null, running = false, runStart = null;
+  var failed = false, Mmax = 0, MmaxIdx = 0, flashT = 0;
 
-  function computeAt(t, load, accEnv) {
-    var m = 0;
+  // M(x): triangular influence line per wheel, superposed (real N*mm)
+  function computeAt(t, load, accEnv, noCheck) {
+    var m = 0, mm = 0, mmIdx = 0, Pw = load * TOTAL_LOAD / 6;
     for (var i = 0; i <= NSEG; i++) {
-      var x = i / NSEG, val = 0;
+      var x = i / NSEG, val = 0, mval = 0;
       for (var k = 0; k < 6; k++) {
         var a = t - OFF[k];
-        if (a > 0 && a < 1) val += vAt(x, load, a);
+        if (a > 0 && a < 1) {
+          val += vAt(x, load, a);
+          mval += Pw * SPAN_MM * (x <= a ? (1 - a) * x : a * (1 - x));
+        }
       }
       display[i] = val;
       if (val > m) m = val;
       if (accEnv && val > envelope[i]) envelope[i] = val;
+      if (mval > mm) { mm = mval; mmIdx = i; }
     }
-    maxAbs = m;
+    maxAbs = m; Mmax = mm; MmaxIdx = mmIdx;
+    if (!noCheck && !failed && mm > CAP) triggerFailure();
   }
 
   function envMax() {
@@ -85,8 +95,9 @@
     return m;
   }
 
-  // fixed max-pixel amplitude: normalize to the full-load centered-train max sag
-  computeAt(0.5 + TRAINLEN / 2, 1, false);
+  // fixed max-pixel amplitude: normalize to the full-load centered-train max sag (synthetic
+  // calibration state — skip the failure check)
+  computeAt(0.5 + TRAINLEN / 2, 1, false, true);
   var WORLDAMP = 0.16, scaleW = WORLDAMP / (maxAbs || 1e-6);
 
   function sagAt(sx) {
@@ -96,6 +107,10 @@
   }
 
   function updateReadout() {
+    if (failed) {
+      readout.textContent = "failed · buckling (top flange) @ " + (MmaxIdx / NSEG).toFixed(2) + "L";
+      return;
+    }
     readout.textContent =
       "train at " + (tCur - TRAINLEN / 2).toFixed(2) + "L · δ = " +
       (maxAbs / VREF).toFixed(2) + " · envelope " + (envMax() / VREF).toFixed(2);
@@ -117,8 +132,38 @@
   function setRunUI(on) { running = on; runBtn.disabled = on; runBtn.textContent = on ? "running…" : "run train"; }
   function cancelRun(reset) { cancelAnim(); setRunUI(false); if (reset) envelope = new Array(NSEG + 1).fill(0); }
 
+  // one-time failure: kink at the critical section, brief flash, stop + lock controls
+  function triggerFailure() {
+    failed = true;
+    cancelAnim();
+    running = false;
+    runBtn.hidden = false; runBtn.disabled = false; runBtn.textContent = "reset";
+    posInput.disabled = true;
+    updateReadout();
+    render();
+    if (!reduceMotion) { flashT = performance.now(); rafId = requestAnimationFrame(flashStep); }
+  }
+
+  function flashStep(now) {
+    render();
+    if (now - flashT < 120) rafId = requestAnimationFrame(flashStep);
+    else { flashT = 0; rafId = null; render(); }
+  }
+
+  function doReset() {
+    failed = false; flashT = 0;
+    cancelAnim();
+    if (reduceMotion) runBtn.hidden = true; else { runBtn.disabled = false; runBtn.textContent = "run train"; }
+    posInput.disabled = false;
+    tCur = TMIN; posInput.value = Math.round(TMIN * 100);
+    envelope = new Array(NSEG + 1).fill(0);
+    computeAt(tCur, loadFrac, false);
+    updateReadout();
+    render();
+  }
+
   function startRun() {
-    if (reduceMotion) return;
+    if (reduceMotion || failed) return;
     cancelAnim();
     envelope = new Array(NSEG + 1).fill(0);
     setRunUI(true);
@@ -132,6 +177,7 @@
     tCur = TMIN + prog * (TMAX - TMIN);
     posInput.value = Math.round(tCur * 100);
     computeAt(tCur, loadFrac, true);
+    if (failed) return;
     updateReadout();
     render();
     if (prog < 1) rafId = requestAnimationFrame(runStep);
@@ -139,6 +185,7 @@
   }
 
   function applyPos() {
+    if (failed) return;
     if (running) cancelRun(true);
     tCur = clamp((+posInput.value) / 100, TMIN, TMAX);
     computeAt(tCur, loadFrac, false);
@@ -147,6 +194,7 @@
   }
 
   function applyLoad() {
+    if (failed) return;
     loadFrac = clamp((+loadInput.value) / 100, 0, 1);
     computeAt(tCur, loadFrac, running);
     updateReadout();
@@ -185,6 +233,10 @@
     var R = [];
     for (var i = 0; i <= NSEG; i++) {
       var X = 2 * (i / NSEG) - 1, yc = -sagAt(i / NSEG);
+      if (failed) {
+        var kd = Math.abs(i - MmaxIdx);
+        if (kd <= 2) yc -= WORLDAMP * 3 * (1 - kd / 2); // plastic-hinge vee, ~3x exaggerated
+      }
       R.push([[X, yc + HY, -HZ], [X, yc + HY, HZ], [X, yc - HY, HZ], [X, yc - HY, -HZ]]);
     }
     var FA = [0.22, 0.14, 0.1, 0.14]; // top / right / bottom / left face fill alpha
@@ -236,6 +288,7 @@
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
+    if (flashT) { ctx.fillStyle = "rgba(192,80,77,.22)"; ctx.fillRect(0, 0, w, h); }
   }
 
   // ---- orbit: pointer-drag horizontal = yaw, clamped ±60°, independent of scrub ----
@@ -254,7 +307,7 @@
   canvas.addEventListener("pointerup", endDrag);
   canvas.addEventListener("pointercancel", endDrag);
 
-  runBtn.addEventListener("click", startRun);
+  runBtn.addEventListener("click", function () { if (failed) doReset(); else startRun(); });
   posInput.addEventListener("input", applyPos);
   loadInput.addEventListener("input", applyLoad);
 

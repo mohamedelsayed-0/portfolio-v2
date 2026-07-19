@@ -1,4 +1,4 @@
-// Mohamed Elsayed — portfolio v2. Galton-board hero + palette/theme/clock.
+// Mohamed Elsayed — portfolio v2. Wigner-surface hero + palette/theme/clock.
 
 (function () {
   "use strict";
@@ -62,211 +62,242 @@
   window.addEventListener("resize", updateProgress);
   updateProgress();
 
-  // ---------- Hero: quantum Galton board ----------
+  // ---------- Hero: 3D Wigner surface of a finite-energy GKP qubit ----------
+  // W(q,p)=Σ(-1)^{mn} e^{-(m²+n²)2Δ²} e^{-((q-ms)²+(p-ns)²)/2σ²}, m,n∈[-3,3];
+  // depth-sorted wireframe, perspective, drag-yaw + idle sway, breathing Δ.
   var canvas = document.getElementById("wave");
   if (canvas) {
     var ctx = canvas.getContext("2d");
     var readout = document.getElementById("wave-readout");
-    var ROWS = 14, BINS = ROWS + 1, MID = ROWS / 2;
 
-    function cssVar(name, fallback) {
-      var v = getComputedStyle(document.documentElement).getPropertyValue(name);
-      return (v && v.trim()) || fallback;
+    var S = Math.sqrt(Math.PI); // GKP lattice pitch s = √π
+    var GX = 48, GY = 36;       // surface vertices (q × p)
+    var HALF = 3.2 * S;         // window half-extent (±3.2 s)
+    var SIG = 0.22 * S, DELTA0 = 0.30; // peak width σ; Δ breathes ±10%
+    var ZAMP = 0.62;            // surface height (normalized units)
+    var PITCH = 0.5, YAWMAX = 1.22, CAM = 4.0; // pitch rad; yaw ±70°; persp dist
+    var NEG = [192, 80, 77];    // #c0504d negative-lobe tint
+
+    function cssRGB(name, fb) {
+      var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      if (v.charAt(0) === "#") {
+        var hx = v.slice(1);
+        if (hx.length === 3) hx = hx[0] + hx[0] + hx[1] + hx[1] + hx[2] + hx[2];
+        var num = parseInt(hx, 16);
+        if (!isNaN(num)) return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+      }
+      var mm = v.match(/\d+/g);
+      if (mm && mm.length >= 3) return [+mm[0], +mm[1], +mm[2]];
+      return fb;
     }
 
-    // Hadamard walk, symmetric coin state.
-    function quantumDist() {
-      var N = ROWS, size = 2 * N + 1, s2 = 1 / Math.sqrt(2);
-      var Lr = new Float64Array(size), Li = new Float64Array(size);
-      var Rr = new Float64Array(size), Ri = new Float64Array(size);
-      Lr[N] = s2; Ri[N] = s2;
-      for (var step = 0; step < N; step++) {
-        var nLr = new Float64Array(size), nLi = new Float64Array(size);
-        var nRr = new Float64Array(size), nRi = new Float64Array(size);
-        for (var p = 0; p < size; p++) {
-          var aLr = (Lr[p] + Rr[p]) * s2, aLi = (Li[p] + Ri[p]) * s2;
-          var aRr = (Lr[p] - Rr[p]) * s2, aRi = (Li[p] - Ri[p]) * s2;
-          if (p > 0) { nLr[p - 1] += aLr; nLi[p - 1] += aLi; }
-          if (p < size - 1) { nRr[p + 1] += aRr; nRi[p + 1] += aRi; }
+    // ---- lattice sites m,n in [-3,3]: radius² and sign (-1)^{mn} ----
+    var siteR2 = [], siteSign = [];
+    for (var m0 = -3; m0 <= 3; m0++)
+      for (var n0 = -3; n0 <= 3; n0++) {
+        siteR2.push(m0 * m0 + n0 * n0);
+        siteSign.push(((m0 & 1) && (n0 & 1)) ? -1 : 1);
+      }
+    var NS = siteR2.length; // 49
+
+    // ---- vertex coords (normalized ±1) + per-site Gaussian cache ----
+    // Peak Gaussians are Δ-independent -> cache once; only recompute envelopes.
+    var NV = GX * GY;
+    var mx = new Float32Array(NV), my = new Float32Array(NV);
+    var gauss = new Float32Array(NV * NS);
+    (function build() {
+      var s2 = 2 * SIG * SIG, k = 0;
+      for (var j = 0; j < GY; j++) {
+        var p = HALF - (2 * HALF) * j / (GY - 1);
+        for (var i = 0; i < GX; i++, k++) {
+          var q = -HALF + (2 * HALF) * i / (GX - 1);
+          mx[k] = q / HALF; my[k] = p / HALF;
+          var t = 0;
+          for (var mm = -3; mm <= 3; mm++)
+            for (var nn = -3; nn <= 3; nn++, t++) {
+              var dq = q - mm * S, dp = p - nn * S;
+              gauss[k * NS + t] = Math.exp(-(dq * dq + dp * dp) / s2);
+            }
         }
-        Lr = nLr; Li = nLi; Rr = nRr; Ri = nRi;
       }
-      var d = [];
-      for (var i = 0; i <= 2 * N; i += 2)
-        d.push(Lr[i] * Lr[i] + Li[i] * Li[i] + Rr[i] * Rr[i] + Ri[i] * Ri[i]);
-      return d;
+    })();
+
+    var zc = new Float32Array(NV); // scaled surface height
+    var hn = new Float32Array(NV); // normalized W (drives colour)
+    var amp = new Float64Array(NS);
+    var invWmax = 1;
+
+    function envAmps(delta) {
+      var f = 2 * delta * delta;
+      for (var t = 0; t < NS; t++) amp[t] = siteSign[t] * Math.exp(-siteR2[t] * f);
     }
 
-    function classicalDist() {
-      var d = [], c = 1, N = ROWS;
-      for (var k = 0; k <= N; k++) { d.push(c); c = c * (N - k) / (k + 1); }
-      var tot = Math.pow(2, N);
-      return d.map(function (x) { return x / tot; });
-    }
-
-    var QDIST = quantumDist(), CDIST = classicalDist();
-
-    function sampleBin(dist) {
-      var r = Math.random(), acc = 0;
-      for (var i = 0; i < dist.length; i++) { acc += dist[i]; if (r <= acc) return i; }
-      return dist.length - 1;
-    }
-
-    function makePath(bin) {
-      var steps = [], i;
-      for (i = 0; i < ROWS; i++) steps.push(i < bin ? 1 : -1);
-      for (i = ROWS - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = steps[i]; steps[i] = steps[j]; steps[j] = tmp;
+    function computeHeights(delta) {
+      envAmps(delta);
+      for (var k = 0; k < NV; k++) {
+        var W = 0, base = k * NS;
+        for (var t = 0; t < NS; t++) W += amp[t] * gauss[base + t];
+        var v = W * invWmax;
+        hn[k] = v;
+        zc[k] = v * ZAMP;
       }
-      var path = [MID], pos = MID;
-      for (i = 0; i < ROWS; i++) { pos += steps[i] * 0.5; path.push(pos); }
-      return path;
     }
 
-    var mode = "quantum";
-    var counts = new Int32Array(BINS);
-    var total = 0;
-    var photons = [];
-    var spawnAcc = 0;
+    (function baseline() { // lock height scale to Δ₀ peak
+      envAmps(DELTA0);
+      var wmax = 1e-6;
+      for (var k = 0; k < NV; k++) {
+        var W = 0, base = k * NS;
+        for (var t = 0; t < NS; t++) W += amp[t] * gauss[base + t];
+        var a = W < 0 ? -W : W;
+        if (a > wmax) wmax = a;
+      }
+      invWmax = 1 / wmax;
+    })();
 
-    function activeDist() { return mode === "classical" ? CDIST : QDIST; }
+    // ---- line-strip segments (both grid directions) ----
+    var sa = [], sb = [];
+    for (var jj = 0; jj < GY; jj++)
+      for (var ii = 0; ii < GX - 1; ii++) { sa.push(jj * GX + ii); sb.push(jj * GX + ii + 1); }
+    for (var j2 = 0; j2 < GY - 1; j2++)
+      for (var i2 = 0; i2 < GX; i2++) { sa.push(j2 * GX + i2); sb.push(j2 * GX + i2 + GX); }
+    var segA = Int32Array.from(sa), segB = Int32Array.from(sb);
+    var NSEG = segA.length;
+    var order = new Int32Array(NSEG);
+    for (var so = 0; so < NSEG; so++) order[so] = so;
+    var segD = new Float32Array(NSEG);
 
-    function setMode(m) {
-      if (mode === m) return;
-      mode = m;
-      counts = new Int32Array(BINS);
-      photons.length = 0;
-    }
+    var px = new Float32Array(NV), py = new Float32Array(NV);
+    var pf = new Float32Array(NV), dep = new Float32Array(NV);
 
+    // ---- sizing (dpr-aware) + fit ----
+    var w = 0, h = 0, scaleX = 1, scaleY = 1, ox = 0, oy = 0;
     function size() {
       var rect = canvas.getBoundingClientRect();
       var dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      w = rect.width || 600; h = rect.height || 150;
+      canvas.width = Math.max(1, Math.round(w * dpr));
+      canvas.height = Math.max(1, Math.round(h * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      scaleY = (h * 0.5 - 8) / 1.1;
+      var fitX = (w * 0.5 - 8) / 2.3;
+      scaleX = Math.min(fitX, scaleY * 1.7); // mild anisotropy
+      ox = w * 0.5; oy = h * 0.5 + 6;
     }
 
-    function frame(dt) {
-      var rect = canvas.getBoundingClientRect();
-      var w = rect.width, h = rect.height;
-      var padX = 10, bw = (w - 2 * padX) / BINS;
-      var topY = 6, histMaxH = h * 0.4, baseY = h - 4;
-      var pegTop = 20, pegBot = baseY - histMaxH - 6;
-      if (pegBot < pegTop + 10) pegBot = pegTop + 10;
-      var rowSpan = pegBot - pegTop;
-      function binX(bf) { return padX + bw * (bf + 0.5); }
-
-      var perSec = mode === "classical" ? 12 : 3;
-      spawnAcc += dt * perSec;
-      while (spawnAcc >= 1 && photons.length < 15) {
-        spawnAcc -= 1;
-        var bin = sampleBin(activeDist());
-        photons.push({ path: makePath(bin), bin: bin, rowf: 0 });
+    function project(yaw) {
+      var cy = Math.cos(yaw), sy = Math.sin(yaw);
+      var cp = Math.cos(PITCH), sp = Math.sin(PITCH);
+      for (var k = 0; k < NV; k++) {
+        var X = mx[k], Y = my[k], Z = zc[k];
+        var x1 = X * cy - Y * sy;
+        var y1 = X * sy + Y * cy;
+        var y2 = y1 * cp - Z * sp; // depth (into screen)
+        var z2 = y1 * sp + Z * cp; // vertical
+        var persp = CAM / (CAM + y2);
+        px[k] = ox + x1 * persp * scaleX;
+        py[k] = oy - z2 * persp * scaleY;
+        dep[k] = y2;
+        pf[k] = persp;
       }
-      if (spawnAcc > 3) spawnAcc = 3;
-      var fallRate = ROWS / 1.1;
-      for (var pi = photons.length - 1; pi >= 0; pi--) {
-        var ph = photons[pi];
-        ph.rowf += dt * fallRate;
-        if (ph.rowf >= ROWS) { counts[ph.bin]++; total++; photons.splice(pi, 1); }
-      }
+    }
 
-      var muted = cssVar("--muted", "#6b6b66");
-      var accent = cssVar("--accent", "#1f3fbf");
-      var fg = cssVar("--fg", "#1a1a1a");
-      var barColor = mode === "classical" ? muted : accent;
+    var ACC, MUT, delta = DELTA0;
+    function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+    function colorStr(hh, fade) {
+      var mag = hh < 0 ? -hh : hh, r, g, bl, f;
+      if (hh >= 0) { f = Math.min(1, hh / 0.45); r = lerp(MUT[0], ACC[0], f); g = lerp(MUT[1], ACC[1], f); bl = lerp(MUT[2], ACC[2], f); }
+      else { f = Math.min(1, mag / 0.30); r = lerp(MUT[0], NEG[0], f); g = lerp(MUT[1], NEG[1], f); bl = lerp(MUT[2], NEG[2], f); }
+      var alpha = (0.20 + 0.75 * Math.min(1, mag / 0.45)) * fade;
+      return "rgba(" + r + "," + g + "," + bl + "," + alpha.toFixed(3) + ")";
+    }
+
+    function drawFrame(yaw) {
+      ACC = cssRGB("--accent", [31, 63, 191]);
+      MUT = cssRGB("--muted", [107, 107, 102]);
+      project(yaw);
+
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = muted;
-      ctx.globalAlpha = 0.4;
-      for (var r = 0; r < ROWS; r++) {
-        var py = pegTop + (ROWS > 1 ? rowSpan * r / (ROWS - 1) : 0);
-        for (var c = 0; c <= r; c++) {
-          ctx.beginPath();
-          ctx.arc(binX(MID + (c - r / 2)), py, 0.8, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
+      ctx.lineWidth = 1;
 
-      var maxCount = 1;
-      for (var b = 0; b < BINS; b++) if (counts[b] > maxCount) maxCount = counts[b];
-      ctx.fillStyle = barColor;
-      ctx.globalAlpha = 0.85;
-      for (b = 0; b < BINS; b++) {
-        if (!counts[b]) continue;
-        var bh = (counts[b] / maxCount) * histMaxH;
-        ctx.fillRect(binX(b) - bw * 0.3, baseY - bh, bw * 0.6, bh);
-      }
-
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = fg;
+      var cp = Math.cos(PITCH), sp = Math.sin(PITCH), cyw = Math.cos(yaw), syw = Math.sin(yaw);
+      ctx.strokeStyle = "rgba(" + MUT[0] + "," + MUT[1] + "," + MUT[2] + ",0.15)";
       ctx.beginPath();
-      ctx.arc(binX(MID), topY, 2.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = accent;
-      ctx.globalAlpha = 0.9;
-      for (pi = 0; pi < photons.length; pi++) {
-        ph = photons[pi];
-        var i0 = Math.floor(ph.rowf);
-        if (i0 > ROWS) i0 = ROWS;
-        var frac = ph.rowf - i0;
-        var bfrom = ph.path[Math.min(i0, ROWS)], bto = ph.path[Math.min(i0 + 1, ROWS)];
-        var bf = bfrom + (bto - bfrom) * frac;
-        var y = topY + (pegBot - topY) * Math.min(1, ph.rowf / ROWS);
+      for (var d = 0; d < NV; d++) {
+        if (hn[d] < 0.62) continue;
+        var X = mx[d], Y = my[d];
+        var x1 = X * cyw - Y * syw, y1 = X * syw + Y * cyw;
+        var y2b = y1 * cp, pb = CAM / (CAM + y2b);
+        ctx.moveTo(px[d], py[d]);
+        ctx.lineTo(ox + x1 * pb * scaleX, oy - (y1 * sp) * pb * scaleY);
+      }
+      ctx.stroke();
+
+      // painter order: far first
+      for (var s = 0; s < NSEG; s++) segD[s] = (dep[segA[s]] + dep[segB[s]]) * 0.5;
+      Array.prototype.sort.call(order, function (a, b) { return segD[b] - segD[a]; });
+
+      var cache = {};
+      for (var oi = 0; oi < NSEG; oi++) {
+        var si = order[oi], a = segA[si], b = segB[si];
+        var hh = (hn[a] + hn[b]) * 0.5;
+        var fade = ((pf[a] + pf[b]) * 0.5 - 0.72) / 0.9;
+        if (fade < 0) fade = 0; else if (fade > 1) fade = 1;
+        fade = 0.45 + 0.55 * fade;
+        var key = Math.round(hh * 40) + "_" + Math.round(fade * 16);
+        var col = cache[key] || (cache[key] = colorStr(hh, fade));
+        ctx.strokeStyle = col;
         ctx.beginPath();
-        ctx.arc(binX(bf), y, 2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(px[a], py[a]);
+        ctx.lineTo(px[b], py[b]);
+        ctx.stroke();
       }
-      ctx.globalAlpha = 1;
 
-      if (readout) {
-        readout.textContent = total.toLocaleString("en-US") + " photons · " +
-          (mode === "classical" ? "classical" : "quantum") + " walk";
-      }
+      if (readout) readout.textContent = "W(q,p) · GKP |0⟩ · Δ = " + delta.toFixed(2);
     }
 
-    function staticDraw() {
-      var rect = canvas.getBoundingClientRect();
-      var w = rect.width, h = rect.height;
-      var padX = 10, bw = (w - 2 * padX) / BINS;
-      var baseY = h - 14, maxH = h * 0.5;
-      var muted = cssVar("--muted", "#6b6b66");
-      var accent = cssVar("--accent", "#1f3fbf");
-      var mx = Math.max(Math.max.apply(null, QDIST), Math.max.apply(null, CDIST));
-      ctx.clearRect(0, 0, w, h);
-      function bars(dist, color) {
-        ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.9;
-        for (var b = 0; b < BINS; b++) {
-          var bh = dist[b] / mx * maxH, x = padX + bw * (b + 0.5), bwid = bw * 0.5;
-          ctx.strokeRect(x - bwid / 2, baseY - bh, bwid, bh);
-        }
-      }
-      bars(CDIST, muted);
-      bars(QDIST, accent);
-      ctx.globalAlpha = 1;
-      ctx.font = "10px " + cssVar("--font-mono", "ui-monospace, monospace");
-      ctx.fillStyle = accent; ctx.fillText("quantum", padX, 12);
-      ctx.fillStyle = muted; ctx.fillText("classical", padX + 56, 12);
-      if (readout) readout.textContent = "quantum vs classical";
+    // ---- interaction: drag orbits yaw ----
+    var yaw = reduceMotion ? 0.6 : 0;
+    var autoDir = 1, lastDrag = -1e9, dragging = false, dragX0 = 0, yaw0 = 0;
+    function now() { return window.performance && performance.now ? performance.now() : Date.now(); }
+    function onDown(e) {
+      dragging = true; dragX0 = e.clientX; yaw0 = yaw;
+      if (canvas.setPointerCapture && e.pointerId != null) { try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
     }
+    function onMove(e) {
+      if (!dragging) return;
+      if (e.cancelable) e.preventDefault();
+      yaw = yaw0 + (e.clientX - dragX0) * 0.006;
+      if (yaw > YAWMAX) yaw = YAWMAX; else if (yaw < -YAWMAX) yaw = -YAWMAX;
+      if (reduceMotion) drawFrame(yaw);
+    }
+    function onUp() { if (!dragging) return; dragging = false; lastDrag = now(); }
+    canvas.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
 
     if (reduceMotion) {
-      size(); staticDraw();
-      window.addEventListener("resize", function () { size(); staticDraw(); });
+      size();
+      computeHeights(DELTA0);
+      drawFrame(yaw);
+      window.addEventListener("resize", function () { size(); computeHeights(DELTA0); drawFrame(yaw); });
     } else {
       size();
       window.addEventListener("resize", size);
-      var toQ = function () { setMode("quantum"); };
-      canvas.addEventListener("pointerdown", function () { setMode("classical"); });
-      window.addEventListener("pointerup", toQ);
-      window.addEventListener("pointercancel", toQ);
-      var last = 0;
-      (function loop(ts) {
-        var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
-        last = ts;
-        frame(dt);
+      computeHeights(DELTA0);
+      var t0 = now(), last = t0;
+      (function loop() {
+        var t = now(), dt = Math.min(0.05, (t - last) / 1000); last = t;
+        if (!dragging && (t - lastDrag) > 3000) { // idle auto-sway
+          yaw += autoDir * 0.18 * dt;
+          if (yaw > 0.55) autoDir = -1; else if (yaw < -0.55) autoDir = 1;
+        }
+        delta = DELTA0 * (1 + 0.10 * Math.sin((t - t0) / 1000 * (2 * Math.PI / 6)));
+        computeHeights(delta);
+        drawFrame(yaw);
         requestAnimationFrame(loop);
-      })(0);
+      })();
     }
   }
 
