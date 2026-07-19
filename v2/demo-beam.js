@@ -1,8 +1,8 @@
 // Beam bench — 3D box-girder bridge, orbitable, CIV102 matboard bridge under a moving train.
-// Geometry from github.com/mohamedelsayed-0/CIV102: span 1200mm, 6-wheel 400N train
-// (spacing 176/164mm), box girder 100mm top / 80mm bottom flange, 75mm deep, 1.27mm matboard.
-// Failure: repo's main.py FOS analysis — governing mode is top-flange plate buckling between
-// webs (E=4000MPa, k=4.0), capacity 44410.8 N*mm (weaker than tension/compression/web buckling).
+// Geometry + physics from github.com/mohamedelsayed-0/CIV102 (Python/main.py, section.py):
+// span 1200mm, 6-wheel 400N train. Seven live failure modes; FoS = min over modes of capacity/
+// demand. Shear peaks near supports, moment/buckling near midspan; top-flange buckling between
+// webs (3.69 MPa) is the weak link and the only mode reaching FoS<1.
 
 (function () {
   "use strict";
@@ -17,7 +17,7 @@
     '<div class="demo-controls">' +
     '<button type="button" class="demo-btn" id="beam-run">run train</button>' +
     '<label>Position <input type="range" id="beam-pos" min="-10" max="175" value="86" step="1"></label>' +
-    '<label>Load <input type="range" id="beam-load" min="0" max="100" value="62" step="1"></label>' +
+    '<label>Weight <input type="range" id="beam-load" min="0" max="100" value="43" step="1"></label>' +
     "</div>" +
     '<span class="demo-readout" id="beam-readout"></span>';
 
@@ -45,14 +45,55 @@
 
   function clamp(x, lo, hi) { return x < lo ? lo : x > hi ? hi : x; }
 
-  // ---- mechanics (L = 1, EI = 1) — superposed simply-supported point loads (reused) ----
-  var NSEG = 24;                 // extrusion segments along the span
-  var VREF = 1 / 48;             // single unit load at midspan — deflection reference
-  var SPAN_MM = 1200, TOTAL_LOAD = 400, CAP = 44410.8; // real mm/N + governing-mode capacity
-  var OFF = [0, 176, 340, 516, 680, 856].map(function (m) { return m / SPAN_MM; }); // real wheels
+  // ---- geometry & spans (CIV102 repo, mm/N) ----
+  var NSEG = 24;
+  var VREF = 1 / 48;
+  var SPAN_MM = 1200, TOTAL_LOAD = 400;
+  var OFF = [0, 176, 340, 516, 680, 856].map(function (m) { return m / SPAN_MM; });
   var TRAINLEN = OFF[5];
-  var TMIN = -0.1, TMAX = 1.75;  // lead-wheel travel: off-left to off-right
+  var TMIN = -0.1, TMAX = 1.75;
   var DUR = 4000;
+
+  // ---- section properties (repo section.py, parallel-axis); precomputed once ----
+  var E = 4000, MU = 0.2, sq = function (v) { return v * v; }; // matboard E (MPa) / Poisson
+  var TFT = 1.27, TW = 1.27, WH = 75, TFW = 100, BFW = 80, SFW = 5; // flange/web/tab dims (mm)
+  var wh = WH - TW; // clear web height (A=area, y=centroid from bottom below)
+  var Ab = BFW * TW, yb0 = TW / 2;
+  var Aw = 2 * wh * TW, yw = TW + wh / 2;
+  var At = 2 * SFW * TW, yt = WH + TFT / 2;
+  var Af = TFW * TW, yf = WH + TFT / 2;
+  var YBAR = (Ab * yb0 + Aw * yw + At * yt + Af * yf) / (Ab + Aw + At + Af);
+  var I_SEC = BFW * TW * sq(TW) / 12 + Ab * sq(yb0 - YBAR)
+    + 2 * (TW * wh * sq(wh) / 12 + wh * TW * sq(yw - YBAR))
+    + 2 * (SFW * TW * sq(TW) / 12 + SFW * TW * sq(yt - YBAR))
+    + TFW * TW * sq(TW) / 12 + Af * sq(yf - YBAR); // I ~= 4.19e5 mm^4
+  var YTOP = (WH + TW) - YBAR, YBOT = YBAR;
+  var wAbove = (WH + TW) - YBAR - TW;
+  var QC = (Af + At) * (yf - YBAR) + 2 * TW * wAbove * (wAbove / 2);
+  var QG = TFW * TW * (yf - YBAR);
+  var TSHEAR = 2 * TW, TGLUE = 2 * SFW;
+
+  // ---- capacities (repo main.py), limiting stresses (MPa); plate buckling k*pi^2*E/(12(1-mu^2))*(t/b)^2
+  var KB = Math.PI * Math.PI * E / (12 * (1 - MU * MU));
+  var SIG_T = 30, SIG_C = 6, TAU_M = 4, TAU_G = 2;
+  var SIG_FL = Math.min( // top-flange buckling = min(overhang, between-webs)
+    0.425 * KB * sq(TFT / ((TFW - BFW) / 2)), //  overhang, k=0.425
+    4.0 * KB * sq(TFT / (BFW - 2 * TW))); //  between webs, k=4.0 (governs)
+  var SIG_WEB = 6.0 * KB * sq(TW / WH); // web compression buckling, k=6
+  var TAU_BUCK = 5.0 * KB * (sq(TW / WH) + sq(TW / (SPAN_MM / 11))); // web shear buckling, k=5
+  var MODE = ["flexural tension", "flexural compression", "top-flange buckling", "web buckling",
+    "matboard shear", "glue shear", "web shear buckling"];
+
+  // ---- load slider = train-weight multiplier (x the 400N design train) ----
+  // slider 0 -> W=0.291 (FoS ~2.2, safe); 100 -> W=0.752 (FoS ~0.85, fails). FoS=1 at ~75% of
+  // the slider so only the top ~25% can fail; default 43 -> FoS ~1.3.
+  var WMIN = 0.291, WMAX = 0.752;
+
+  var tCur = 0.857, loadFrac = WMIN;
+  var display = new Array(NSEG + 1).fill(0);
+  var maxAbs = 0, critIdx = 0, govMode = 0, fosMin = 99;
+  var rafId = null, running = false, runStart = null;
+  var failed = false, flashT = 0;
 
   function vAt(x, load, a) {
     var b = 1 - a;
@@ -61,43 +102,35 @@
       : (load * a * (1 - x) / 6) * (2 * x - a * a - x * x);
   }
 
-  var tCur = 0.857, loadFrac = 0.62;
-  var display = new Array(NSEG + 1).fill(0);
-  var envelope = new Array(NSEG + 1).fill(0);
-  var maxAbs = 0;
-  var rafId = null, running = false, runStart = null;
-  var failed = false, MmaxIdx = 0, flashT = 0;
-
-  // M(x): triangular influence line per wheel, superposed (real N*mm)
-  function computeAt(t, load, accEnv, noCheck) {
-    var m = 0, mm = 0, mmIdx = 0, Pw = load * TOTAL_LOAD / 6;
+  // Superpose wheel influence lines (deflection; moment M=Pw*L*infl; shear V per wheel);
+  // demand sigma=M*y/I, tau=V*Q/(I*b); FoS = min over 7 modes per section.
+  function computeAt(t, W, noCheck) {
+    var m = 0, Pw = W * TOTAL_LOAD / 6, minF = Infinity, gMode = 0, gIdx = 0;
     for (var i = 0; i <= NSEG; i++) {
-      var x = i / NSEG, val = 0, mval = 0;
+      var x = i / NSEG, val = 0, M = 0, V = 0;
       for (var k = 0; k < 6; k++) {
         var a = t - OFF[k];
         if (a > 0 && a < 1) {
-          val += vAt(x, load, a);
-          mval += Pw * SPAN_MM * (x <= a ? (1 - a) * x : a * (1 - x));
+          val += vAt(x, W, a);
+          M += Pw * SPAN_MM * (x <= a ? (1 - a) * x : a * (1 - x));
+          V += x < a ? Pw * (1 - a) : -Pw * a;
         }
       }
       display[i] = val;
       if (val > m) m = val;
-      if (accEnv && val > envelope[i]) envelope[i] = val;
-      if (mval > mm) { mm = mval; mmIdx = i; }
+      var aM = M < 0 ? -M : M, aV = V < 0 ? -V : V, e = 1e-9;
+      var dTop = aM * YTOP / I_SEC, dBot = aM * YBOT / I_SEC;
+      var dTau = aV * QC / (I_SEC * TSHEAR), dGlue = aV * QG / (I_SEC * TGLUE);
+      var f = [SIG_T / (dBot + e), SIG_C / (dTop + e), SIG_FL / (dTop + e), SIG_WEB / (dTop + e),
+        TAU_M / (dTau + e), TAU_G / (dGlue + e), TAU_BUCK / (dTau + e)];
+      for (var md = 0; md < 7; md++) if (f[md] < minF) { minF = f[md]; gMode = md; gIdx = i; }
     }
-    maxAbs = m; MmaxIdx = mmIdx;
-    if (!noCheck && !failed && mm > CAP) triggerFailure();
+    maxAbs = m; fosMin = minF; govMode = gMode; critIdx = gIdx;
+    if (!noCheck && !failed && minF < 1) triggerFailure();
   }
 
-  function envMax() {
-    var m = 0;
-    for (var i = 0; i <= NSEG; i++) if (envelope[i] > m) m = envelope[i];
-    return m;
-  }
-
-  // fixed max-pixel amplitude: normalize to the full-load centered-train max sag (synthetic
-  // calibration state — skip the failure check)
-  computeAt(0.5 + TRAINLEN / 2, 1, false, true);
+  // pixel amplitude: normalize to full design-train centered max sag (calibration; no check)
+  computeAt(0.5 + TRAINLEN / 2, 1, true);
   var WORLDAMP = 0.16, scaleW = WORLDAMP / (maxAbs || 1e-6);
 
   function sagAt(sx) {
@@ -108,15 +141,16 @@
 
   function updateReadout() {
     if (failed) {
-      readout.textContent = "failed · buckling (top flange) @ " + (MmaxIdx / NSEG).toFixed(2) + "L";
+      readout.textContent = "failed · " + MODE[govMode] + " @ " + (critIdx / NSEG).toFixed(2) + "L";
       return;
     }
+    var fos = fosMin > 99 ? 99 : fosMin;
     readout.textContent =
-      "train at " + (tCur - TRAINLEN / 2).toFixed(2) + "L · δ = " +
-      (maxAbs / VREF).toFixed(2) + " · envelope " + (envMax() / VREF).toFixed(2);
+      "train at " + (tCur - TRAINLEN / 2).toFixed(2) + "L · δ " +
+      (maxAbs / VREF).toFixed(2) + " · FoS " + fos.toFixed(2) + " (" + MODE[govMode] + ")";
   }
 
-  // ---- fixed perspective camera, slight downward pitch, drag = yaw orbit ----
+  // ---- perspective camera (downward pitch), drag = yaw orbit ----
   var YAW = 0, PITCH = 0.34, CAMD = 3.4, HZ = 0.16, HY = 0.12;
 
   function project(X, Y, Z, w, h, f) {
@@ -130,9 +164,9 @@
 
   function cancelAnim() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
   function setRunUI(on) { running = on; runBtn.disabled = on; runBtn.textContent = on ? "running…" : "run train"; }
-  function cancelRun(reset) { cancelAnim(); setRunUI(false); if (reset) envelope = new Array(NSEG + 1).fill(0); }
+  function cancelRun() { cancelAnim(); setRunUI(false); }
 
-  // one-time failure: kink at the critical section, brief flash, stop + lock controls
+  // one-time failure: kink at critical section, brief flash, stop + lock
   function triggerFailure() {
     failed = true;
     cancelAnim();
@@ -156,7 +190,6 @@
     if (reduceMotion) runBtn.hidden = true; else { runBtn.disabled = false; runBtn.textContent = "run train"; }
     posInput.disabled = false;
     tCur = TMIN; posInput.value = Math.round(TMIN * 100);
-    envelope = new Array(NSEG + 1).fill(0);
     computeAt(tCur, loadFrac, false);
     updateReadout();
     render();
@@ -165,7 +198,6 @@
   function startRun() {
     if (reduceMotion || failed) return;
     cancelAnim();
-    envelope = new Array(NSEG + 1).fill(0);
     setRunUI(true);
     runStart = null;
     rafId = requestAnimationFrame(runStep);
@@ -176,7 +208,7 @@
     var prog = Math.min(1, (now - runStart) / DUR);
     tCur = TMIN + prog * (TMAX - TMIN);
     posInput.value = Math.round(tCur * 100);
-    computeAt(tCur, loadFrac, true);
+    computeAt(tCur, loadFrac, false);
     if (failed) return;
     updateReadout();
     render();
@@ -186,7 +218,7 @@
 
   function applyPos() {
     if (failed) return;
-    if (running) cancelRun(true);
+    if (running) cancelRun();
     tCur = clamp((+posInput.value) / 100, TMIN, TMAX);
     computeAt(tCur, loadFrac, false);
     updateReadout();
@@ -195,8 +227,8 @@
 
   function applyLoad() {
     if (failed) return;
-    loadFrac = clamp((+loadInput.value) / 100, 0, 1);
-    computeAt(tCur, loadFrac, running);
+    loadFrac = WMIN + clamp((+loadInput.value) / 100, 0, 1) * (WMAX - WMIN);
+    computeAt(tCur, loadFrac, false);
     updateReadout();
     render();
   }
@@ -229,17 +261,17 @@
       q([x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], a * 0.7, col);
     }
 
-    // girder: extrude the box cross-section along the deflected centroid line
+    // girder: extrude box section along deflected line
     var R = [];
     for (var i = 0; i <= NSEG; i++) {
       var X = 2 * (i / NSEG) - 1, yc = -sagAt(i / NSEG);
       if (failed) {
-        var kd = Math.abs(i - MmaxIdx);
-        if (kd <= 2) yc -= WORLDAMP * 3 * (1 - kd / 2); // plastic-hinge vee, ~3x exaggerated
+        var kd = Math.abs(i - critIdx);
+        if (kd <= 2) yc -= WORLDAMP * 3 * (1 - kd / 2);
       }
       R.push([[X, yc + HY, -HZ], [X, yc + HY, HZ], [X, yc - HY, HZ], [X, yc - HY, -HZ]]);
     }
-    var FA = [0.22, 0.14, 0.1, 0.14]; // top / right / bottom / left face fill alpha
+    var FA = [0.22, 0.14, 0.1, 0.14];
     for (i = 0; i < NSEG; i++) {
       for (var j = 0; j < 4; j++) {
         var k2 = (j + 1) % 4;
@@ -253,7 +285,7 @@
     bx(-1, -HY - 0.13, 0, 0.05, 0.13, 0.13, 0.4, 1);
     bx(1, -HY - 0.13, 0, 0.05, 0.13, 0.13, 0.4, 1);
 
-    // train: 3 darker box masses riding the deck at the wheel-pair positions
+    // train: box masses at wheel-pair positions
     for (var m = 0; m < 3; m++) {
       var cOff = (OFF[2 * m] + OFF[2 * m + 1]) / 2, pos = tCur - cOff;
       if (pos < 0 || pos > 1) continue;
@@ -319,6 +351,7 @@
 
   // ---- init ----
   size();
+  loadFrac = WMIN + clamp((+loadInput.value) / 100, 0, 1) * (WMAX - WMIN);
   computeAt(tCur, loadFrac, false);
   updateReadout();
   render();

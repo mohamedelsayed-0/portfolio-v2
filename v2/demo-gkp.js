@@ -1,7 +1,11 @@
-// Phase-space (Wigner-style) view of a finite-energy GKP qubit. A coarse
-// heatmap of W(q,p) over a square lattice comb; a `thermal noise` slider
-// widens the peaks and strips the negative (odd,odd) lattice sites, so the
-// checkerboard negativity that makes the state non-classical decays away.
+// The GKP error-correction loop as a game, over a Wigner heatmap of W(q,p).
+// `thermal noise` γ widens peaks + strips negativity. `kick` = random
+// displacement error (magnitude ~ γ); the comb slides by the accumulated vector
+// (accent arrow). `correct` = syndrome recovery: snap each axis to the nearest
+// lattice point round(disp/s) — drift < s/2 recenters clean; drift past s/2
+// snaps to the wrong site = logical error (state recenters but the checkerboard
+// parity flips and stays flipped; q→X, p→Z, both→Y). `apply recovery` re-sharpens
+// σ but does NOT fix displacement (that's the physics); `reset` clears it all.
 
 (function () {
   "use strict";
@@ -9,14 +13,12 @@
   var mount = document.getElementById("demo-gkp-mount");
   if (!mount) return;
 
-  // ---------- constants (phase-space units) ----------
   var S = Math.sqrt(Math.PI);   // lattice pitch s ≈ √π
   var DELTA = 0.3;              // finite-energy envelope width
   var SIG0 = 0.16 * S;          // peak width at zero noise
   var HALF = 3.5 * S;           // window half-extent (±3.5s)
   var GX = 140, GY = 100;       // coarse grid resolution
 
-  // ---------- build DOM ----------
   var canvas = document.createElement("canvas");
   canvas.width = 960;
   canvas.height = 540; // 16:9
@@ -30,18 +32,21 @@
   label.appendChild(document.createTextNode("thermal noise "));
   var gInput = document.createElement("input");
   gInput.type = "range";
-  gInput.min = "0";
-  gInput.max = "1";
-  gInput.step = "0.01";
-  gInput.value = "0.15";
+  gInput.min = "0"; gInput.max = "1"; gInput.step = "0.01"; gInput.value = "0.15";
   label.appendChild(gInput);
   controls.appendChild(label);
 
-  var recoverBtn = document.createElement("button");
-  recoverBtn.type = "button";
-  recoverBtn.className = "demo-btn";
-  recoverBtn.textContent = "apply recovery";
-  controls.appendChild(recoverBtn);
+  function mkBtn(text) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "demo-btn";
+    b.textContent = text;
+    controls.appendChild(b);
+    return b;
+  }
+  var kickBtn = mkBtn("kick"), correctBtn = mkBtn("correct"),
+    recoverBtn = mkBtn("apply recovery"), resetBtn = mkBtn("reset");
+  resetBtn.style.display = "none";
 
   var readout = document.createElement("span");
   readout.className = "demo-readout";
@@ -50,16 +55,14 @@
 
   var ctx = canvas.getContext("2d");
 
-  // offscreen coarse buffer, drawn once and scaled up each render
-  var off = document.createElement("canvas");
+  var off = document.createElement("canvas"); // offscreen coarse buffer
   off.width = GX;
   off.height = GY;
   var octx = off.getContext("2d");
   var img = octx.createImageData(GX, GY);
   var field = new Float64Array(GX * GY);
 
-  // ---------- theme colors (re-read every draw) ----------
-  var accent = [31, 63, 191], NEG = [192, 80, 77];
+  var accent = [31, 63, 191], NEG = [192, 80, 77]; // theme colors, re-read/draw
   var colMuted, colMono;
   function toRGB(str, fb) {
     str = (str || "").trim();
@@ -80,11 +83,9 @@
     colMono = cs.getPropertyValue("--font-mono").trim() || "monospace";
   }
 
-  // ---------- sizing (devicePixelRatio-aware) ----------
-  var w = 0, h = 0;
+  var w = 0, h = 0; // canvas size, devicePixelRatio-aware
   function size() {
-    var rect = canvas.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
     w = rect.width || 960;
     h = rect.height || 540;
     canvas.width = Math.max(1, Math.round(w * dpr));
@@ -92,63 +93,51 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // ---------- Wigner comb ----------
-  // Fills `field` with W(q,p); returns {wmax, raw} (raw = un-normalized
-  // negativity Σ|W<0|/Σ|W|). Odd·odd sites are negative, scaled by negScale
-  // (1 at γ=0). sigma/negScale are explicit params (not derived from γ here)
-  // so recovery can drive them independently of the slider.
-  function compute(sigma, negScale) {
+  // Wigner comb → fills `field`, returns {wmax, raw negativity}. dispQ0/dispP0
+  // slide the comb; parity (+1/-1) inverts the (odd·odd) checkerboard sign.
+  function compute(sigma, negScale, dispQ0, dispP0, parity) {
     var s2 = 2 * sigma * sigma;
     var sumNeg = 0, sumAll = 0, wmax = 0;
     var dqx = (2 * HALF) / GX, dpy = (2 * HALF) / GY;
-    // precompute per-site amplitude and center
-    var amps = [], cx = [], cy = [];
-    for (var m = -3; m <= 3; m++) {
-      for (var n = -3; n <= 3; n++) {
-        var env = Math.exp(-(m * m + n * n) * 2 * DELTA * DELTA);
-        if (env < 1e-4) continue;
-        var neg = (m & 1) && (n & 1);
-        var a = neg ? -env * negScale : env;
-        amps.push(a);
-        cx.push(m * S);
-        cy.push(n * S);
-      }
+    var amps = [], cx = [], cy = []; // per-site amplitude + center
+    for (var m = -3; m <= 3; m++) for (var n = -3; n <= 3; n++) {
+      var env = Math.exp(-(m * m + n * n) * 2 * DELTA * DELTA);
+      if (env < 1e-4) continue;
+      var neg = ((m & 1) && (n & 1)) ? parity > 0 : parity < 0;
+      amps.push(neg ? -env * negScale : env);
+      cx.push(m * S + dispQ0); cy.push(n * S + dispP0);
     }
     var k = 0;
     for (var j = 0; j < GY; j++) {
       var p = HALF - (j + 0.5) * dpy;
       for (var i = 0; i < GX; i++, k++) {
-        var q = -HALF + (i + 0.5) * dqx;
-        var W = 0;
+        var q = -HALF + (i + 0.5) * dqx, W = 0;
         for (var t = 0; t < amps.length; t++) {
           var dq = q - cx[t], dp = p - cy[t];
           W += amps[t] * Math.exp(-(dq * dq + dp * dp) / s2);
         }
         field[k] = W;
         var abs = W < 0 ? -W : W;
-        sumAll += abs;
-        if (W < 0) sumNeg += abs;
-        if (abs > wmax) wmax = abs;
+        sumAll += abs; if (W < 0) sumNeg += abs; if (abs > wmax) wmax = abs;
       }
     }
     return { wmax: wmax, raw: sumAll > 0 ? sumNeg / sumAll : 0 };
   }
 
-  // baseline negativity at γ=0 (computed once) → display normalized to 1.00
-  var baseline = compute(SIG0, 1).raw || 1;
+  var baseline = compute(SIG0, 1, 0, 0, 1).raw || 1; // γ=0 negativity → 1.00
 
-  // ---------- recovery state ----------
-  // sigmaEff/negScaleEff are the effective width/negative-scale rendered.
-  // The slider sets a baseline for both; recovery re-sharpens them toward
-  // the γ=0 ideal without touching the slider. recoveryStep counts
-  // recoveries since the last slider move, for diminishing returns.
+  // recovery state: slider baselines sigmaEff/negScaleEff; recovery re-sharpens
+  // toward the γ=0 ideal, recoveryStep → diminishing returns.
   var sigmaEff = 0, negScaleEff = 1, recoveryStep = 0, animToken = 0;
-  var animating = false; // true while a recovery animation owns the readout/field
+  var animating = false; // an animation owns the readout/field
+
+  // game state (displacement channel)
+  var dispQ = 0, dispP = 0, parity = 1, corrected = 0, logical = 0, lastEvent = "";
 
   function baselineFor(g) { return { sigma: SIG0 * (1 + 2 * g), neg: 1 - g }; }
 
   function resetRecovery() {
-    animToken++; // cancels any in-flight animation
+    animToken++; // cancel in-flight animation
     animating = false;
     var g = parseFloat(gInput.value);
     var b = baselineFor(g);
@@ -158,22 +147,18 @@
     recoverBtn.disabled = g === 0;
   }
 
-  // ---------- render ----------
   function toX(q) { return w * (0.5 + q / (2 * HALF)); }
   function toY(p) { return h * (0.5 - p / (2 * HALF)); }
 
   function draw() {
     readColors();
     var g = parseFloat(gInput.value);
-    var res = compute(sigmaEff, negScaleEff);
+    var res = compute(sigmaEff, negScaleEff, dispQ, dispP, parity);
     var wmax = res.wmax || 1;
 
-    // paint coarse field into the offscreen buffer
-    var d = img.data;
+    var d = img.data; // paint coarse field → offscreen buffer → scaled up
     for (var k = 0; k < field.length; k++) {
-      var W = field[k];
-      var a = Math.abs(W) / wmax;
-      var o = k * 4;
+      var W = field[k], a = Math.abs(W) / wmax, o = k * 4;
       if (a < 0.02) { d[o + 3] = 0; continue; }
       var c = W < 0 ? NEG : accent;
       d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2];
@@ -185,16 +170,12 @@
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(off, 0, 0, w, h);
 
-    // hairline axes through the origin
-    ctx.strokeStyle = colMuted;
-    ctx.globalAlpha = 0.55;
-    ctx.lineWidth = 1;
+    // hairline axes + lattice ticks
+    ctx.strokeStyle = colMuted; ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(toX(0), 0); ctx.lineTo(toX(0), h);
     ctx.moveTo(0, toY(0)); ctx.lineTo(w, toY(0));
     ctx.stroke();
-
-    // small ticks at lattice multiples of s
     ctx.beginPath();
     for (var kk = -3; kk <= 3; kk++) {
       if (kk === 0) continue;
@@ -205,75 +186,136 @@
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // tiny mono axis labels
-    ctx.fillStyle = colMuted;
-    ctx.font = "10px " + colMono;
-    ctx.textBaseline = "middle";
+    ctx.fillStyle = colMuted; ctx.font = "10px " + colMono; ctx.textBaseline = "middle";
     ctx.fillText("q", w - 12, toY(0) - 8);
     ctx.fillText("p", toX(0) + 8, 10);
 
+    // correctable region: dashed ±s/2 box (tip inside → clean correction)
+    ctx.save();
+    ctx.strokeStyle = colMuted; ctx.globalAlpha = 0.4; ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.strokeRect(toX(-S / 2), toY(S / 2),
+      toX(S / 2) - toX(-S / 2), toY(-S / 2) - toY(S / 2));
+    ctx.restore();
+
+    // accumulated displacement arrow from origin
+    if (dispQ * dispQ + dispP * dispP > 1e-4) {
+      var ox = toX(0), oy = toY(0), axx = toX(dispQ), ayy = toY(dispP);
+      ctx.strokeStyle = ctx.fillStyle =
+        "rgb(" + accent[0] + "," + accent[1] + "," + accent[2] + ")";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(ox, oy); ctx.lineTo(axx, ayy); ctx.stroke();
+      var ah = Math.atan2(ayy - oy, axx - ox), hl = 8;
+      ctx.beginPath();
+      ctx.moveTo(axx, ayy);
+      ctx.lineTo(axx - hl * Math.cos(ah - 0.4), ayy - hl * Math.sin(ah - 0.4));
+      ctx.lineTo(axx - hl * Math.cos(ah + 0.4), ayy - hl * Math.sin(ah + 0.4));
+      ctx.closePath(); ctx.fill();
+    }
+
     var neg = res.raw / baseline;
-    readout.textContent = "γ = " + g.toFixed(2) + " · negativity " + neg.toFixed(2);
-    return neg; // true ratio actually rendered; reused by the recovery animation below
+    readout.textContent = compose(g, neg.toFixed(2));
+    return neg; // ratio actually rendered; reused by the recovery tween
   }
 
-  // ---------- recovery animation ----------
-  // Bounded ~600ms loop (20 eased steps) driving sigmaEff/negScaleEff to the
-  // recovered target, redrawing via draw() each step. Cancellable: a fresh
-  // call bumps animToken so any in-flight loop stops on its next tick.
+  // Bounded eased tween shared by recovery + displacement: set(e) draws the
+  // frame, done() finalizes. A fresh call bumps animToken → in-flight loop bails.
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-  // `cur`/`fin` are draw()'s own return value, not a separate linear
-  // interpolation, so the readout always matches the rendered field.
-  function animateRecovery(sig0, neg0, sig1, neg1, before) {
-    var token = ++animToken;
+  function tween(steps, ms, set, done) {
+    var token = ++animToken, step = 0;
     animating = true;
-    var STEPS = 20, STEP_MS = 30, step = 0;
-    var g = parseFloat(gInput.value);
-    function tick() {
-      if (token !== animToken) return; // superseded by a newer click/slider move
-      step++;
-      var e = easeOutCubic(step / STEPS);
-      sigmaEff = sig0 + (sig1 - sig0) * e;
-      negScaleEff = neg0 + (neg1 - neg0) * e;
-      var cur = draw();
-      readout.textContent = "γ = " + g.toFixed(2) + " · negativity " +
-        before.toFixed(2) + " → " + cur.toFixed(2);
-      if (step < STEPS) {
-        setTimeout(tick, STEP_MS);
-      } else {
-        sigmaEff = sig1;
-        negScaleEff = neg1;
-        animating = false;
-        var fin = draw();
-        readout.textContent = "γ = " + g.toFixed(2) + " · negativity " +
-          before.toFixed(2) + " → " + fin.toFixed(2);
-      }
-    }
-    tick();
+    (function tick() {
+      if (token !== animToken) return; // superseded
+      set(easeOutCubic(++step / steps));
+      if (step < steps) { setTimeout(tick, ms); return; }
+      animating = false;
+      if (done) done();
+    })();
   }
 
   function applyRecovery() {
     var g = parseFloat(gInput.value);
     if (g === 0) return; // already ideal — visual no-op
-    var before = compute(sigmaEff, negScaleEff).raw / baseline;
+    var before = compute(sigmaEff, negScaleEff, dispQ, dispP, parity).raw / baseline;
 
-    // diminishing returns: each successive recovery (sans slider move)
-    // recovers only 60% of what the previous one could
-    var fraction = 0.35 * Math.pow(0.6, recoveryStep);
-    recoveryStep++;
-
+    // diminishing returns: each recovery (sans slider move) fixes 60% of the last
+    var fraction = 0.35 * Math.pow(0.6, recoveryStep++);
     var sig0 = sigmaEff, neg0 = negScaleEff;
     var sig1 = Math.max(SIG0, sig0 - fraction * (sig0 - SIG0));
     var neg1 = Math.min(1, neg0 + fraction * (1 - neg0));
 
-    animateRecovery(sig0, neg0, sig1, neg1, before);
+    // re-sharpens σ / restores negativity; does NOT touch displacement
+    tween(20, 30, function (e) {
+      sigmaEff = sig0 + (sig1 - sig0) * e;
+      negScaleEff = neg0 + (neg1 - neg0) * e;
+      var cur = draw();
+      readout.textContent = compose(g, before.toFixed(2) + " → " + cur.toFixed(2));
+    });
   }
 
-  // ---------- events ----------
-  // Coalesce rapid slider `input` events: draw immediately on the first of a
-  // burst, then collapse the rest into one trailing redraw ~40ms later
-  // (always fresh-read) instead of a full recompute per event.
+  // displacement game
+  // mono readout: γ · negativity · tally · outcome
+  function compose(g, negStr) {
+    var t = "γ = " + g.toFixed(2) + " · negativity " + negStr +
+      " · corrected " + corrected + " · logical " + logical;
+    return lastEvent ? t + " · " + lastEvent : t;
+  }
+
+  // Slide the comb (q0,p0)→(q1,p1) over ~350ms, then done() + settle redraw.
+  function animateDisplace(q0, p0, q1, p1, done) {
+    tween(16, 22, function (e) {
+      dispQ = q0 + (q1 - q0) * e;
+      dispP = p0 + (p1 - p0) * e;
+      draw();
+    }, function () {
+      dispQ = q1; dispP = p1;
+      if (done) done();
+      draw();
+    });
+  }
+
+  // Random displacement error, magnitude ~ γ, uniform direction; accumulates.
+  function kick() {
+    if (animating) return; // guard while animating
+    var g = parseFloat(gInput.value);
+    var mag = S * (0.12 + g * 0.75) * (0.55 + Math.random());
+    var ang = Math.random() * 6.2831853, lim = 2.2 * S;
+    var tq = Math.max(-lim, Math.min(lim, dispQ + mag * Math.cos(ang)));
+    var tp = Math.max(-lim, Math.min(lim, dispP + mag * Math.sin(ang)));
+    lastEvent = "";
+    animateDisplace(dispQ, dispP, tq, tp, null);
+  }
+
+  // Syndrome correction: round(disp/s)===0 ⇒ correctable, else wrong site ⇒
+  // logical error on that axis (q→X, p→Z, both→Y) + checkerboard flip.
+  function correct() {
+    if (animating) return;
+    var errQ = Math.round(dispQ / S) !== 0, errP = Math.round(dispP / S) !== 0;
+    animateDisplace(dispQ, dispP, 0, 0, function () {
+      corrected++;
+      if (errQ || errP) {
+        logical++;
+        parity = -parity;
+        lastEvent = "logical " + (errQ && errP ? "Y" : errQ ? "X" : "Z") + " error";
+        resetBtn.style.display = "";
+      } else {
+        lastEvent = "corrected ✓";
+      }
+    });
+  }
+
+  // silent errors are uncorrectable — only a fresh state clears them
+  function resetState() {
+    animToken++; // cancel any in-flight animation
+    animating = false;
+    dispQ = dispP = 0; parity = 1; corrected = logical = 0; lastEvent = "";
+    resetBtn.style.display = "none";
+    draw();
+  }
+
+  // coalesce rapid slider `input` into a leading + trailing (~40ms) redraw
   var drawTimer = null, drawPending = false;
   function safeDraw() { if (!animating) draw(); }
   function requestDraw() {
@@ -290,6 +332,9 @@
 
   gInput.addEventListener("input", function () { resetRecovery(); requestDraw(); });
   recoverBtn.addEventListener("click", applyRecovery);
+  kickBtn.addEventListener("click", kick);
+  correctBtn.addEventListener("click", correct);
+  resetBtn.addEventListener("click", resetState);
 
   var resizeTimer = null;
   window.addEventListener("resize", function () {

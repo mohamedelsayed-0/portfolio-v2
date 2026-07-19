@@ -6,7 +6,6 @@
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- Theme toggle (light <-> dark) ----------
-  // The no-flash <head> script already applied any saved theme; wire the button.
   var THEME_COLORS = { light: "#fafaf7", dark: "#161614" };
 
   function effectiveTheme() {
@@ -27,7 +26,7 @@
     document.documentElement.setAttribute("data-theme", next);
     try { localStorage.setItem("theme", next); } catch (e) {}
     syncThemeUI(next);
-    window.dispatchEvent(new Event("resize")); // sample canvases re-read vars
+    window.dispatchEvent(new Event("resize"));
   }
 
   syncThemeUI(effectiveTheme());
@@ -63,20 +62,19 @@
   updateProgress();
 
   // ---------- Hero: 3D Wigner surface of a finite-energy GKP qubit ----------
-  // W(q,p)=Σ(-1)^{mn} e^{-(m²+n²)2Δ²} e^{-((q-ms)²+(p-ns)²)/2σ²}, m,n∈[-3,3];
-  // depth-sorted wireframe, perspective, drag-yaw + idle sway, breathing Δ.
   var canvas = document.getElementById("wave");
   if (canvas) {
     var ctx = canvas.getContext("2d");
     var readout = document.getElementById("wave-readout");
 
-    var S = Math.sqrt(Math.PI); // GKP lattice pitch s = √π
-    var GX = 48, GY = 36;       // surface vertices (q × p)
-    var HALF = 3.2 * S;         // window half-extent (±3.2 s)
-    var SIG = 0.22 * S, DELTA0 = 0.30; // peak width σ; Δ breathes ±10%
-    var ZAMP = 0.62;            // surface height (normalized units)
-    var PITCH = 0.5, YAWMAX = 1.22, CAM = 4.0; // pitch rad; yaw ±70°; persp dist
-    var NEG = [192, 80, 77];    // #c0504d negative-lobe tint
+    var S = Math.sqrt(Math.PI);
+    var GX = 48, GY = 36;
+    var HALF = 3.2 * S;
+    var SIG = 0.22 * S, DELTA0 = 0.30;
+    var SWFAC = 1.8;
+    var ZAMP = 0.62;
+    var PITCH = 0.5, YAWMAX = 1.22, CAM = 4.0;
+    var NEG = [192, 80, 77];
 
     function cssRGB(name, fb) {
       var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -91,22 +89,20 @@
       return fb;
     }
 
-    // ---- lattice sites m,n in [-3,3]: radius² and sign (-1)^{mn} ----
     var siteR2 = [], siteSign = [];
     for (var m0 = -3; m0 <= 3; m0++)
       for (var n0 = -3; n0 <= 3; n0++) {
         siteR2.push(m0 * m0 + n0 * n0);
         siteSign.push(((m0 & 1) && (n0 & 1)) ? -1 : 1);
       }
-    var NS = siteR2.length; // 49
+    var NS = siteR2.length;
 
-    // ---- vertex coords (normalized ±1) + per-site Gaussian cache ----
-    // Peak Gaussians are Δ-independent -> cache once; only recompute envelopes.
     var NV = GX * GY;
     var mx = new Float32Array(NV), my = new Float32Array(NV);
     var gauss = new Float32Array(NV * NS);
+    var gaussW = new Float32Array(NV * NS);
     (function build() {
-      var s2 = 2 * SIG * SIG, k = 0;
+      var s2 = 2 * SIG * SIG, sw = SIG * SWFAC, s2w = 2 * sw * sw, k = 0;
       for (var j = 0; j < GY; j++) {
         var p = HALF - (2 * HALF) * j / (GY - 1);
         for (var i = 0; i < GX; i++, k++) {
@@ -115,35 +111,38 @@
           var t = 0;
           for (var mm = -3; mm <= 3; mm++)
             for (var nn = -3; nn <= 3; nn++, t++) {
-              var dq = q - mm * S, dp = p - nn * S;
-              gauss[k * NS + t] = Math.exp(-(dq * dq + dp * dp) / s2);
+              var dq = q - mm * S, dp = p - nn * S, r2 = dq * dq + dp * dp;
+              gauss[k * NS + t] = Math.exp(-r2 / s2);
+              gaussW[k * NS + t] = Math.exp(-r2 / s2w);
             }
         }
       }
     })();
 
-    var zc = new Float32Array(NV); // scaled surface height
-    var hn = new Float32Array(NV); // normalized W (drives colour)
+    var zc = new Float32Array(NV);
+    var hn = new Float32Array(NV);
     var amp = new Float64Array(NS);
     var invWmax = 1;
 
-    function envAmps(delta) {
-      var f = 2 * delta * delta;
-      for (var t = 0; t < NS; t++) amp[t] = siteSign[t] * Math.exp(-siteR2[t] * f);
-    }
-
-    function computeHeights(delta) {
-      envAmps(delta);
-      for (var k = 0; k < NV; k++) {
-        var W = 0, base = k * NS;
-        for (var t = 0; t < NS; t++) W += amp[t] * gauss[base + t];
-        var v = W * invWmax;
-        hn[k] = v;
-        zc[k] = v * ZAMP;
+    function envAmps(delta, ns) {
+      var f = 2 * delta * delta; ns = ns == null ? 1 : ns;
+      for (var t = 0; t < NS; t++) {
+        var a = siteSign[t] * Math.exp(-siteR2[t] * f);
+        amp[t] = siteSign[t] < 0 ? a * ns : a;
       }
     }
 
-    (function baseline() { // lock height scale to Δ₀ peak
+    function computeHeights(delta, sw, ns) {
+      envAmps(delta, ns);
+      for (var k = 0; k < NV; k++) {
+        var W = 0, base = k * NS, t;
+        if (sw > 0) for (t = 0; t < NS; t++) { var g = gauss[base + t]; W += amp[t] * (g + (gaussW[base + t] - g) * sw); }
+        else for (t = 0; t < NS; t++) W += amp[t] * gauss[base + t];
+        var v = W * invWmax; hn[k] = v; zc[k] = v * ZAMP;
+      }
+    }
+
+    (function baseline() {
       envAmps(DELTA0);
       var wmax = 1e-6;
       for (var k = 0; k < NV; k++) {
@@ -155,7 +154,6 @@
       invWmax = 1 / wmax;
     })();
 
-    // ---- line-strip segments (both grid directions) ----
     var sa = [], sb = [];
     for (var jj = 0; jj < GY; jj++)
       for (var ii = 0; ii < GX - 1; ii++) { sa.push(jj * GX + ii); sb.push(jj * GX + ii + 1); }
@@ -170,7 +168,6 @@
     var px = new Float32Array(NV), py = new Float32Array(NV);
     var pf = new Float32Array(NV), dep = new Float32Array(NV);
 
-    // ---- sizing (dpr-aware) + fit ----
     var w = 0, h = 0, scaleX = 1, scaleY = 1, ox = 0, oy = 0;
     function size() {
       var rect = canvas.getBoundingClientRect();
@@ -181,7 +178,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       scaleY = (h * 0.5 - 8) / 1.1;
       var fitX = (w * 0.5 - 8) / 2.3;
-      scaleX = Math.min(fitX, scaleY * 1.7); // mild anisotropy
+      scaleX = Math.min(fitX, scaleY * 1.7);
       ox = w * 0.5; oy = h * 0.5 + 6;
     }
 
@@ -192,8 +189,8 @@
         var X = mx[k], Y = my[k], Z = zc[k];
         var x1 = X * cy - Y * sy;
         var y1 = X * sy + Y * cy;
-        var y2 = y1 * cp - Z * sp; // depth (into screen)
-        var z2 = y1 * sp + Z * cp; // vertical
+        var y2 = y1 * cp - Z * sp;
+        var z2 = y1 * sp + Z * cp;
         var persp = CAM / (CAM + y2);
         px[k] = ox + x1 * persp * scaleX;
         py[k] = oy - z2 * persp * scaleY;
@@ -233,7 +230,6 @@
       }
       ctx.stroke();
 
-      // painter order: far first
       for (var s = 0; s < NSEG; s++) segD[s] = (dep[segA[s]] + dep[segB[s]]) * 0.5;
       Array.prototype.sort.call(order, function (a, b) { return segD[b] - segD[a]; });
 
@@ -253,25 +249,59 @@
         ctx.stroke();
       }
 
-      if (readout) readout.textContent = "W(q,p) · GKP |0⟩ · Δ = " + delta.toFixed(2);
+      if (readout) readout.textContent = pulsing
+        ? "thermal pulse · negativity " + negVal.toFixed(2)
+        : "W(q,p) · GKP |0⟩ · Δ = " + delta.toFixed(2);
     }
 
-    // ---- interaction: drag orbits yaw ----
     var yaw = reduceMotion ? 0.6 : 0;
     var autoDir = 1, lastDrag = -1e9, dragging = false, dragX0 = 0, yaw0 = 0;
+    var TAPMS = 200, TAPPX = 6, downT = 0, downX = 0, downY = 0, downMax = 0;
+    var DECOH = 400, HOLD = 600, REC = 1200, STEP = 0.9, DCAP = 1, NEGFLOOR = 0.05;
+    var S_BACK = 1.3, NEG0 = 0.41;
+    var pulsing = false, deg = 0, degMax = 0, degAtTap = 0, tapTime = 0, negVal = NEG0, rmTimer = 0, breathPhase = 0;
     function now() { return window.performance && performance.now ? performance.now() : Date.now(); }
+
+    function pulseDeg(t) {
+      var e = t - tapTime, f, u;
+      if (e < DECOH) { f = e / DECOH; f = f * f * (3 - 2 * f); return degAtTap + (degMax - degAtTap) * f; }
+      if ((e -= DECOH) < HOLD) return degMax;
+      if ((e -= HOLD) < REC) { u = e / REC - 1; return degMax * -(u * u * ((S_BACK + 1) * u + S_BACK)); }
+      pulsing = false; return 0;
+    }
+
+    function fireTap() {
+      if (reduceMotion) {
+        pulsing = true; deg = 1; negVal = 0;
+        computeHeights(DELTA0, 1, NEGFLOOR); drawFrame(yaw);
+        if (rmTimer) clearTimeout(rmTimer);
+        rmTimer = setTimeout(function () { pulsing = false; deg = 0; computeHeights(DELTA0); drawFrame(yaw); }, 800);
+        return;
+      }
+      degAtTap = deg;
+      degMax = Math.min(DCAP, (pulsing ? degMax : 0) + STEP);
+      tapTime = now(); pulsing = true;
+    }
+
     function onDown(e) {
       dragging = true; dragX0 = e.clientX; yaw0 = yaw;
+      downT = now(); downX = e.clientX; downY = e.clientY; downMax = 0;
       if (canvas.setPointerCapture && e.pointerId != null) { try { canvas.setPointerCapture(e.pointerId); } catch (_) {} }
     }
     function onMove(e) {
       if (!dragging) return;
       if (e.cancelable) e.preventDefault();
+      var dx = e.clientX - downX, dy = e.clientY - downY, d = Math.sqrt(dx * dx + dy * dy);
+      if (d > downMax) downMax = d;
       yaw = yaw0 + (e.clientX - dragX0) * 0.006;
       if (yaw > YAWMAX) yaw = YAWMAX; else if (yaw < -YAWMAX) yaw = -YAWMAX;
       if (reduceMotion) drawFrame(yaw);
     }
-    function onUp() { if (!dragging) return; dragging = false; lastDrag = now(); }
+    function onUp() {
+      if (!dragging) return;
+      dragging = false; lastDrag = now();
+      if ((now() - downT) <= TAPMS && downMax < TAPPX) fireTap();
+    }
     canvas.addEventListener("pointerdown", onDown);
     window.addEventListener("pointermove", onMove, { passive: false });
     window.addEventListener("pointerup", onUp);
@@ -286,15 +316,23 @@
       size();
       window.addEventListener("resize", size);
       computeHeights(DELTA0);
-      var t0 = now(), last = t0;
+      var last = now();
       (function loop() {
         var t = now(), dt = Math.min(0.05, (t - last) / 1000); last = t;
-        if (!dragging && (t - lastDrag) > 3000) { // idle auto-sway
+        if (!dragging && (t - lastDrag) > 3000) {
           yaw += autoDir * 0.18 * dt;
           if (yaw > 0.55) autoDir = -1; else if (yaw < -0.55) autoDir = 1;
         }
-        delta = DELTA0 * (1 + 0.10 * Math.sin((t - t0) / 1000 * (2 * Math.PI / 6)));
-        computeHeights(delta);
+        if (pulsing) {
+          deg = pulseDeg(t);
+          negVal = NEG0 * (1 - deg); if (negVal < 0) negVal = 0;
+          var swv = deg < 0 ? 0 : (deg > 1 ? 1 : deg);
+          computeHeights(DELTA0, swv, 1 - deg * (1 - NEGFLOOR));
+        } else {
+          breathPhase += dt;
+          delta = DELTA0 * (1 + 0.10 * Math.sin(breathPhase * (2 * Math.PI / 6)));
+          computeHeights(delta);
+        }
         drawFrame(yaw);
         requestAnimationFrame(loop);
       })();
@@ -383,7 +421,7 @@
     document.addEventListener("keydown", function (e) {
       if (!modalOverlay || modalOverlay.hidden) return;
       if (e.key === "Escape") { e.preventDefault(); closeModal(); return; }
-      if (e.key === "Tab") { // focus trap
+      if (e.key === "Tab") {
         var f = modalPanel.querySelectorAll(FOCUSABLE);
         if (!f.length) { e.preventDefault(); modalPanel.focus(); return; }
         var first = f[0], last = f[f.length - 1];
@@ -508,7 +546,6 @@
       e.preventDefault();
       if (filtered[active]) go(filtered[active]);
     } else if (e.key === "Tab") {
-      // trap focus: the input is the only focusable control in the dialog.
       e.preventDefault();
       input.focus();
     }
