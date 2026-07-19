@@ -1,17 +1,24 @@
-// Mohamed Elsayed — portfolio v2. Two things live here: the interference
-// wave under the name, and the ctrl-k command palette. Nothing else.
+// Mohamed Elsayed — portfolio v2. Two things live here: the two-wave
+// superposition instrument under the name, and the ctrl-k command palette.
 
 (function () {
   "use strict";
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // ---------- Interference wave ----------
+  // ---------- Hero instrument: two waves + their sum ----------
   var canvas = document.getElementById("wave");
   if (canvas) {
     var ctx = canvas.getContext("2d");
-    var mouseX = null;
-    var t = 0;
+    var readout = document.getElementById("wave-readout");
+    var mouseX = null;      // cursor position over canvas (null = idle)
+    var phase = Math.PI / 3; // Δφ of wave 2, radians
+    var travel = 0;          // slow horizontal drift for life
+
+    function cssVar(name, fallback) {
+      var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+      return (v && v.trim()) || fallback;
+    }
 
     function size() {
       var rect = canvas.getBoundingClientRect();
@@ -19,29 +26,48 @@
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return rect;
+    }
+
+    function wavePath(w, h, mid, amp, phaseOff, weightSum) {
+      ctx.beginPath();
+      for (var x = 0; x <= w; x += 2) {
+        var p = (x / w) * Math.PI * 4 + travel;
+        var val = weightSum
+          ? (Math.sin(p) + Math.sin(p + phase)) / 2
+          : Math.sin(p + phaseOff);
+        var y = mid - val * amp;
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
     }
 
     function draw() {
       var rect = canvas.getBoundingClientRect();
-      var w = rect.width, h = rect.height, mid = h / 2;
+      var w = rect.width, h = rect.height, mid = h / 2, amp = h * 0.2;
       ctx.clearRect(0, 0, w, h);
-      ctx.lineWidth = 1.4;
-      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue("--accent") || "#1f3fbf";
-      ctx.beginPath();
 
-      var phaseShift = mouseX === null ? 0 : (mouseX / w) * Math.PI * 2;
-      var idle = reduceMotion ? 0 : t * 0.02;
+      var muted = cssVar("--muted", "#6b6b66");
+      var accent = cssVar("--accent", "#1f3fbf");
 
-      for (var x = 0; x <= w; x += 2) {
-        var p = (x / w) * Math.PI * 4;
-        var wave1 = Math.sin(p + idle);
-        var wave2 = Math.sin(p * 1.15 + idle * 1.3 + phaseShift);
-        var y = mid + ((wave1 + wave2) / 2) * (h * 0.4);
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      // wave 1 + wave 2: thin, muted
+      ctx.strokeStyle = muted;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 1;
+      wavePath(w, h, mid, amp, 0, false);
+      wavePath(w, h, mid, amp, phase, false);
+
+      // sum: accent, thicker
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2;
+      wavePath(w, h, mid, amp, 0, true);
+      ctx.globalAlpha = 1;
+
+      if (readout) {
+        var c = Math.abs(Math.cos(phase / 2));
+        var label = c > 0.7 ? "constructive" : (c < 0.3 ? "destructive" : "partial");
+        readout.textContent = "Δφ = " + (phase / Math.PI).toFixed(2) + "π · " + label;
       }
-      ctx.stroke();
     }
 
     if (reduceMotion) {
@@ -50,18 +76,24 @@
       window.addEventListener("resize", function () { size(); draw(); });
     } else {
       size();
-      draw();
-      window.addEventListener("mousemove", function (e) {
+      canvas.addEventListener("mousemove", function (e) {
         var rect = canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
       });
-      window.addEventListener("mouseleave", function () { mouseX = null; });
+      canvas.addEventListener("mouseleave", function () { mouseX = null; });
+      window.addEventListener("resize", size);
       (function loop() {
-        t++;
+        var w = canvas.getBoundingClientRect().width;
+        if (mouseX !== null) {
+          phase = Math.max(0, Math.min(1, mouseX / w)) * Math.PI * 2;
+        } else {
+          phase += 0.006;
+          if (phase > Math.PI * 2) phase -= Math.PI * 2;
+        }
+        travel += 0.012;
         draw();
         requestAnimationFrame(loop);
       })();
-      window.addEventListener("resize", size);
     }
   }
 

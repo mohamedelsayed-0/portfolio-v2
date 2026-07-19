@@ -19,7 +19,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
 
     <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg">
@@ -51,120 +51,191 @@
     <main id="main">
         <section class="hero wrap">
             <h1>Mohamed Elsayed</h1>
-            <p class="deck">I wish to pursue photonics and use my software and AI/ML skills to build research
-                tools, simulations, and systems you can see, test, and ship.</p>
+            <p class="deck">I wish to pursue <em>photonics</em> and use my software and AI/ML skills to build
+                research tools, simulations, and systems you can see, test, and <em>ship</em>.</p>
             <canvas id="wave" aria-hidden="true"></canvas>
+            <p class="readout"><span id="wave-readout" aria-hidden="true">Δφ = 0.33π · partial</span></p>
+            <p class="caption">two waves, one sum — move your cursor</p>
             <p class="meta">Toronto / Cairo · Physics / Maths / Programming</p>
         </section>
 
         <hr>
 
         <section id="now" class="wrap section">
-            <h2>Now</h2>
-            <p>I'm a research assistant at Ain Shams University, working with Professors Nasr Gad and Mostafa
-                El-Aasser on quantum-dot-enhanced photovoltaic devices — running optical simulations in Lumerical
-                and Python to compare material parameters, device geometries, and design tradeoffs. Alongside
-                that, I lead technology strategy for Al Mannar NGO. I'm open to internships, research roles, and
-                technically ambitious collaborations.</p>
+            <div class="sec-head">
+                <span class="sec-num">01</span>
+                <span class="sec-rule"></span>
+                <h2 class="sec-title">Now</h2>
+            </div>
+            <p class="lead">I'm a research assistant at Ain Shams University, working with Professors Nasr Gad and
+                Mostafa El-Aasser on quantum-dot-enhanced photovoltaic devices — running optical simulations in
+                Lumerical and Python to compare material parameters, device geometries, and design tradeoffs.
+                Alongside that, I lead technology strategy for Al Mannar NGO. I'm open to internships, research
+                roles, and technically ambitious collaborations.</p>
         </section>
 
         <hr>
 
         <section id="experience" class="wrap section">
-            <h2>Experience</h2>
-            <ul class="exp-list">
-                <li>
-                    <div class="exp-row">
-                        <span class="exp-role">Undergraduate Research Assistant <span class="exp-org">— Ain Shams
-                                University</span></span>
-                        <span class="exp-date">May 2026 – Present</span>
+            <div class="sec-head">
+                <span class="sec-num">02</span>
+                <span class="sec-rule"></span>
+                <h2 class="sec-title">Experience</h2>
+            </div>
+            <ol class="rows">
+                <li class="row">
+                    <span class="row-idx">01</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <span class="row-title">Undergraduate Research Assistant <span class="row-org">— Ain
+                                    Shams University</span></span>
+                            <span class="row-meta">May 2026 – Present</span>
+                        </div>
+                        <p class="row-desc">Photonics research on quantum-dot-enhanced photovoltaic devices,
+                            supervised by Professors Nasr Gad and Mostafa El-Aasser.</p>
                     </div>
-                    <p class="exp-desc">Photonics research on quantum-dot-enhanced photovoltaic devices,
-                        supervised by Professors Nasr Gad and Mostafa El-Aasser.</p>
                 </li>
-                <li>
-                    <div class="exp-row">
-                        <span class="exp-role">Technical Lead <span class="exp-org">— Al Mannar NGO</span></span>
-                        <span class="exp-date">Jul 2021 – Mar 2026</span>
+                <li class="row">
+                    <span class="row-idx">02</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <span class="row-title">Technical Lead <span class="row-org">— Al Mannar
+                                    NGO</span></span>
+                            <span class="row-meta">Jul 2021 – Mar 2026</span>
+                        </div>
+                        <p class="row-desc">Lead technology strategy and infrastructure for a regional charity in
+                            Upper Egypt, including a SQLite-backed system that digitized beneficiary records.</p>
                     </div>
-                    <p class="exp-desc">Lead technology strategy and infrastructure for a regional charity in
-                        Upper Egypt, including a SQLite-backed system that digitized beneficiary records.</p>
                 </li>
-                <li>
-                    <div class="exp-row">
-                        <span class="exp-role">Undergraduate Research Assistant <span class="exp-org">— The
-                                American University in Cairo</span></span>
-                        <span class="exp-date">Jul 2025 – Sep 2025</span>
+                <li class="row">
+                    <span class="row-idx">03</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <span class="row-title">Undergraduate Research Assistant <span class="row-org">— The
+                                    American University in Cairo</span></span>
+                            <span class="row-meta">Jul 2025 – Sep 2025</span>
+                        </div>
+                        <p class="row-desc">Built a custom microcontroller-based control system to automate a
+                            precision translation stage for optics experiments.</p>
                     </div>
-                    <p class="exp-desc">Built a custom microcontroller-based control system to automate a
-                        precision translation stage for optics experiments.</p>
                 </li>
-                <li>
-                    <div class="exp-row">
-                        <span class="exp-role">Backend Intern <span class="exp-org">— eVision</span></span>
-                        <span class="exp-date">Jul 2024 – Aug 2024</span>
+                <li class="row">
+                    <span class="row-idx">04</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <span class="row-title">Backend Intern <span class="row-org">— eVision</span></span>
+                            <span class="row-meta">Jul 2024 – Aug 2024</span>
+                        </div>
+                        <p class="row-desc">Built a scalable Java file-parsing automation system for structured
+                            financial documents, cutting manual data entry.</p>
                     </div>
-                    <p class="exp-desc">Built a scalable Java file-parsing automation system for structured
-                        financial documents, cutting manual data entry.</p>
                 </li>
-                <li>
-                    <div class="exp-row">
-                        <span class="exp-role">Software Developer &amp; Animator <span class="exp-org">—
-                                Self-Employed</span></span>
-                        <span class="exp-date">Oct 2021 – Jul 2023</span>
+                <li class="row">
+                    <span class="row-idx">05</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <span class="row-title">Software Developer &amp; Animator <span class="row-org">—
+                                    Self-Employed</span></span>
+                            <span class="row-meta">Oct 2021 – Jul 2023</span>
+                        </div>
+                        <p class="row-desc">Built gameplay systems and Blender animations for Roblox studios;
+                            shipped titles collectively surpassed 1.7 billion visits.</p>
                     </div>
-                    <p class="exp-desc">Built gameplay systems and Blender animations for Roblox studios; shipped
-                        titles collectively surpassed 1.7 billion visits.</p>
                 </li>
-            </ul>
+            </ol>
         </section>
 
         <hr>
 
         <section id="projects" class="wrap section">
-            <h2>Projects</h2>
-            <ul class="proj-list">
-                <li>
-                    <a href="https://github.com/mohamedelsayed-0/gaussian_simulations/tree/main">Gaussian
-                        Simulations</a>
-                    <p>Independent research deriving closed-form entanglement survival thresholds for two-mode
-                        squeezed vacuum states in symmetric phase-insensitive Gaussian channels.</p>
+            <div class="sec-head">
+                <span class="sec-num">03</span>
+                <span class="sec-rule"></span>
+                <h2 class="sec-title">Projects</h2>
+            </div>
+            <ol class="rows">
+                <li class="row">
+                    <span class="row-idx">01</span>
+                    <div class="row-main">
+                        <a class="row-title"
+                            href="https://github.com/mohamedelsayed-0/gaussian_simulations/tree/main">Gaussian
+                            Simulations</a>
+                        <p class="row-desc">Independent research deriving closed-form entanglement survival
+                            thresholds for two-mode squeezed vacuum states in symmetric phase-insensitive Gaussian
+                            channels.</p>
+                        <p class="row-tags">python · quantum information</p>
+                    </div>
                 </li>
-                <li>
-                    <a href="https://github.com/mohamedelsayed-0/CIV102">Structural Beam Simulation</a>
-                    <p>Beam deflection calculator for arbitrary cross sections with 3D stress visualizations and
-                        deflection animations, built for a CIV102 capstone. See it on the <a
-                            href="demos.html#beam-simulation">demos page</a>.</p>
+                <li class="row">
+                    <span class="row-idx">02</span>
+                    <div class="row-main">
+                        <a class="row-title" href="https://github.com/mohamedelsayed-0/CIV102">Structural Beam
+                            Simulation</a>
+                        <p class="row-desc">Beam deflection calculator for arbitrary cross sections with 3D stress
+                            visualizations and deflection animations, built for a CIV102 capstone. Try the live
+                            <a href="demos.html#beam">beam bench</a>.</p>
+                        <p class="row-tags">python · matlab</p>
+                    </div>
                 </li>
-                <li>
-                    <a href="https://github.com/mohamedelsayed-0/Pong-AI">Pong AI</a>
-                    <p>AI-driven Pong agent for the ESC180 tournament — placed 3rd overall. See it on the <a
-                            href="demos.html#pong-ai">demos page</a>.</p>
+                <li class="row">
+                    <span class="row-idx">03</span>
+                    <div class="row-main">
+                        <a class="row-title" href="https://github.com/mohamedelsayed-0/Pong-AI">Pong AI</a>
+                        <p class="row-desc">AI-driven Pong agent for the ESC180 tournament — placed 3rd overall.
+                            Play the <a href="demos.html#pong">live Pong demo</a>.</p>
+                        <p class="row-tags">python · pygame</p>
+                    </div>
                 </li>
-                <li>
-                    <a href="demos.html#lumina">Lumina — LaTeX Notetaker</a>
-                    <p>Web tool that converts handwritten, typed, and audio notes into structured LaTeX documents
-                        optimized for notation-heavy coursework.</p>
+                <li class="row">
+                    <span class="row-idx">04</span>
+                    <div class="row-main">
+                        <span class="row-title">Lumina — LaTeX Notetaker</span>
+                        <p class="row-desc">Web tool that converts handwritten, typed, and audio notes into
+                            structured LaTeX documents optimized for notation-heavy coursework.</p>
+                        <p class="row-tags">typescript · javascript · css · python</p>
+                    </div>
                 </li>
-                <li>
-                    <a href="https://github.com/mohamedelsayed-0/robotic_arm">Robotic Arm</a>
-                    <p>Computer-vision tooling for a robotic arm platform — perception and calibration are built;
-                        hardware integration and control are in progress.</p>
+                <li class="row">
+                    <span class="row-idx">05</span>
+                    <div class="row-main">
+                        <a class="row-title" href="https://github.com/mohamedelsayed-0/robotic_arm">Robotic Arm</a>
+                        <p class="row-desc">Computer-vision tooling for a robotic arm platform — perception and
+                            calibration are built; hardware integration and control are in progress.</p>
+                        <p class="row-tags">computer vision · robotics</p>
+                    </div>
                 </li>
-                <li>
-                    <a href="https://github.com/mohamedelsayed-0/ESC102/tree/main/esc102-design-portfolio">ESC102
-                        — Engineering Design Portfolio</a>
-                    <p>Capstone portfolio framed through an engineering design perspective, with an emphasis on
-                        process, iteration, and technical communication.</p>
+                <li class="row">
+                    <span class="row-idx">06</span>
+                    <div class="row-main">
+                        <a class="row-title" href="https://github.com/mohamedelsayed-0/vfx_v2">VFX v2</a>
+                        <p class="row-desc">Private in-progress ML project fine-tuning a model to learn Roblox VFX
+                            generation workflows and produce reusable effect outputs.</p>
+                        <p class="row-tags">machine learning · roblox vfx</p>
+                    </div>
                 </li>
-            </ul>
+                <li class="row">
+                    <span class="row-idx">07</span>
+                    <div class="row-main">
+                        <a class="row-title"
+                            href="https://github.com/mohamedelsayed-0/ESC102/tree/main/esc102-design-portfolio">ESC102
+                            — Engineering Design Portfolio</a>
+                        <p class="row-desc">Capstone portfolio framed through an engineering design perspective,
+                            with an emphasis on process, iteration, and technical communication.</p>
+                        <p class="row-tags">engineering design · portfolio</p>
+                    </div>
+                </li>
+            </ol>
         </section>
 
         <hr>
 
         <!-- TODO: Mohamed — make these yours -->
         <section id="lifetime" class="wrap section">
-            <h2>In my lifetime I want to</h2>
+            <div class="sec-head">
+                <span class="sec-num">04</span>
+                <span class="sec-rule"></span>
+                <h2 class="sec-title">In my lifetime</h2>
+            </div>
             <ul class="lifetime-list">
                 <li>Push quantum-dot photonics research into real device improvements, not just simulations.</li>
                 <li>Build tools that make experimental physics faster and less manual for other researchers.</li>
