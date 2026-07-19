@@ -18,7 +18,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
 
     <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg">
@@ -69,7 +69,7 @@
             </div>
 
             <div class="showcase">
-                <figure class="show-card">
+                <figure class="show-card" role="button" tabindex="0" aria-haspopup="dialog" data-modal="modal-pong">
                     <div class="show-media">
                         <img src="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif" loading="lazy"
                             alt="Two AI-controlled Pong paddles rallying during the ESC180 tournament.">
@@ -88,7 +88,7 @@
                     </div>
                 </figure>
 
-                <figure class="show-card">
+                <figure class="show-card" role="button" tabindex="0" aria-haspopup="dialog" data-modal="modal-gameplay">
                     <div class="show-media">
                         <div class="show-placeholder"><span>clip coming soon</span></div>
                     </div>
@@ -100,7 +100,7 @@
                     </div>
                 </figure>
 
-                <figure class="show-card">
+                <figure class="show-card" role="button" tabindex="0" aria-haspopup="dialog" data-modal="modal-animation">
                     <div class="show-media">
                         <div class="show-placeholder"><span>clip coming soon</span></div>
                     </div>
@@ -112,7 +112,7 @@
                     </div>
                 </figure>
 
-                <figure class="show-card">
+                <figure class="show-card" role="button" tabindex="0" aria-haspopup="dialog" data-modal="modal-physics">
                     <div class="show-media">
                         <div class="show-placeholder"><span>clip coming soon</span></div>
                     </div>
@@ -124,6 +124,56 @@
                     </div>
                 </figure>
             </div>
+
+            <template id="modal-pong">
+                <p class="show-modal-meta">game ai · 2025</p>
+                <h3 class="show-modal-title">Pong AI</h3>
+                <div class="show-modal-media">
+                    <img src="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif" loading="lazy"
+                        alt="Two AI-controlled Pong paddles rallying during the ESC180 tournament.">
+                </div>
+                <p class="show-modal-desc">AI-driven Pong agent developed for the annual ESC180 tournament,
+                    securing 3rd place. It maximizes score against a professor-built AI over a thousand rounds,
+                    implementing collision physics, responsive paddle controls, and an adaptive strategy with
+                    optimized time complexity.</p>
+                <div class="show-modal-links">
+                    <a href="https://github.com/mohamedelsayed-0/Pong-AI">repo <span class="arrow"
+                            aria-hidden="true">↗</span></a>
+                    <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/">assignment <span class="arrow"
+                            aria-hidden="true">↗</span></a>
+                </div>
+            </template>
+
+            <template id="modal-gameplay">
+                <p class="show-modal-meta">gameplay · 2023</p>
+                <h3 class="show-modal-title">Gameplay Systems Engineering</h3>
+                <div class="show-modal-media">
+                    <div class="show-placeholder"><span>clip coming soon</span></div>
+                </div>
+                <p class="show-modal-desc">Server-side logic and gameplay mechanics written in Lua, tuned for
+                    performance at scale under high-concurrency conditions across shipped titles that collectively
+                    surpassed 1.7 billion visits and 250,000 concurrent players.</p>
+            </template>
+
+            <template id="modal-animation">
+                <p class="show-modal-meta">animation · 2023</p>
+                <h3 class="show-modal-title">3D Character Animations</h3>
+                <div class="show-modal-media">
+                    <div class="show-placeholder"><span>clip coming soon</span></div>
+                </div>
+                <p class="show-modal-desc">Character animations and assets built in Blender, exported and integrated
+                    into Roblox Studio as production-ready content delivered for multiple shipped titles.</p>
+            </template>
+
+            <template id="modal-physics">
+                <p class="show-modal-meta">physics · 2023</p>
+                <h3 class="show-modal-title">Physics &amp; Combat Systems</h3>
+                <div class="show-modal-media">
+                    <div class="show-placeholder"><span>clip coming soon</span></div>
+                </div>
+                <p class="show-modal-desc">Custom hit detection, ragdoll physics, and ability systems engineered to
+                    run reliably at scale — the combat backbone for high-concurrency Roblox titles.</p>
+            </template>
         </section>
     </main>
 

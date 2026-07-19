@@ -1,5 +1,4 @@
-// Mohamed Elsayed — portfolio v2. Two things live here: the thin-lens ray
-// tracer under the name, and the ctrl-k command palette.
+// Mohamed Elsayed — portfolio v2. Galton-board hero + palette/theme/clock.
 
 (function () {
   "use strict";
@@ -7,9 +6,7 @@
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- Theme toggle (light <-> dark) ----------
-  // The no-flash inline <head> script already applied any saved theme; here we
-  // wire the nav button, sync its glyph + <meta theme-color>, and nudge canvas
-  // samples to redraw (they re-read CSS vars each frame).
+  // The no-flash <head> script already applied any saved theme; wire the button.
   var THEME_COLORS = { light: "#fafaf7", dark: "#161614" };
 
   function effectiveTheme() {
@@ -65,20 +62,81 @@
   window.addEventListener("resize", updateProgress);
   updateProgress();
 
-  // ---------- Hero instrument: a thin-lens ray tracer ----------
-  // A fan leaves a point source, refracts through the lens, and converges to
-  // the image given by 1/s + 1/s' = 1/f; inside f the image goes virtual.
+  // ---------- Hero: quantum Galton board ----------
   var canvas = document.getElementById("wave");
   if (canvas) {
     var ctx = canvas.getContext("2d");
     var readout = document.getElementById("wave-readout");
-    var mouse = null;   // {x, y} over canvas, null = idle
-    var t = 0;          // idle drift clock
-    var is404 = document.body.classList.contains("is-404");
+    var ROWS = 14, BINS = ROWS + 1, MID = ROWS / 2;
 
     function cssVar(name, fallback) {
       var v = getComputedStyle(document.documentElement).getPropertyValue(name);
       return (v && v.trim()) || fallback;
+    }
+
+    // Hadamard walk, symmetric coin state.
+    function quantumDist() {
+      var N = ROWS, size = 2 * N + 1, s2 = 1 / Math.sqrt(2);
+      var Lr = new Float64Array(size), Li = new Float64Array(size);
+      var Rr = new Float64Array(size), Ri = new Float64Array(size);
+      Lr[N] = s2; Ri[N] = s2;
+      for (var step = 0; step < N; step++) {
+        var nLr = new Float64Array(size), nLi = new Float64Array(size);
+        var nRr = new Float64Array(size), nRi = new Float64Array(size);
+        for (var p = 0; p < size; p++) {
+          var aLr = (Lr[p] + Rr[p]) * s2, aLi = (Li[p] + Ri[p]) * s2;
+          var aRr = (Lr[p] - Rr[p]) * s2, aRi = (Li[p] - Ri[p]) * s2;
+          if (p > 0) { nLr[p - 1] += aLr; nLi[p - 1] += aLi; }
+          if (p < size - 1) { nRr[p + 1] += aRr; nRi[p + 1] += aRi; }
+        }
+        Lr = nLr; Li = nLi; Rr = nRr; Ri = nRi;
+      }
+      var d = [];
+      for (var i = 0; i <= 2 * N; i += 2)
+        d.push(Lr[i] * Lr[i] + Li[i] * Li[i] + Rr[i] * Rr[i] + Ri[i] * Ri[i]);
+      return d;
+    }
+
+    function classicalDist() {
+      var d = [], c = 1, N = ROWS;
+      for (var k = 0; k <= N; k++) { d.push(c); c = c * (N - k) / (k + 1); }
+      var tot = Math.pow(2, N);
+      return d.map(function (x) { return x / tot; });
+    }
+
+    var QDIST = quantumDist(), CDIST = classicalDist();
+
+    function sampleBin(dist) {
+      var r = Math.random(), acc = 0;
+      for (var i = 0; i < dist.length; i++) { acc += dist[i]; if (r <= acc) return i; }
+      return dist.length - 1;
+    }
+
+    function makePath(bin) {
+      var steps = [], i;
+      for (i = 0; i < ROWS; i++) steps.push(i < bin ? 1 : -1);
+      for (i = ROWS - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = steps[i]; steps[i] = steps[j]; steps[j] = tmp;
+      }
+      var path = [MID], pos = MID;
+      for (i = 0; i < ROWS; i++) { pos += steps[i] * 0.5; path.push(pos); }
+      return path;
+    }
+
+    var mode = "quantum";
+    var counts = new Int32Array(BINS);
+    var total = 0;
+    var photons = [];
+    var spawnAcc = 0;
+
+    function activeDist() { return mode === "classical" ? CDIST : QDIST; }
+
+    function setMode(m) {
+      if (mode === m) return;
+      mode = m;
+      counts = new Int32Array(BINS);
+      photons.length = 0;
     }
 
     function size() {
@@ -89,208 +147,236 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    // Draw the segment of the line through (L, dir) that runs from L rightward
-    // to the right edge (used for the outgoing physical ray).
-    function rayToRight(L, dir, w) {
-      // dir points to the right (dir.x > 0); scale to reach the right edge.
-      var tEdge = (w - L.x) / dir.x;
-      ctx.beginPath();
-      ctx.moveTo(L.x, L.y);
-      ctx.lineTo(L.x + dir.x * tEdge, L.y + dir.y * tEdge);
-      ctx.stroke();
-    }
-
-    function draw(sx, sy, hovered) {
+    function frame(dt) {
       var rect = canvas.getBoundingClientRect();
-      var w = rect.width, h = rect.height, mid = h / 2;
-      var cx = w / 2;                 // lens plane
-      var f = Math.max(46, w / 6);    // focal length (px)
-      var ap = h * 0.40;              // lens half-aperture
+      var w = rect.width, h = rect.height;
+      var padX = 10, bw = (w - 2 * padX) / BINS;
+      var topY = 6, histMaxH = h * 0.4, baseY = h - 4;
+      var pegTop = 20, pegBot = baseY - histMaxH - 6;
+      if (pegBot < pegTop + 10) pegBot = pegTop + 10;
+      var rowSpan = pegBot - pegTop;
+      function binX(bf) { return padX + bw * (bf + 0.5); }
 
-      ctx.clearRect(0, 0, w, h);
+      var perSec = mode === "classical" ? 12 : 3;
+      spawnAcc += dt * perSec;
+      while (spawnAcc >= 1 && photons.length < 15) {
+        spawnAcc -= 1;
+        var bin = sampleBin(activeDist());
+        photons.push({ path: makePath(bin), bin: bin, rowf: 0 });
+      }
+      if (spawnAcc > 3) spawnAcc = 3;
+      var fallRate = ROWS / 1.1;
+      for (var pi = photons.length - 1; pi >= 0; pi--) {
+        var ph = photons[pi];
+        ph.rowf += dt * fallRate;
+        if (ph.rowf >= ROWS) { counts[ph.bin]++; total++; photons.splice(pi, 1); }
+      }
 
       var muted = cssVar("--muted", "#6b6b66");
       var accent = cssVar("--accent", "#1f3fbf");
       var fg = cssVar("--fg", "#1a1a1a");
-
-      // --- optical axis ---
-      ctx.strokeStyle = muted;
-      ctx.globalAlpha = 0.35;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(0, mid);
-      ctx.lineTo(w, mid);
-      ctx.stroke();
-
-      // --- focal ticks + labels at +/- f ---
-      ctx.globalAlpha = 0.6;
-      ctx.font = "10px " + cssVar("--font-mono", "ui-monospace, monospace");
+      var barColor = mode === "classical" ? muted : accent;
+      ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = muted;
-      [-f, f].forEach(function (dx) {
-        var fx = cx + dx;
-        ctx.beginPath();
-        ctx.moveTo(fx, mid - 4);
-        ctx.lineTo(fx, mid + 4);
-        ctx.stroke();
-        ctx.fillText("f", fx + 3, mid - 6);
-      });
-
-      // --- lens glyph: two shallow arcs (a vesica) ---
-      var top = mid - ap, bot = mid + ap, bulge = 7;
-      ctx.globalAlpha = 0.9;
-      ctx.strokeStyle = muted;
-      ctx.lineWidth = 1.25;
-      ctx.beginPath();
-      ctx.moveTo(cx, top);
-      ctx.quadraticCurveTo(cx - bulge, mid, cx, bot);
-      ctx.quadraticCurveTo(cx + bulge, mid, cx, top);
-      ctx.stroke();
-
-      // --- optics ---
-      var s = cx - sx;                       // object distance (px, >0)
-      s = Math.max(6, s);
-
-      // Hovering splits the outgoing fan into three colors at slightly
-      // different focal lengths (dispersion); idle = one accent fan.
-      var passes = hovered
-        ? [[0.96, "#5b4bd6"], [1.0, accent], [1.04, "#c0504d"]]
-        : [[1.0, accent]];
-
-      // fan of rays across the aperture; three near the principals are stronger
-      var N = 9;
-      var strong = [0, (N - 1) / 2, N - 1]; // top-edge, chief, bottom-edge
-      var ys = [];
-
-      // incoming rays: source -> lens (straight, independent of focal length)
-      for (var i = 0; i < N; i++) {
-        var ly = top + (ap * 2) * (i / (N - 1));
-        ys.push(ly);
-        ctx.strokeStyle = muted;
-        ctx.globalAlpha = strong.indexOf(i) !== -1 ? 0.5 : 0.22;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.moveTo(sx, sy);
-        ctx.lineTo(cx, ly);
-        ctx.stroke();
+      ctx.globalAlpha = 0.4;
+      for (var r = 0; r < ROWS; r++) {
+        var py = pegTop + (ROWS > 1 ? rowSpan * r / (ROWS - 1) : 0);
+        for (var c = 0; c <= r; c++) {
+          ctx.beginPath();
+          ctx.arc(binX(MID + (c - r / 2)), py, 0.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
-      // outgoing fan + focus dot, once per chromatic pass
-      var mainSp = 0, mainVirtual = false, mainM = 0;
-      passes.forEach(function (p) {
-        var f2 = f * p[0];
-        var denom = s - f2;
-        if (Math.abs(denom) < 1e-3) denom = denom < 0 ? -1e-3 : 1e-3;
-        var sp = (s * f2) / denom;
-        sp = Math.max(-40 * f, Math.min(40 * f, sp));
-        var m = -sp / s;
-        var virtual = sp < 0;
-        var I = { x: cx + sp, y: mid + m * (sy - mid) };
-        if (p[0] === 1.0) { mainSp = sp; mainVirtual = virtual; mainM = m; }
+      var maxCount = 1;
+      for (var b = 0; b < BINS; b++) if (counts[b] > maxCount) maxCount = counts[b];
+      ctx.fillStyle = barColor;
+      ctx.globalAlpha = 0.85;
+      for (b = 0; b < BINS; b++) {
+        if (!counts[b]) continue;
+        var bh = (counts[b] / maxCount) * histMaxH;
+        ctx.fillRect(binX(b) - bw * 0.3, baseY - bh, bw * 0.6, bh);
+      }
 
-        ctx.strokeStyle = p[1];
-        for (var j = 0; j < N; j++) {
-          var isStrong = strong.indexOf(j) !== -1;
-          var L = { x: cx, y: ys[j] };
-          var toI = { x: I.x - L.x, y: I.y - L.y };
-          var dir = toI.x >= 0 ? toI : { x: -toI.x, y: -toI.y };
-          if (Math.abs(dir.x) < 1e-3) dir.x = 1e-3;
-          ctx.globalAlpha = hovered ? (isStrong ? 0.45 : 0.3) : (isStrong ? 0.6 : 0.28);
-          ctx.setLineDash([]);
-          rayToRight(L, dir, w);
-          if (virtual) {
-            ctx.globalAlpha = hovered ? (isStrong ? 0.3 : 0.16) : (isStrong ? 0.4 : 0.18);
-            ctx.setLineDash([3, 3]);
-            ctx.beginPath();
-            ctx.moveTo(L.x, L.y);
-            ctx.lineTo(I.x, I.y);
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
-        }
-
-        // focus dot for this pass: filled if real, hollow if virtual
-        if (I.x > 2 && I.x < w - 2 && I.y > 2 && I.y < h - 2) {
-          ctx.globalAlpha = hovered ? 0.85 : 1;
-          ctx.strokeStyle = p[1];
-          ctx.fillStyle = p[1];
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([]);
-          ctx.beginPath();
-          ctx.arc(I.x, I.y, 3.5, 0, Math.PI * 2);
-          if (virtual) ctx.stroke(); else ctx.fill();
-        }
-      });
-
-      // --- source dot ---
       ctx.globalAlpha = 1;
-      ctx.setLineDash([]);
       ctx.fillStyle = fg;
       ctx.beginPath();
-      ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+      ctx.arc(binX(MID), topY, 2.2, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = 0.9;
+      for (pi = 0; pi < photons.length; pi++) {
+        ph = photons[pi];
+        var i0 = Math.floor(ph.rowf);
+        if (i0 > ROWS) i0 = ROWS;
+        var frac = ph.rowf - i0;
+        var bfrom = ph.path[Math.min(i0, ROWS)], bto = ph.path[Math.min(i0 + 1, ROWS)];
+        var bf = bfrom + (bto - bfrom) * frac;
+        var y = topY + (pegBot - topY) * Math.min(1, ph.rowf / ROWS);
+        ctx.beginPath();
+        ctx.arc(binX(bf), y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
 
-      // --- readout (tracks the central, 1.0f pass) ---
       if (readout) {
-        var mag = Math.abs(mainSp / s).toFixed(1);
-        var kind = mainVirtual ? "virtual" : "real";
-        var orient = mainM < 0 ? "inverted" : "upright";
-        readout.textContent =
-          "s = " + (s / f).toFixed(2) + "f · image " + kind + ", " + orient + ", " + mag + "×";
+        readout.textContent = total.toLocaleString("en-US") + " photons · " +
+          (mode === "classical" ? "classical" : "quantum") + " walk";
       }
     }
 
-    // resolve the source position for the current frame
-    function sourceForFrame() {
+    function staticDraw() {
       var rect = canvas.getBoundingClientRect();
-      var w = rect.width, h = rect.height, cx = w / 2, mid = h / 2;
-      var f = Math.max(46, w / 6);
-      if (mouse) {
-        // clamp x to the left half; keep y inside the canvas
-        var sx = Math.max(10, Math.min(cx - 8, mouse.x));
-        var sy = Math.max(8, Math.min(h - 8, mouse.y));
-        return { x: sx, y: sy };
+      var w = rect.width, h = rect.height;
+      var padX = 10, bw = (w - 2 * padX) / BINS;
+      var baseY = h - 14, maxH = h * 0.5;
+      var muted = cssVar("--muted", "#6b6b66");
+      var accent = cssVar("--accent", "#1f3fbf");
+      var mx = Math.max(Math.max.apply(null, QDIST), Math.max.apply(null, CDIST));
+      ctx.clearRect(0, 0, w, h);
+      function bars(dist, color) {
+        ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.9;
+        for (var b = 0; b < BINS; b++) {
+          var bh = dist[b] / mx * maxH, x = padX + bw * (b + 0.5), bwid = bw * 0.5;
+          ctx.strokeRect(x - bwid / 2, baseY - bh, bwid, bh);
+        }
       }
-      // idle drift sweeps across f; 404 begins on the virtual branch (0.7f).
-      var s = is404
-        ? f * (0.7 + (1 - Math.cos(t)) * 0.85)
-        : f * (1.5 + Math.cos(t) * 0.9);
-      return { x: cx - s, y: mid + Math.sin(t * 0.7) * (h * 0.22) };
+      bars(CDIST, muted);
+      bars(QDIST, accent);
+      ctx.globalAlpha = 1;
+      ctx.font = "10px " + cssVar("--font-mono", "ui-monospace, monospace");
+      ctx.fillStyle = accent; ctx.fillText("quantum", padX, 12);
+      ctx.fillStyle = muted; ctx.fillText("classical", padX + 56, 12);
+      if (readout) readout.textContent = "quantum vs classical";
     }
 
     if (reduceMotion) {
-      var staticFrame = function () {
-        var rect = canvas.getBoundingClientRect();
-        var w = rect.width, h = rect.height, cx = w / 2;
-        var f = Math.max(46, w / 6);
-        var sMul = is404 ? 0.7 : 1.5; // 404 sits on the virtual branch
-        draw(cx - sMul * f, h / 2 - h * 0.22, false); // single fan, no hover
-      };
-      size();
-      staticFrame();
-      window.addEventListener("resize", function () { size(); staticFrame(); });
+      size(); staticDraw();
+      window.addEventListener("resize", function () { size(); staticDraw(); });
     } else {
       size();
-      canvas.addEventListener("mousemove", function (e) {
-        var rect = canvas.getBoundingClientRect();
-        mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      });
-      canvas.addEventListener("mouseleave", function () { mouse = null; });
       window.addEventListener("resize", size);
-      (function loop() {
-        if (!mouse) t += 0.012;
-        var src = sourceForFrame();
-        draw(src.x, src.y, !!mouse); // chromatic split only while hovered
+      var toQ = function () { setMode("quantum"); };
+      canvas.addEventListener("pointerdown", function () { setMode("classical"); });
+      window.addEventListener("pointerup", toQ);
+      window.addEventListener("pointercancel", toQ);
+      var last = 0;
+      (function loop(ts) {
+        var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0;
+        last = ts;
+        frame(dt);
         requestAnimationFrame(loop);
-      })();
+      })(0);
     }
   }
 
-  // ---------- Command palette ----------
+  // ---------- Homepage side rail: scrollspy ----------
+  var rail = document.querySelector("nav.side-rail");
+  if (rail) {
+    var railLinks = Array.prototype.slice.call(rail.querySelectorAll("a[href^='#']"));
+    var targets = railLinks
+      .map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); })
+      .filter(Boolean);
+    if (targets.length && "IntersectionObserver" in window) {
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          railLinks.forEach(function (a) {
+            a.classList.toggle("active", a.getAttribute("href").slice(1) === en.target.id);
+          });
+        });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      targets.forEach(function (t) { spy.observe(t); });
+    }
+    railLinks.forEach(function (a) {
+      a.addEventListener("click", function () {
+        railLinks.forEach(function (x) { x.classList.remove("active"); });
+        a.classList.add("active");
+      });
+    });
+  }
+
+  // ---------- Demos: card -> modal ----------
+  var showCards = document.querySelectorAll(".show-card[data-modal]");
+  if (showCards.length) {
+    var modalOverlay = null, modalPanel = null, modalBody = null, modalLastFocus = null;
+    var FOCUSABLE = "button, a[href], input, textarea, select, [tabindex]:not([tabindex='-1'])";
+
+    function buildOverlay() {
+      modalOverlay = document.createElement("div");
+      modalOverlay.id = "show-modal-overlay";
+      modalOverlay.className = "show-modal-overlay";
+      modalOverlay.hidden = true;
+      modalPanel = document.createElement("div");
+      modalPanel.className = "show-modal";
+      modalPanel.setAttribute("role", "dialog");
+      modalPanel.setAttribute("aria-modal", "true");
+      modalPanel.setAttribute("tabindex", "-1");
+      var closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "show-modal-close";
+      closeBtn.setAttribute("aria-label", "Close");
+      closeBtn.innerHTML = "&times;";
+      closeBtn.addEventListener("click", closeModal);
+      modalBody = document.createElement("div");
+      modalBody.className = "show-modal-body";
+      modalPanel.appendChild(closeBtn);
+      modalPanel.appendChild(modalBody);
+      modalOverlay.appendChild(modalPanel);
+      modalOverlay.addEventListener("mousedown", function (e) {
+        if (e.target === modalOverlay) closeModal();
+      });
+      document.body.appendChild(modalOverlay);
+    }
+
+    function openModal(tplId) {
+      var tpl = document.getElementById(tplId);
+      if (!tpl || !("content" in tpl)) return;
+      if (!modalOverlay) buildOverlay();
+      modalBody.innerHTML = "";
+      modalBody.appendChild(tpl.content.cloneNode(true));
+      modalLastFocus = document.activeElement;
+      modalOverlay.hidden = false;
+      document.body.classList.add("modal-open");
+      var f = modalPanel.querySelector(FOCUSABLE);
+      (f || modalPanel).focus();
+    }
+
+    function closeModal() {
+      if (!modalOverlay || modalOverlay.hidden) return;
+      modalOverlay.hidden = true;
+      document.body.classList.remove("modal-open");
+      if (modalLastFocus && modalLastFocus.focus) modalLastFocus.focus();
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (!modalOverlay || modalOverlay.hidden) return;
+      if (e.key === "Escape") { e.preventDefault(); closeModal(); return; }
+      if (e.key === "Tab") { // focus trap
+        var f = modalPanel.querySelectorAll(FOCUSABLE);
+        if (!f.length) { e.preventDefault(); modalPanel.focus(); return; }
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    Array.prototype.forEach.call(showCards, function (card) {
+      card.addEventListener("click", function () { openModal(card.getAttribute("data-modal")); });
+      card.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+          e.preventDefault();
+          openModal(card.getAttribute("data-modal"));
+        }
+      });
+    });
+  }
+
+  // ---------- Command palette (Mohamed's "search") ----------
   var destinations = [
     { label: "Home", hint: "index", url: "index.html" },
     { label: "Now", hint: "section", url: "index.html#now" },
+    { label: "Timeline", hint: "section", url: "index.html#timeline" },
     { label: "Experience", hint: "section", url: "index.html#experience" },
     { label: "In My Lifetime", hint: "section", url: "index.html#lifetime" },
     { label: "Projects", hint: "page", url: "projects.html" },

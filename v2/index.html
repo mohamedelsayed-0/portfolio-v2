@@ -19,7 +19,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
 
     <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg">
@@ -52,14 +52,21 @@
         </div>
     </header>
 
+    <nav class="side-rail" aria-label="Section navigation">
+        <a href="#now"><span class="rail-num">01</span> now</a>
+        <a href="#timeline"><span class="rail-num">02</span> timeline</a>
+        <a href="#experience"><span class="rail-num">03</span> experience</a>
+        <a href="#lifetime"><span class="rail-num">04</span> lifetime</a>
+    </nav>
+
     <main id="main">
         <section class="hero wrap">
             <h1>Mohamed Elsayed</h1>
             <p class="deck">Hello! My name is Mohamed. I'm an EE student at UofT and I'm interested in a variety of fields in <em>Quantum Physics</em> and use my software and AI/ML skills to build
                 research tools, simulations, and systems you can see, test, and benefit from.</p>
             <canvas id="wave" aria-hidden="true"></canvas>
-            <p class="readout"><span id="wave-readout" aria-hidden="true">s = 1.50f · image real, inverted, 2.0×</span></p>
-            <p class="caption">a thin lens — bring your cursor inside f</p>
+            <p class="readout"><span id="wave-readout" aria-hidden="true">1,248 photons · quantum walk</span></p>
+            <p class="caption">a quantum walk — hold to make it classical</p>
             <p class="meta">Toronto / Cairo · Physics / Maths / Programming</p>
         </section>
 
@@ -80,9 +87,53 @@
 
         <hr>
 
-        <section id="experience" class="wrap section">
+        <!-- TODO: Mohamed — check dates/wording -->
+        <section id="timeline" class="wrap section">
             <div class="sec-head">
                 <span class="sec-num">02</span>
+                <span class="sec-rule"></span>
+                <h2 class="sec-title">Timeline</h2>
+            </div>
+            <ol class="timeline">
+                <li class="tl-item">
+                    <span class="tl-date">2026·05</span>
+                    <span class="tl-text">Began quantum-dot photovoltaics research at Ain Shams University
+                        (Profs. El-Aasser &amp; Gad).</span>
+                </li>
+                <li class="tl-item">
+                    <span class="tl-date">2026</span>
+                    <span class="tl-text">Started independent GKP quantum error correction research
+                        (<a href="https://github.com/mohamedelsayed-0/gkp-thermal-recovery">gkp-thermal-recovery</a>).</span>
+                </li>
+                <li class="tl-item">
+                    <span class="tl-date">2025·07</span>
+                    <span class="tl-text">Optics-automation research at AUC (Prof. Swillam).</span>
+                </li>
+                <li class="tl-item">
+                    <span class="tl-date">2025</span>
+                    <span class="tl-text"><a href="https://github.com/mohamedelsayed-0/Pong-AI">Pong AI</a>
+                        placed 3rd, ESC180 tournament.</span>
+                </li>
+                <li class="tl-item">
+                    <span class="tl-date">2024·09</span>
+                    <span class="tl-text">Started Engineering Science at UofT.</span>
+                </li>
+                <li class="tl-item">
+                    <span class="tl-date">2024·07</span>
+                    <span class="tl-text">Backend internship at eVision.</span>
+                </li>
+                <li class="tl-item">
+                    <span class="tl-date">2021–2023</span>
+                    <span class="tl-text">Roblox development era — shipped titles passing 1.7B visits.</span>
+                </li>
+            </ol>
+        </section>
+
+        <hr>
+
+        <section id="experience" class="wrap section">
+            <div class="sec-head">
+                <span class="sec-num">03</span>
                 <span class="sec-rule"></span>
                 <h2 class="sec-title">Experience</h2>
             </div>
@@ -152,7 +203,7 @@
         <!-- TODO: Mohamed — make these yours -->
         <section id="lifetime" class="wrap section">
             <div class="sec-head">
-                <span class="sec-num">03</span>
+                <span class="sec-num">04</span>
                 <span class="sec-rule"></span>
                 <h2 class="sec-title">In my lifetime, I want to...</h2>
             </div>

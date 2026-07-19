@@ -37,6 +37,12 @@
   label.appendChild(gInput);
   controls.appendChild(label);
 
+  var recoverBtn = document.createElement("button");
+  recoverBtn.type = "button";
+  recoverBtn.className = "demo-btn";
+  recoverBtn.textContent = "apply recovery";
+  controls.appendChild(recoverBtn);
+
   var readout = document.createElement("span");
   readout.className = "demo-readout";
   controls.appendChild(readout);
@@ -91,11 +97,12 @@
   // Fills `field` with W(q,p) over the grid; returns {wmax, raw} where raw is
   // the un-normalized negativity Σ|W<0| / Σ|W|. Only odd·odd lattice sites are
   // negative ((-1)^{m·n} < 0 iff both m and n are odd); their amplitude is
-  // scaled by (1−γ) so they fade out under noise. Envelope terms below 1e-4
-  // are skipped, but for m,n∈[-3,3] none are (worst case ≈ 0.039).
-  function compute(g) {
-    var sig = SIG0 * (1 + 2 * g);
-    var s2 = 2 * sig * sig;
+  // scaled by negScale (1 at γ=0) so they fade out under noise. `sigma` and
+  // `negScale` are passed explicitly (not derived from γ inline) so the
+  // recovery map can drive them independently of the slider. Envelope terms
+  // below 1e-4 are skipped, but for m,n∈[-3,3] none are (worst case ≈ 0.039).
+  function compute(sigma, negScale) {
+    var s2 = 2 * sigma * sigma;
     var sumNeg = 0, sumAll = 0, wmax = 0;
     var dqx = (2 * HALF) / GX, dpy = (2 * HALF) / GY;
     // precompute per-site amplitude and center
@@ -105,7 +112,7 @@
         var env = Math.exp(-(m * m + n * n) * 2 * DELTA * DELTA);
         if (env < 1e-4) continue;
         var neg = (m & 1) && (n & 1);
-        var a = neg ? -env * (1 - g) : env;
+        var a = neg ? -env * negScale : env;
         amps.push(a);
         cx.push(m * S);
         cy.push(n * S);
@@ -132,7 +139,27 @@
   }
 
   // baseline negativity at γ=0 (computed once) → display normalized to 1.00
-  var baseline = compute(0).raw || 1;
+  var baseline = compute(SIG0, 1).raw || 1;
+
+  // ---------- recovery state ----------
+  // sigmaEff/negScaleEff are the *effective* peak width / negative-amplitude
+  // scale actually rendered. The slider sets a baseline for both; `apply
+  // recovery` re-sharpens them toward the γ=0 ideal (sigmaEff → SIG0,
+  // negScaleEff → 1) without touching the slider. recoveryStep counts
+  // recoveries since the last slider move, for diminishing returns.
+  var sigmaEff = 0, negScaleEff = 1, recoveryStep = 0, animToken = 0;
+
+  function baselineFor(g) { return { sigma: SIG0 * (1 + 2 * g), neg: 1 - g }; }
+
+  function resetRecovery() {
+    animToken++; // cancels any in-flight animation
+    var g = parseFloat(gInput.value);
+    var b = baselineFor(g);
+    sigmaEff = b.sigma;
+    negScaleEff = b.neg;
+    recoveryStep = 0;
+    recoverBtn.disabled = g === 0;
+  }
 
   // ---------- render ----------
   function toX(q) { return w * (0.5 + q / (2 * HALF)); }
@@ -141,7 +168,7 @@
   function draw() {
     readColors();
     var g = parseFloat(gInput.value);
-    var res = compute(g);
+    var res = compute(sigmaEff, negScaleEff);
     var wmax = res.wmax || 1;
 
     // paint coarse field into the offscreen buffer
@@ -192,8 +219,62 @@
     readout.textContent = "γ = " + g.toFixed(2) + " · negativity " + neg.toFixed(2);
   }
 
+  // ---------- recovery animation ----------
+  // Bounded ~600ms loop (20 fixed-interval eased steps) that drives
+  // sigmaEff/negScaleEff from their pre-click values to the recovered
+  // target, redrawing through the same draw() path each step. Cancellable:
+  // a fresh call bumps animToken so any in-flight loop stops on its next
+  // tick, and starts over from whatever sigmaEff/negScaleEff currently are.
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animateRecovery(sig0, neg0, sig1, neg1, before, after) {
+    var token = ++animToken;
+    var STEPS = 20, STEP_MS = 30, step = 0;
+    var g = parseFloat(gInput.value);
+    function tick() {
+      if (token !== animToken) return; // superseded by a newer click/slider move
+      step++;
+      var e = easeOutCubic(step / STEPS);
+      sigmaEff = sig0 + (sig1 - sig0) * e;
+      negScaleEff = neg0 + (neg1 - neg0) * e;
+      draw();
+      var cur = before + (after - before) * e;
+      readout.textContent = "γ = " + g.toFixed(2) + " · negativity " +
+        before.toFixed(2) + " → " + cur.toFixed(2);
+      if (step < STEPS) {
+        setTimeout(tick, STEP_MS);
+      } else {
+        sigmaEff = sig1;
+        negScaleEff = neg1;
+        draw();
+        readout.textContent = "γ = " + g.toFixed(2) + " · negativity " +
+          before.toFixed(2) + " → " + after.toFixed(2);
+      }
+    }
+    tick();
+  }
+
+  function applyRecovery() {
+    var g = parseFloat(gInput.value);
+    if (g === 0) return; // already ideal — visual no-op
+    var before = compute(sigmaEff, negScaleEff).raw / baseline;
+
+    // diminishing returns: each successive recovery (sans slider move)
+    // recovers only 60% of what the previous one could
+    var fraction = 0.35 * Math.pow(0.6, recoveryStep);
+    recoveryStep++;
+
+    var sig0 = sigmaEff, neg0 = negScaleEff;
+    var sig1 = Math.max(SIG0, sig0 - fraction * (sig0 - SIG0));
+    var neg1 = Math.min(1, neg0 + fraction * (1 - neg0));
+    var after = compute(sig1, neg1).raw / baseline;
+
+    animateRecovery(sig0, neg0, sig1, neg1, before, after);
+  }
+
   // ---------- events: static render on input / resize / theme only ----------
-  gInput.addEventListener("input", draw);
+  gInput.addEventListener("input", function () { resetRecovery(); draw(); });
+  recoverBtn.addEventListener("click", applyRecovery);
 
   var resizeTimer = null;
   window.addEventListener("resize", function () {
@@ -201,6 +282,7 @@
     resizeTimer = setTimeout(function () { size(); draw(); }, 150);
   });
 
+  resetRecovery();
   size();
   draw();
 })();

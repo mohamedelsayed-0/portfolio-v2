@@ -1,7 +1,6 @@
-// Cart-pole bench — nonlinear dynamics, RK4-integrated, upright-balanced by
-// a hardcoded LQR gain. Click/tap shoves the pole; it fights back and
-// recovers unless the shove is too big, in which case it falls and waits
-// for "stabilize".
+// Cart-pole bench, RK4-integrated. Starts hanging (theta=pi); "swing up"
+// energy-pumps to upright then hands off to a hardcoded LQR. Click shoves
+// while balancing, nudges while hanging. Falling -> "lost"; "reset" re-hangs.
 
 (function () {
   "use strict";
@@ -14,60 +13,53 @@
   mount.innerHTML =
     '<canvas class="demo-canvas" width="960" height="420" aria-hidden="true"></canvas>' +
     '<div class="demo-controls">' +
-    '<button type="button" class="demo-btn" id="mech-stabilize" hidden>stabilize</button>' +
+    '<button type="button" class="demo-btn" id="mech-swingup">swing up</button>' +
+    '<button type="button" class="demo-btn" id="mech-reset" hidden>reset</button>' +
     "</div>" +
     '<span class="demo-readout" id="mech-readout" aria-live="polite"></span>';
 
   var canvas = mount.querySelector("canvas");
   var ctx = canvas.getContext("2d");
-  var stabilizeBtn = mount.querySelector("#mech-stabilize");
+  var swingBtn = mount.querySelector("#mech-swingup");
+  var resetBtn = mount.querySelector("#mech-reset");
   var readout = mount.querySelector("#mech-readout");
 
   function colors() {
     var cs = getComputedStyle(document.documentElement);
-    function v(name, fb) {
-      var val = cs.getPropertyValue(name);
-      return val && val.trim() ? val.trim() : fb;
-    }
-    return {
-      fg: v("--fg", "#1a1a1a"),
-      muted: v("--muted", "#6b6b66"),
-      accent: v("--accent", "#1f3fbf"),
-      rule: v("--rule", "rgba(26,26,26,0.12)")
-    };
+    function v(name, fb) { var val = cs.getPropertyValue(name); return val && val.trim() ? val.trim() : fb; }
+    return { fg: v("--fg", "#1a1a1a"), muted: v("--muted", "#6b6b66"), accent: v("--accent", "#1f3fbf"), rule: v("--rule", "rgba(26,26,26,0.12)") };
   }
 
   function clamp(x, lo, hi) { return x < lo ? lo : x > hi ? hi : x; }
 
-  // ---- plant (cart mass M, pole mass MP, pole half-length L) ----
-  var M = 1, MP = 0.2, L = 0.5, G = 9.81;
-  var TOTAL = M + MP;
-  var U_MAX = 15;       // N, saturation
-  var RAIL = 6;         // m, cart clamps at +/- RAIL/2
-  var DT = 0.005;       // s, fixed RK4 substep
+  // plant: cart mass M, pole mass MP, half-length L. theta=0 upright
+  // (unstable), +/-pi hanging (stable).
+  var M = 1, MP = 0.2, L = 0.5, G = 9.81, TOTAL = M + MP;
+  var U_MAX = 15, RAIL = 6, DT = 0.005; // N sat, m rail width, s RK4 substep
   var FALL_ANGLE = (60 * Math.PI) / 180;
-  var IMPULSE_DTHETADOT = 3;   // rad/s kick from a click, swings ~20-30deg
-  var JITTER_PERIOD = 1.0;     // s between idle disturbances
-  var JITTER_MAG = 0.06;       // rad/s, tiny — keeps it "alive"
-  var SETTLE_ANGLE = (0.5 * Math.PI) / 180;
-  var SETTLE_RATE = 0.05;
+  var IMPULSE_DTHETADOT = 3, JITTER_PERIOD = 1, JITTER_MAG = 0.06; // click kick, idle sway
+  var SETTLE_ANGLE = (0.5 * Math.PI) / 180, SETTLE_RATE = 0.05;
 
-  // LQR gain K for u = -K.z, z = [x, xdot, theta, thetadot], theta=0 upright.
-  // Derived offline: linearize the plant about theta=0, discretize with a
-  // small dt, then iterate the discrete Riccati difference equation
-  //   P = Q + Ad'PAd - Ad'PBd (R + Bd'PBd)^-1 Bd'PAd
-  // to convergence for Q = diag(1,1,10,1), R = 0.1. Converged gain (~4000
-  // iterations): K = [-3.0615, -5.7949, -50.4135, -12.8781]. Verified in a
-  // throwaway RK4 harness: from theta=25deg the closed loop returns to
-  // |theta|<1deg in ~2.0s without the cart approaching +/-3m (rail=6m); from
-  // theta=70deg with u=0 the free swing stays numerically bounded.
+  // Swing-up: u = k(E-Eupright)*sign(thetadot*cos(theta)) + small cart
+  // recentering (KX, KXD) — bare energy law drifts the cart into a rail
+  // wall in ~2 pumps (throwaway harness); recentering fixes it. Tuned:
+  // k=5 catches from rest in ~2.7s sim, excursion ~1.8m, LQR then settles
+  // |theta|<0.01deg.
+  var K_SWING = 5, KX = 1.5, KXD = 0.8;
+  var CATCH_ANGLE = (25 * Math.PI) / 180, CATCH_RATE = 2.0; // handed to LQR at catch
+  var SWINGUP_TIMEOUT = 20; // s, failsafe
+
+  // LQR gain K for u=-K.z, z=[x,xdot,theta,thetadot], theta=0 upright.
+  // Offline: linearize about theta=0, discretize, iterate the discrete
+  // Riccati equation to convergence for Q=diag(1,1,10,1), R=0.1. Verified:
+  // from theta=25deg returns to |theta|<1deg in ~2s, cart within +/-3m.
+  // theta is ALWAYS wrapped to [-pi,pi] before feeding the gain (wrapAngle)
+  // — raw unwrapped angle after a swing-up would fire on theta~=2*pi, not 0.
   var K = [-3.061534435459863, -5.7948618936020795, -50.41352132866051, -12.87809236287752];
 
-  var z = [0, 0, 0, 0]; // x, xdot, theta, thetadot
-  var fallen = false;
-  var lastU = 0;
-  var lastTipX = 0;
-  var jitterAccum = 0;
+  var z = [0, 0, Math.PI, 0]; // x, xdot, theta, thetadot — starts hanging
+  var mode = "hanging"; // hanging | swing-up | balance | lost
+  var lastU = 0, lastTipX = 0, jitterAccum = 0, swingUpElapsed = 0;
 
   function deriv(zz, u) {
     var xd = zz[1], th = zz[2], thd = zz[3];
@@ -107,6 +99,21 @@
     return v < 0 ? "−" + Math.abs(v).toFixed(dec) : r;
   }
 
+  function swingUpU() {
+    var th = z[2], thd = z[3];
+    var E = 0.5 * MP * L * L * thd * thd + MP * G * L * Math.cos(th);
+    var Eu = MP * G * L;
+    var raw = thd * Math.cos(th);
+    var s = raw > 1e-6 ? 1 : raw < -1e-6 ? -1 : Math.sin(th) >= 0 ? 1 : -1; // kick-start, mirrored
+    var u = K_SWING * (E - Eu) * s - KX * z[0] - KXD * z[1];
+    return clamp(u, -U_MAX, U_MAX);
+  }
+
+  function lqrU() {
+    var thw = wrapAngle(z[2]); // deviation from upright, NOT raw z[2]
+    return clamp(-(K[0] * z[0] + K[1] * z[1] + K[2] * thw + K[3] * z[3]), -U_MAX, U_MAX);
+  }
+
   function physicsStep() {
     jitterAccum += DT;
     if (jitterAccum >= JITTER_PERIOD) {
@@ -114,13 +121,19 @@
       jitterAccum = 0;
     }
     var u = 0;
-    if (!fallen) {
-      u = clamp(-(K[0] * z[0] + K[1] * z[1] + K[2] * z[2] + K[3] * z[3]), -U_MAX, U_MAX);
-    }
+    if (mode === "swing-up") u = swingUpU();
+    else if (mode === "balance") u = lqrU();
     z = rk4(z, u, DT);
     if (z[0] > RAIL / 2) { z[0] = RAIL / 2; z[1] = 0; }
     else if (z[0] < -RAIL / 2) { z[0] = -RAIL / 2; z[1] = 0; }
-    if (!fallen && Math.abs(z[2]) > FALL_ANGLE) fallen = true;
+    if (mode === "swing-up") {
+      swingUpElapsed += DT;
+      var thw = wrapAngle(z[2]);
+      if (Math.abs(thw) < CATCH_ANGLE && Math.abs(z[3]) < CATCH_RATE) mode = "balance";
+      else if (swingUpElapsed > SWINGUP_TIMEOUT) mode = "hanging";
+    } else if (mode === "balance") {
+      if (Math.abs(wrapAngle(z[2])) > FALL_ANGLE) mode = "lost";
+    }
     lastU = u;
   }
 
@@ -135,13 +148,8 @@
   }
 
   function drawArrow(ctx2, x0, y, x1, c) {
-    ctx2.strokeStyle = c.muted;
-    ctx2.fillStyle = c.muted;
-    ctx2.lineWidth = 2;
-    ctx2.beginPath();
-    ctx2.moveTo(x0, y);
-    ctx2.lineTo(x1, y);
-    ctx2.stroke();
+    ctx2.strokeStyle = c.muted; ctx2.fillStyle = c.muted; ctx2.lineWidth = 2;
+    ctx2.beginPath(); ctx2.moveTo(x0, y); ctx2.lineTo(x1, y); ctx2.stroke();
     if (Math.abs(x1 - x0) > 3) {
       var dir = x1 > x0 ? 1 : -1;
       ctx2.beginPath();
@@ -158,60 +166,55 @@
     var w = rect.width, h = rect.height;
     var c = colors();
     ctx.clearRect(0, 0, w, h);
-
     var railY = h * 0.62;
     var margin = w * 0.08;
-    var trackPxW = w - margin * 2;
-    var pxPerM = trackPxW / RAIL;
+    var pxPerM = (w - margin * 2) / RAIL;
     var centerX = w / 2;
     var cartPxX = centerX + z[0] * pxPerM;
-
-    ctx.strokeStyle = c.rule;
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = c.rule; ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(margin, railY);
-    ctx.lineTo(w - margin, railY);
-    ctx.moveTo(centerX, railY - 6);
-    ctx.lineTo(centerX, railY + 6);
+    ctx.moveTo(margin, railY); ctx.lineTo(w - margin, railY);
+    ctx.moveTo(centerX, railY - 6); ctx.lineTo(centerX, railY + 6);
     ctx.stroke();
-
     var cartW = Math.max(26, w * 0.045), cartH = Math.max(14, h * 0.08);
     ctx.fillStyle = c.fg;
     ctx.fillRect(cartPxX - cartW / 2, railY - cartH / 2, cartW, cartH);
-
     var poleLen = h * 0.34;
     var pivotY = railY - cartH / 2;
     var tipX = cartPxX + poleLen * Math.sin(z[2]);
     var tipY = pivotY - poleLen * Math.cos(z[2]);
-    ctx.globalAlpha = fallen ? 0.5 : 1;
-    ctx.strokeStyle = fallen ? c.muted : c.accent;
+    var dim = mode === "lost";
+    ctx.globalAlpha = dim ? 0.5 : 1;
+    ctx.strokeStyle = dim ? c.muted : c.accent;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(cartPxX, pivotY);
-    ctx.lineTo(tipX, tipY);
+    ctx.moveTo(cartPxX, pivotY); ctx.lineTo(tipX, tipY);
     ctx.stroke();
-    ctx.fillStyle = fallen ? c.muted : c.accent;
+    ctx.fillStyle = dim ? c.muted : c.accent;
     ctx.beginPath();
     ctx.arc(tipX, tipY, Math.max(4, w * 0.011), 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
-
     var arrowScale = (w * 0.12) / U_MAX;
     drawArrow(ctx, cartPxX, railY + cartH / 2 + 14, cartPxX + lastU * arrowScale, c);
-
     lastTipX = tipX;
   }
 
   function updateReadout() {
     var thetaDeg = (wrapAngle(z[2]) * 180) / Math.PI;
-    var text = "θ = " + fmtSigned(thetaDeg, 1) + "° · u = " + fmtSigned(lastU, 1) + " N";
-    if (fallen) text += " · controller lost it";
+    var text;
+    if (mode === "hanging") text = "hanging";
+    else if (mode === "swing-up") text = "swing-up · θ = " + fmtSigned(thetaDeg, 0) + "°";
+    else if (mode === "balance") text = "balance · θ = " + fmtSigned(thetaDeg, 1) + "°";
+    else text = "lost";
     readout.textContent = text;
-    stabilizeBtn.hidden = !fallen;
+    var idle = mode === "hanging" || mode === "lost";
+    swingBtn.hidden = !idle;
+    resetBtn.hidden = !idle;
   }
 
   // ---- loop ----
-  var rafId = null, lastTs = null, transientActive = false;
+  var rafId = null, lastTs = null, transientActive = false, transientDeadline = null;
 
   function resume() {
     if (rafId !== null) return;
@@ -234,31 +237,49 @@
     render();
     updateReadout();
     if (reduceMotion) {
-      var settled = !fallen && Math.abs(wrapAngle(z[2])) < SETTLE_ANGLE && Math.abs(z[3]) < SETTLE_RATE;
-      if (settled || fallen) { transientActive = false; rafId = null; return; }
+      var stop = false;
+      if (mode === "lost") stop = true;
+      else if (mode === "balance") {
+        stop = Math.abs(wrapAngle(z[2])) < SETTLE_ANGLE && Math.abs(z[3]) < SETTLE_RATE;
+      } else if (mode === "hanging" && transientDeadline !== null && now >= transientDeadline) {
+        stop = true;
+      }
+      if (stop) { transientActive = false; transientDeadline = null; rafId = null; return; }
     }
     rafId = requestAnimationFrame(step);
   }
 
   canvas.addEventListener("click", function (e) {
-    if (fallen) return;
+    if (mode === "swing-up" || mode === "lost") return;
     var rect = canvas.getBoundingClientRect();
     var clickX = e.clientX - rect.left;
     var sign = clickX < lastTipX ? 1 : -1;
     z[3] += sign * IMPULSE_DTHETADOT;
+    if (reduceMotion) {
+      transientActive = true;
+      if (mode === "hanging") transientDeadline = performance.now() + 2500;
+    }
+    resume();
+  });
+
+  swingBtn.addEventListener("click", function () {
+    if (mode !== "hanging" && mode !== "lost") return;
+    mode = "swing-up";
+    swingUpElapsed = 0;
+    transientDeadline = null;
     if (reduceMotion) transientActive = true;
     resume();
   });
 
-  stabilizeBtn.addEventListener("click", function () {
-    z = [0, 0, 0, 0];
-    fallen = false;
+  resetBtn.addEventListener("click", function () {
+    z = [0, 0, Math.PI, 0];
+    mode = "hanging";
     lastU = 0;
     jitterAccum = 0;
+    swingUpElapsed = 0;
     transientActive = false;
-    render();
-    updateReadout();
-    resume();
+    transientDeadline = null;
+    render(); updateReadout(); resume();
   });
 
   document.addEventListener("visibilitychange", function () {

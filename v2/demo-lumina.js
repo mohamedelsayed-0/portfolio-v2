@@ -251,22 +251,34 @@ return{latex:latex,frag:frag,tokenCount:toks.length,ruleCount:ruleCount,truncate
 var ta=el("textarea","lumina-in");
 ta.setAttribute("spellcheck","false");
 ta.setAttribute("aria-label","plain text to convert to LaTeX");
-ta.value="integral of x^2 dx from 0 to 1 = 1/3";
-mount.appendChild(ta);
+ta.value="integral of alpha x^2 dx from 0 to infinity";
 var rd=el("div","lumina-render");
 var sp=el("pre","lumina-src");
 var cb=el("button","demo-btn");
 cb.type="button";
 cb.textContent="copy";
-var sr=el("div","lumina-src-row");
-sr.appendChild(sp);
-sr.appendChild(cb);
+var leftHead=el("div","lum-head");
+leftHead.textContent="plain text";
+var leftPane=el("div","lum-pane");
+leftPane.appendChild(leftHead);
+leftPane.appendChild(ta);
+var rightHead=el("div","lum-head");
+rightHead.textContent="rendered";
+var card=el("div","lum-card");
+card.appendChild(rd);
+var latexHead=el("div");
+latexHead.className="lum-head lum-latex-head";
+latexHead.appendChild(document.createTextNode("latex "));
+latexHead.appendChild(cb);
+var rightPane=el("div","lum-pane");
+rightPane.appendChild(rightHead);
+rightPane.appendChild(card);
+rightPane.appendChild(latexHead);
+rightPane.appendChild(sp);
 var ro=el("div","demo-readout");
-var out=el("div","lumina-out");
-out.appendChild(rd);
-out.appendChild(sr);
-out.appendChild(ro);
-mount.appendChild(out);
+mount.appendChild(leftPane);
+mount.appendChild(rightPane);
+mount.appendChild(ro);
 cb.addEventListener("click",function(){
 if(!navigator.clipboard||!navigator.clipboard.writeText)return;
 navigator.clipboard.writeText(sp.textContent).then(function(){
@@ -277,6 +289,7 @@ setTimeout(function(){cb.textContent="copy";},1200);
 function update(){
 var raw=ta.value;
 while(rd.firstChild)rd.removeChild(rd.firstChild);
+rd.classList.toggle("lx-display",raw.indexOf("\n")===-1&&raw.trim().length>0);
 if(raw.length===0){
 sp.textContent="";
 ro.textContent="0 tokens · 0 rules";
