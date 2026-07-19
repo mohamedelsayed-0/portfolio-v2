@@ -60,7 +60,7 @@
 
   // ---------- theme colors (re-read every draw) ----------
   var accent = [31, 63, 191], NEG = [192, 80, 77];
-  var colFg, colMuted, colMono;
+  var colMuted, colMono;
   function toRGB(str, fb) {
     str = (str || "").trim();
     if (str.charAt(0) === "#") {
@@ -76,7 +76,6 @@
   function readColors() {
     var cs = getComputedStyle(document.documentElement);
     accent = toRGB(cs.getPropertyValue("--accent"), [31, 63, 191]);
-    colFg = cs.getPropertyValue("--fg").trim() || "#1a1a1a";
     colMuted = cs.getPropertyValue("--muted").trim() || "#6b6b66";
     colMono = cs.getPropertyValue("--font-mono").trim() || "monospace";
   }

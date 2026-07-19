@@ -395,8 +395,6 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
 
 /* Demos */
 
-.demo-desc { color: var(--muted); max-width: 34rem; margin-bottom: 1.5rem; }
-
 .demo-stage {
   width: 100%;
   border: 1px solid var(--rule);
@@ -486,30 +484,6 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
 
 .demo-controls button:hover,
 .demo-btn:hover { color: var(--accent); border-color: var(--accent); }
-
-.demo-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  margin-top: 1rem;
-}
-
-.roblox-list { list-style: none; margin: 0; padding: 0; }
-
-.roblox-list li {
-  padding: 0.7rem 0;
-  border-top: 1px solid var(--rule);
-  color: var(--muted);
-}
-
-.roblox-list li:first-child { border-top: none; }
-
-.roblox-list strong {
-  color: var(--fg);
-  font-weight: 500;
-}
 
 /* Embedded project samples (projects.html) */
 .row-main .demo-stage { margin-top: 0.9rem; }
@@ -754,15 +728,6 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
 
 .lumina-src button:hover { color: var(--accent); border-color: var(--accent); }
 
-.lumina-readout {
-  flex-basis: 100%;
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  color: var(--muted);
-  padding: 0.6rem 1rem;
-  border-top: 1px solid var(--rule);
-}
-
 /* stacked-fraction and sup/sub spans in the Lumina render */
 .lx-sup { font-size: 0.7em; vertical-align: super; }
 .lx-sub { font-size: 0.7em; vertical-align: sub; }
@@ -889,7 +854,6 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
 
 .side-rail a:hover,
 .side-rail a.active,
-.side-rail a.is-active,
 .side-rail a[aria-current] {
   color: var(--accent);
   transform: translateX(2px);

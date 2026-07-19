@@ -66,7 +66,7 @@
   var envelope = new Array(NSEG + 1).fill(0);
   var maxAbs = 0;
   var rafId = null, running = false, runStart = null;
-  var failed = false, Mmax = 0, MmaxIdx = 0, flashT = 0;
+  var failed = false, MmaxIdx = 0, flashT = 0;
 
   // M(x): triangular influence line per wheel, superposed (real N*mm)
   function computeAt(t, load, accEnv, noCheck) {
@@ -85,7 +85,7 @@
       if (accEnv && val > envelope[i]) envelope[i] = val;
       if (mval > mm) { mm = mval; mmIdx = i; }
     }
-    maxAbs = m; Mmax = mm; MmaxIdx = mmIdx;
+    maxAbs = m; MmaxIdx = mmIdx;
     if (!noCheck && !failed && mm > CAP) triggerFailure();
   }
 
