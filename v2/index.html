@@ -5,106 +5,193 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Mohamed Elsayed - Engineering @ UofT, pursuing photonics and building rigorous systems across physics, mathematics, software, AI/ML, and interactive 3D.">
+        content="Mohamed Elsayed — Engineering @ UofT pursuing photonics; building research tools, simulations, and systems in physics, math, and software.">
     <title>Mohamed Elsayed</title>
 
     <!-- Open Graph -->
     <meta property="og:title" content="Mohamed Elsayed">
-    <meta property="og:description"
-        content="Engineering @ UofT pursuing photonics">
+    <meta property="og:description" content="Engineering @ UofT pursuing photonics">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://elsayedmohamed.com/">
     <meta property="og:image" content="https://elsayedmohamed.com/assets/og-meem.png">
 
+    <link rel="canonical" href="https://elsayedmohamed.com/">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap"
         rel="stylesheet">
 
-    <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg?v=20260406-7">
+    <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg">
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#fafaf7">
 
-    <link rel="stylesheet" href="styles.css?v=20260521-1">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="portfolio-landing landing-preload">
-    <canvas id="landing-scene-canvas" aria-hidden="true"></canvas>
-    <div class="landing-vignette" aria-hidden="true"></div>
-    <div class="transition-overlay"></div>
-    <div class="landing-shell">
-        <header class="landing-header">
-            <nav class="landing-nav" aria-label="Primary">
-                <a href="about.html">About</a>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <div class="wrap header-inner">
+            <a class="site-name" href="index.html">Mohamed Elsayed</a>
+            <nav aria-label="Primary">
                 <a href="demos.html">Demos</a>
                 <a href="notes.html">Notes</a>
-                <a href="assets/Resume (6).pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+                <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+                <button id="palette-btn" class="kbd-hint" type="button" aria-haspopup="dialog"
+                    aria-label="Open command palette">
+                    <kbd>ctrl</kbd><kbd>k</kbd>
+                </button>
             </nav>
-        </header>
+        </div>
+    </header>
 
-        <main class="landing-main">
-            <div class="ice-cube-field" id="ice-cube-field" aria-hidden="true"></div>
+    <main id="main">
+        <section class="hero wrap">
+            <h1>Mohamed Elsayed</h1>
+            <p class="deck">I wish to pursue photonics and use my software and AI/ML skills to build research
+                tools, simulations, and systems you can see, test, and ship.</p>
+            <canvas id="wave" aria-hidden="true"></canvas>
+            <p class="meta">Toronto / Cairo · Physics / Maths / Programming</p>
+        </section>
 
-            <section class="landing-copy" id="landing-copy">
-                <div class="landing-instrument" aria-hidden="true">
-                    <svg class="landing-instrument__diagram" viewBox="0 0 960 540" preserveAspectRatio="none">
-                        <path class="instrument-orbit instrument-orbit--a" pathLength="1"
-                            d="M78 352 C216 220 376 196 510 268 C650 344 774 320 890 196" />
-                        <path class="instrument-orbit instrument-orbit--b" pathLength="1"
-                            d="M122 166 C280 104 456 132 580 230 C704 328 804 368 902 330" />
-                        <path class="instrument-wave" pathLength="1"
-                            d="M96 420 C158 382 196 456 256 418 C318 378 358 454 420 416 C482 378 524 452 584 414 C650 370 690 450 760 406" />
-                        <g class="instrument-network">
-                            <line pathLength="1" x1="150" y1="260" x2="254" y2="204" />
-                            <line pathLength="1" x1="254" y1="204" x2="352" y2="250" />
-                            <line pathLength="1" x1="690" y1="176" x2="786" y2="128" />
-                            <line pathLength="1" x1="786" y1="128" x2="846" y2="214" />
-                            <circle cx="150" cy="260" r="4" />
-                            <circle cx="254" cy="204" r="4" />
-                            <circle cx="352" cy="250" r="4" />
-                            <circle cx="690" cy="176" r="4" />
-                            <circle cx="786" cy="128" r="4" />
-                            <circle cx="846" cy="214" r="4" />
-                        </g>
-                    </svg>
-                </div>
-                <p class="landing-overline">Engineering @ UofT</p>
-                <div class="landing-rule" aria-hidden="true"></div>
-                <h1 class="landing-title">
-                    <span>Mohamed</span>
-                    <span>Elsayed</span>
-                </h1>
-                <p class="landing-deck">
-                    I wish to pursue photonics while building research-minded tools with software and AI/ML
-                </p>
+        <hr>
 
-                <div class="landing-meta-row" aria-label="Location and focus">
-                    <span>Toronto / Cairo</span>
-                    <span>Physics / Maths / Programming</span>
-                </div>
+        <section id="now" class="wrap section">
+            <h2>Now</h2>
+            <p>I'm a research assistant at Ain Shams University, working with Professors Nasr Gad and Mostafa
+                El-Aasser on quantum-dot-enhanced photovoltaic devices — running optical simulations in Lumerical
+                and Python to compare material parameters, device geometries, and design tradeoffs. Alongside
+                that, I lead technology strategy for Al Mannar NGO. I'm open to internships, research roles, and
+                technically ambitious collaborations.</p>
+        </section>
 
-                <div class="landing-actions">
-                    <a href="about.html" class="btn btn-primary">Read Profile</a>
-                    <a href="demos.html" class="btn btn-secondary">View Demos</a>
-                    <a href="assets/Resume (6).pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Resume</a>
-                </div>
-            </section>
+        <hr>
 
-        </main>
+        <section id="experience" class="wrap section">
+            <h2>Experience</h2>
+            <ul class="exp-list">
+                <li>
+                    <div class="exp-row">
+                        <span class="exp-role">Undergraduate Research Assistant <span class="exp-org">— Ain Shams
+                                University</span></span>
+                        <span class="exp-date">May 2026 – Present</span>
+                    </div>
+                    <p class="exp-desc">Photonics research on quantum-dot-enhanced photovoltaic devices,
+                        supervised by Professors Nasr Gad and Mostafa El-Aasser.</p>
+                </li>
+                <li>
+                    <div class="exp-row">
+                        <span class="exp-role">Technical Lead <span class="exp-org">— Al Mannar NGO</span></span>
+                        <span class="exp-date">Jul 2021 – Mar 2026</span>
+                    </div>
+                    <p class="exp-desc">Lead technology strategy and infrastructure for a regional charity in
+                        Upper Egypt, including a SQLite-backed system that digitized beneficiary records.</p>
+                </li>
+                <li>
+                    <div class="exp-row">
+                        <span class="exp-role">Undergraduate Research Assistant <span class="exp-org">— The
+                                American University in Cairo</span></span>
+                        <span class="exp-date">Jul 2025 – Sep 2025</span>
+                    </div>
+                    <p class="exp-desc">Built a custom microcontroller-based control system to automate a
+                        precision translation stage for optics experiments.</p>
+                </li>
+                <li>
+                    <div class="exp-row">
+                        <span class="exp-role">Backend Intern <span class="exp-org">— eVision</span></span>
+                        <span class="exp-date">Jul 2024 – Aug 2024</span>
+                    </div>
+                    <p class="exp-desc">Built a scalable Java file-parsing automation system for structured
+                        financial documents, cutting manual data entry.</p>
+                </li>
+                <li>
+                    <div class="exp-row">
+                        <span class="exp-role">Software Developer &amp; Animator <span class="exp-org">—
+                                Self-Employed</span></span>
+                        <span class="exp-date">Oct 2021 – Jul 2023</span>
+                    </div>
+                    <p class="exp-desc">Built gameplay systems and Blender animations for Roblox studios; shipped
+                        titles collectively surpassed 1.7 billion visits.</p>
+                </li>
+            </ul>
+        </section>
 
-        <footer class="footer-links">
-            <a href="mailto:mohamedessam.elsayed07@gmail.com" class="footer-link">Email</a>
-            <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" target="_blank" rel="noopener noreferrer"
-                class="footer-link">LinkedIn</a>
-            <a href="https://github.com/mohamedelsayed-0" target="_blank" rel="noopener noreferrer"
-                class="footer-link">GitHub</a>
-        </footer>
+        <hr>
+
+        <section id="projects" class="wrap section">
+            <h2>Projects</h2>
+            <ul class="proj-list">
+                <li>
+                    <a href="https://github.com/mohamedelsayed-0/gaussian_simulations/tree/main">Gaussian
+                        Simulations</a>
+                    <p>Independent research deriving closed-form entanglement survival thresholds for two-mode
+                        squeezed vacuum states in symmetric phase-insensitive Gaussian channels.</p>
+                </li>
+                <li>
+                    <a href="https://github.com/mohamedelsayed-0/CIV102">Structural Beam Simulation</a>
+                    <p>Beam deflection calculator for arbitrary cross sections with 3D stress visualizations and
+                        deflection animations, built for a CIV102 capstone. See it on the <a
+                            href="demos.html#beam-simulation">demos page</a>.</p>
+                </li>
+                <li>
+                    <a href="https://github.com/mohamedelsayed-0/Pong-AI">Pong AI</a>
+                    <p>AI-driven Pong agent for the ESC180 tournament — placed 3rd overall. See it on the <a
+                            href="demos.html#pong-ai">demos page</a>.</p>
+                </li>
+                <li>
+                    <a href="demos.html#lumina">Lumina — LaTeX Notetaker</a>
+                    <p>Web tool that converts handwritten, typed, and audio notes into structured LaTeX documents
+                        optimized for notation-heavy coursework.</p>
+                </li>
+                <li>
+                    <a href="https://github.com/mohamedelsayed-0/robotic_arm">Robotic Arm</a>
+                    <p>Computer-vision tooling for a robotic arm platform — perception and calibration are built;
+                        hardware integration and control are in progress.</p>
+                </li>
+                <li>
+                    <a href="https://github.com/mohamedelsayed-0/ESC102/tree/main/esc102-design-portfolio">ESC102
+                        — Engineering Design Portfolio</a>
+                    <p>Capstone portfolio framed through an engineering design perspective, with an emphasis on
+                        process, iteration, and technical communication.</p>
+                </li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <!-- TODO: Mohamed — make these yours -->
+        <section id="lifetime" class="wrap section">
+            <h2>In my lifetime I want to</h2>
+            <ul class="lifetime-list">
+                <li>Push quantum-dot photonics research into real device improvements, not just simulations.</li>
+                <li>Build tools that make experimental physics faster and less manual for other researchers.</li>
+                <li>Ship at least one piece of software that outlives the project it was built for.</li>
+                <li>Keep Al Mannar's systems running long after I've moved on to other things.</li>
+                <li>Work across Toronto and Cairo without treating either one as the place I've left behind.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="site-footer wrap">
+        <p>
+            <a href="mailto:mohamedessam.elsayed07@gmail.com">Email</a> ·
+            <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/">LinkedIn</a> ·
+            <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
+            <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+        </p>
+    </footer>
+
+    <div id="palette-overlay" class="palette-overlay" hidden>
+        <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+            <input id="palette-input" type="text" placeholder="Jump to..." autocomplete="off" spellcheck="false">
+            <ul id="palette-list" role="listbox"></ul>
+        </div>
     </div>
 
-    <script src="script.js?v=20260501-1"></script>
-    <script src="landing-scene.js?v=20260521-1"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>404 — Mohamed Elsayed</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="/assets/meem-favicon.svg">
+    <link rel="apple-touch-icon" href="/assets/profile.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#fafaf7">
+
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <div class="wrap header-inner">
+            <a class="site-name" href="/index.html">Mohamed Elsayed</a>
+            <nav aria-label="Primary">
+                <a href="/demos.html">Demos</a>
+                <a href="/notes.html">Notes</a>
+                <a href="/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+                <button id="palette-btn" class="kbd-hint" type="button" aria-haspopup="dialog"
+                    aria-label="Open command palette">
+                    <kbd>ctrl</kbd><kbd>k</kbd>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="hero wrap">
+            <h1>404</h1>
+            <p class="deck">This page interfered destructively.</p>
+            <canvas id="wave" aria-hidden="true"></canvas>
+            <p class="meta"><a href="/index.html">Back home</a></p>
+        </section>
+    </main>
+
+    <footer class="site-footer wrap">
+        <p>
+            <a href="mailto:mohamedessam.elsayed07@gmail.com">Email</a> ·
+            <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/">LinkedIn</a> ·
+            <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
+            <a href="/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+        </p>
+    </footer>
+
+    <div id="palette-overlay" class="palette-overlay" hidden>
+        <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+            <input id="palette-input" type="text" placeholder="Jump to..." autocomplete="off" spellcheck="false">
+            <ul id="palette-list" role="listbox"></ul>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+
+</html>
