@@ -1,5 +1,5 @@
-// Beam bench — simply supported Euler-Bernoulli beam, point load, exaggerated
-// deflection curve. Drag the arrow or use the sliders.
+// Beam bench — simply supported bridge, 3-axle train crossing.
+// Superposed point-load deflection, live reactions, run/scrub controls.
 
 (function () {
   "use strict";
@@ -12,16 +12,20 @@
   mount.innerHTML =
     '<canvas class="demo-canvas" width="960" height="480" aria-hidden="true"></canvas>' +
     '<div class="demo-controls">' +
-    '<label>Position <input type="range" id="beam-pos" min="2" max="98" value="38" step="1"></label>' +
+    '<button type="button" class="demo-btn" id="beam-run">run train</button>' +
+    '<label>Position <input type="range" id="beam-pos" min="-24" max="124" value="38" step="1"></label>' +
     '<label>Load <input type="range" id="beam-load" min="0" max="100" value="62" step="1"></label>' +
     "</div>" +
     '<span class="demo-readout" id="beam-readout"></span>';
 
   var canvas = mount.querySelector("canvas");
   var ctx = canvas.getContext("2d");
+  var runBtn = mount.querySelector("#beam-run");
   var posInput = mount.querySelector("#beam-pos");
   var loadInput = mount.querySelector("#beam-load");
   var readout = mount.querySelector("#beam-readout");
+
+  if (reduceMotion) runBtn.hidden = true;
 
   function colors() {
     var cs = getComputedStyle(document.documentElement);
@@ -41,46 +45,61 @@
 
   // ---- geometry / mechanics (L = 1, EI = 1) ----
   var N = 200;
-  var VREF = 1 / 48; // deflection at P=1, a=0.5 — the reference max
-  var MREF = 0.25; // moment at P=1, a=0.5 — the reference max
-  function vAt(x, P, a) {
+  var VREF = 1 / 48; // deflection at load=1, single load at midspan — the reference unit
+  var SPACING = 0.12;
+  var TMIN = -0.24, TMAX = 1.24; // lead-axle travel: fully off-left to fully off-right
+
+  function vAt(x, load, a) {
     var b = 1 - a;
     return x <= a
-      ? (P * b * x / 6) * (1 - b * b - x * x)
-      : (P * a * (1 - x) / 6) * (2 * x - a * a - x * x);
+      ? (load * b * x / 6) * (1 - b * b - x * x)
+      : (load * a * (1 - x) / 6) * (2 * x - a * a - x * x);
   }
 
-  var posFrac = 0.38, loadFrac = 0.62;
-  var dPos = posFrac, dLoad = loadFrac;
-  var target = new Array(N + 1);
-  var display = new Array(N + 1);
-  var fromArr = new Array(N + 1);
-  var fromPos = posFrac, fromLoad = loadFrac;
-  var maxAbs = 0, maxLoc = 0, mPeak = 0;
-  var rafId = null, animStart = null;
-  var DUR = 200;
+  var tCur = 0.38, loadFrac = 0.62;
+  var display = new Array(N + 1).fill(0);
+  var envelope = new Array(N + 1).fill(0);
+  var maxAbs = 0, curRa = 0, curRb = 0;
+  var rafId = null, running = false, runStart = null;
+  var DUR = 4000;
 
-  function computeTarget() {
-    var a = posFrac, P = loadFrac, m = 0, mi = 0;
+  // axle positions for a given lead-axle t: lead, then two trailing behind it
+  function axle(t, k) { return t - k * SPACING; }
+
+  function computeAt(t, load, accumEnvelope) {
+    var m = 0;
     for (var i = 0; i <= N; i++) {
-      var val = vAt(i / N, P, a);
-      target[i] = val;
-      var av = val < 0 ? -val : val;
-      if (av > m) { m = av; mi = i; }
+      var x = i / N, val = 0;
+      for (var k = 0; k < 3; k++) {
+        var a = axle(t, k);
+        if (a > 0 && a < 1) val += vAt(x, load, a);
+      }
+      display[i] = val;
+      if (val > m) m = val;
+      if (accumEnvelope && val > envelope[i]) envelope[i] = val;
     }
     maxAbs = m;
-    maxLoc = mi / N;
-    mPeak = P * a * (1 - a); // triangular BMD peak Ra·a = P·a·b at the load
+    var ra = 0, rb = 0;
+    for (var k2 = 0; k2 < 3; k2++) {
+      var a2 = axle(t, k2);
+      if (a2 > 0 && a2 < 1) { ra += load * (1 - a2); rb += load * a2; }
+    }
+    curRa = ra; curRb = rb;
+  }
+
+  function envMax() {
+    var m = 0;
+    for (var i = 0; i <= N; i++) if (envelope[i] > m) m = envelope[i];
+    return m;
   }
 
   function updateReadout() {
     readout.textContent =
-      "P = " + Math.round(loadFrac * 100) + "% · a = " + posFrac.toFixed(2) +
-      "L · δmax = " + (maxAbs / VREF).toFixed(2) + " at x = " + maxLoc.toFixed(2) + "L" +
-      " · M_max = " + (mPeak / MREF).toFixed(2);
+      "train at " + tCur.toFixed(2) + "L · δ = " + (maxAbs / VREF).toFixed(2) +
+      " · envelope " + (envMax() / VREF).toFixed(2);
   }
 
-  // reaction arrow: tip at the support, tail below, length ∝ R
+  // reaction arrow: tip at the support, tail below, length proportional to R
   function drawReaction(x, yTip, R, label, c, gap, sc) {
     var yTail = yTip + gap + R * sc;
     ctx.strokeStyle = c.fg;
@@ -100,39 +119,72 @@
     ctx.fillText(label, x - 8, yTail + 11);
   }
 
-  function cancelAnim() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
-
-  function step(now) {
-    if (!animStart) animStart = now;
-    var t = Math.min(1, (now - animStart) / DUR);
-    var e = 1 - Math.pow(1 - t, 3);
-    for (var i = 0; i <= N; i++) display[i] = fromArr[i] + (target[i] - fromArr[i]) * e;
-    dPos = fromPos + (posFrac - fromPos) * e;
-    dLoad = fromLoad + (loadFrac - fromLoad) * e;
-    render();
-    if (t < 1) rafId = requestAnimationFrame(step);
-    else rafId = null;
+  // axle arrow: tail above, triangular head at the tip (touching curve or ground)
+  function drawAxle(x, yTip, len, c) {
+    ctx.strokeStyle = c.fg;
+    ctx.fillStyle = c.fg;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, yTip - len);
+    ctx.lineTo(x, yTip);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, yTip);
+    ctx.lineTo(x - 6, yTip - 10);
+    ctx.lineTo(x + 6, yTip - 10);
+    ctx.closePath();
+    ctx.fill();
+    return yTip - len;
   }
 
-  function applyInputs(instant) {
-    posFrac = clamp((+posInput.value) / 100, 0.02, 0.98);
-    loadFrac = clamp((+loadInput.value) / 100, 0, 1);
-    computeTarget();
+  function cancelAnim() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+
+  function setRunUI(isRunning) {
+    running = isRunning;
+    runBtn.disabled = isRunning;
+    runBtn.textContent = isRunning ? "running…" : "run train";
+  }
+
+  function cancelRun(resetEnvelope) {
+    cancelAnim();
+    setRunUI(false);
+    if (resetEnvelope) envelope = new Array(N + 1).fill(0);
+  }
+
+  function startRun() {
+    if (reduceMotion) return;
+    cancelAnim();
+    envelope = new Array(N + 1).fill(0);
+    setRunUI(true);
+    runStart = null;
+    rafId = requestAnimationFrame(runStep);
+  }
+
+  function runStep(now) {
+    if (!runStart) runStart = now;
+    var prog = Math.min(1, (now - runStart) / DUR);
+    tCur = TMIN + prog * (TMAX - TMIN);
+    posInput.value = Math.round(tCur * 100);
+    computeAt(tCur, loadFrac, true);
     updateReadout();
-    if (instant || reduceMotion) {
-      cancelAnim();
-      display = target.slice();
-      dPos = posFrac;
-      dLoad = loadFrac;
-      render();
-    } else {
-      fromArr = display.slice();
-      fromPos = dPos;
-      fromLoad = dLoad;
-      animStart = null;
-      cancelAnim();
-      rafId = requestAnimationFrame(step);
-    }
+    render();
+    if (prog < 1) rafId = requestAnimationFrame(runStep);
+    else { rafId = null; setRunUI(false); }
+  }
+
+  function applyPos() {
+    if (running) cancelRun(true);
+    tCur = clamp((+posInput.value) / 100, TMIN, TMAX);
+    computeAt(tCur, loadFrac, false);
+    updateReadout();
+    render();
+  }
+
+  function applyLoad() {
+    loadFrac = clamp((+loadInput.value) / 100, 0, 1);
+    computeAt(tCur, loadFrac, running);
+    updateReadout();
+    render();
   }
 
   // ---- canvas sizing (devicePixelRatio-aware) ----
@@ -150,35 +202,55 @@
     return { x0: m, x1: rect.width - m, span: rect.width - 2 * m };
   }
 
+  // map lead-axle-domain position t (TMIN..TMAX) to screen x across the full stage
+  function xForT(t, b) { return b.x0 + ((t - TMIN) / (TMAX - TMIN)) * b.span; }
+
   function render() {
     var rect = canvas.getBoundingClientRect();
     var w = rect.width, h = rect.height;
     var c = colors();
     var b = bounds(rect);
-    var beamY = h * 0.24;
-    var ampMax = h * 0.16;
+    var beamY = h * 0.34;
+    var ampMax = h * 0.14;
     var scale = ampMax / VREF;
+    var bx0 = xForT(0, b), bx1 = xForT(1, b);
+    var bspan = bx1 - bx0;
 
     ctx.clearRect(0, 0, w, h);
 
-    // undeflected hairline
+    // approach / exit road — ground level, no deflection off-bridge
     ctx.strokeStyle = c.rule;
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.moveTo(b.x0, beamY);
+    ctx.lineTo(bx0, beamY);
+    ctx.moveTo(bx1, beamY);
     ctx.lineTo(b.x1, beamY);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // deflected beam curve
+    // envelope fill — high-water mark of deflection reached so far this run
+    ctx.beginPath();
+    ctx.moveTo(bx0, beamY);
+    for (var i = 0; i <= N; i++) {
+      ctx.lineTo(bx0 + (i / N) * bspan, beamY + envelope[i] * scale);
+    }
+    ctx.lineTo(bx1, beamY);
+    ctx.closePath();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = c.accent;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // current deflection curve
     ctx.strokeStyle = c.accent;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    for (var i = 0; i <= N; i++) {
-      var xp = b.x0 + (i / N) * b.span;
-      var yp = beamY + display[i] * scale;
-      if (i === 0) ctx.moveTo(xp, yp); else ctx.lineTo(xp, yp);
+    for (var j = 0; j <= N; j++) {
+      var xp = bx0 + (j / N) * bspan;
+      var yp = beamY + display[j] * scale;
+      if (j === 0) ctx.moveTo(xp, yp); else ctx.lineTo(xp, yp);
     }
     ctx.stroke();
 
@@ -187,119 +259,52 @@
     ctx.lineWidth = 1.5;
     var s = 10;
     ctx.beginPath();
-    ctx.moveTo(b.x0, beamY);
-    ctx.lineTo(b.x0 - s, beamY + s * 1.6);
-    ctx.lineTo(b.x0 + s, beamY + s * 1.6);
+    ctx.moveTo(bx0, beamY);
+    ctx.lineTo(bx0 - s, beamY + s * 1.6);
+    ctx.lineTo(bx0 + s, beamY + s * 1.6);
     ctx.closePath();
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(b.x0 - s * 1.6, beamY + s * 1.6);
-    ctx.lineTo(b.x0 + s * 1.6, beamY + s * 1.6);
+    ctx.moveTo(bx0 - s * 1.6, beamY + s * 1.6);
+    ctx.lineTo(bx0 + s * 1.6, beamY + s * 1.6);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(b.x1, beamY + s, s * 0.8, 0, Math.PI * 2);
+    ctx.arc(bx1, beamY + s, s * 0.8, 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(b.x1 - s * 1.6, beamY + s * 1.8);
-    ctx.lineTo(b.x1 + s * 1.6, beamY + s * 1.8);
+    ctx.moveTo(bx1 - s * 1.6, beamY + s * 1.8);
+    ctx.lineTo(bx1 + s * 1.6, beamY + s * 1.8);
     ctx.stroke();
 
-    // reactions Ra = P·b/L, Rb = P·a/L (L=1) — live off the lerped dPos/dLoad
-    var Ra = dLoad * (1 - dPos), Rb = dLoad * dPos;
+    // reactions Ra (left support) / Rb (right support) — sum of active axle reactions
     ctx.font = "600 9px ui-monospace, SFMono-Regular, Menlo, monospace";
-    drawReaction(b.x0, beamY, Ra, "Ra", c, h * 0.06, h * 0.2);
-    drawReaction(b.x1, beamY, Rb, "Rb", c, h * 0.06, h * 0.2);
+    drawReaction(bx0, beamY, curRa, "Ra", c, h * 0.05, h * 0.1);
+    drawReaction(bx1, beamY, curRb, "Rb", c, h * 0.05, h * 0.1);
 
-    // bending-moment diagram — triangular, peak P·a·b at the load
-    var yM0 = h * 0.62, mScale = (h * 0.18) / MREF;
-    var mPk = dLoad * dPos * (1 - dPos);
-    var axm = b.x0 + dPos * b.span;
-    ctx.beginPath();
-    ctx.moveTo(b.x0, yM0);
-    ctx.lineTo(axm, yM0 + mPk * mScale);
-    ctx.lineTo(b.x1, yM0);
-    ctx.closePath();
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = c.accent;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = c.accent;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // load arrow (tip follows the current curve at its position)
-    var idxA = clamp(Math.round(dPos * N), 0, N);
-    var ax = b.x0 + dPos * b.span;
-    var tipY = beamY + display[idxA] * scale;
-    var len = 18 + dLoad * 46;
-    if (hoverArrow) {
-      ctx.globalAlpha = 0.35;
-      ctx.strokeStyle = c.fg;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(ax, tipY - len * 0.5, len * 0.5 + 10, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+    // train axles — on the deflected curve while on-bridge, on the road otherwise
+    var len = 14 + loadFrac * 20;
+    var tops = [];
+    for (var k = 0; k < 3; k++) {
+      var a = axle(tCur, k);
+      var ax = xForT(a, b);
+      var onBridge = a > 0 && a < 1;
+      var ay = onBridge ? beamY + display[clamp(Math.round(a * N), 0, N)] * scale : beamY;
+      tops.push([ax, drawAxle(ax, ay, len, c)]);
     }
     ctx.strokeStyle = c.fg;
-    ctx.fillStyle = c.fg;
-    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(ax, tipY - len);
-    ctx.lineTo(ax, tipY);
+    ctx.moveTo(tops[2][0], tops[2][1]);
+    ctx.lineTo(tops[1][0], tops[1][1]);
+    ctx.lineTo(tops[0][0], tops[0][1]);
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ax, tipY);
-    ctx.lineTo(ax - 6, tipY - 10);
-    ctx.lineTo(ax + 6, tipY - 10);
-    ctx.closePath();
-    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
-  // ---- drag interaction (canvas), mirrored by the position slider ----
-  var dragging = false;
-  var hoverArrow = false;
-
-  function hitArrow(clientX) {
-    var rect = canvas.getBoundingClientRect();
-    var b = bounds(rect);
-    var ax = b.x0 + dPos * b.span;
-    return Math.abs(clientX - rect.left - ax) <= 28;
-  }
-
-  function dragTo(clientX) {
-    var rect = canvas.getBoundingClientRect();
-    var b = bounds(rect);
-    var frac = clamp((clientX - rect.left - b.x0) / b.span, 0.02, 0.98);
-    posInput.value = Math.round(frac * 100);
-    applyInputs(true);
-  }
-
-  canvas.addEventListener("pointerdown", function (e) {
-    if (!hitArrow(e.clientX)) return;
-    dragging = true;
-    canvas.classList.add("is-dragging");
-    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-    dragTo(e.clientX);
-  });
-  canvas.addEventListener("pointermove", function (e) {
-    if (dragging) { dragTo(e.clientX); return; }
-    var hv = hitArrow(e.clientX);
-    if (hv !== hoverArrow) { hoverArrow = hv; render(); }
-  });
-  canvas.addEventListener("pointerleave", function () {
-    if (hoverArrow) { hoverArrow = false; render(); }
-  });
-  function endDrag(e) {
-    dragging = false;
-    canvas.classList.remove("is-dragging");
-    try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
-  }
-  canvas.addEventListener("pointerup", endDrag);
-  canvas.addEventListener("pointercancel", endDrag);
-
-  posInput.addEventListener("input", function () { applyInputs(false); });
-  loadInput.addEventListener("input", function () { applyInputs(false); });
+  runBtn.addEventListener("click", startRun);
+  posInput.addEventListener("input", applyPos);
+  loadInput.addEventListener("input", applyLoad);
 
   var resizeTimer = null;
   window.addEventListener("resize", function () {
@@ -309,8 +314,7 @@
 
   // ---- init ----
   size();
-  computeTarget();
-  display = target.slice();
+  computeAt(tCur, loadFrac, false);
   updateReadout();
   render();
 })();

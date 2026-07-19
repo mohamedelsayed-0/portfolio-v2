@@ -13,14 +13,24 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 
+/* Dark vars live in two forms: the media query (auto, unless user forced light)
+   and the explicit [data-theme="dark"] override set by the toggle. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #161614;
     --fg: #ececea;
     --muted: #9a9a94;
     --accent: #6f8fff;
     --rule: rgba(255, 255, 255, 0.14);
   }
+}
+
+[data-theme="dark"] {
+  --bg: #161614;
+  --fg: #ececea;
+  --muted: #9a9a94;
+  --accent: #6f8fff;
+  --rule: rgba(255, 255, 255, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -155,6 +165,31 @@ a:hover {
 .kbd-hint:hover { color: var(--accent); border-color: var(--accent); }
 
 kbd { font-family: var(--font-mono); }
+
+/* Theme toggle button (nav) */
+.theme-btn {
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0.28em 0.55em;
+}
+
+/* Reading hairline: scroll-progress bar pinned to the top of the viewport */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  z-index: 300;
+  transition: transform 0.1s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress { transition: none; }
+}
 
 /* Hero */
 
@@ -351,6 +386,13 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
 .site-footer a { color: var(--muted); text-decoration: none; }
 .site-footer a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 
+.footer-clock {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
 /* Demos */
 
 .demo-desc { color: var(--muted); max-width: 34rem; margin-bottom: 1.5rem; }
@@ -479,63 +521,270 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
   margin: 0.15rem 0 0.4rem;
 }
 
-/* Media showcase figures (demos.html) */
-.showcase-figure {
-  margin: 0 0 1rem;
+/* Structured showcase grid (demos.html) */
+.showcase {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 720px) {
+  .showcase { grid-template-columns: 1fr 1fr; }
+}
+
+.show-card {
+  margin: 0;
   border: 1px solid var(--rule);
   border-radius: 6px;
   overflow: hidden;
   background: color-mix(in srgb, var(--fg) 2%, transparent);
+  display: flex;
+  flex-direction: column;
 }
 
-.showcase-figure img {
+.show-media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+
+.show-media img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 
-.showcase-figure figcaption {
+/* Empty state: diagonal hairline cross + "clip coming soon" */
+.show-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--rule) calc(50% - 0.5px), var(--rule) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--rule) calc(50% - 0.5px), var(--rule) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+
+.show-placeholder span {
   font-family: var(--font-mono);
   font-size: 0.76rem;
   color: var(--muted);
-  padding: 0.7rem 1rem;
-  border-top: 1px solid var(--rule);
+  background: var(--bg);
+  padding: 0.2em 0.6em;
 }
+
+.show-body { padding: 1rem 1.1rem 1.15rem; }
+
+.show-meta {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  margin: 0 0 0.3rem;
+}
+
+.show-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.1;
+  margin: 0 0 0.35rem;
+}
+
+.show-desc { color: var(--muted); margin: 0 0 0.8rem; }
+
+.show-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.show-links a { text-decoration: none; }
+.show-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ↗ affordance, shared: nudges up-right on hover */
+.arrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--muted);
+  margin-left: 0.15em;
+  transition: transform 0.2s ease, color 0.15s ease;
+}
+
+.show-links a:hover .arrow,
+.note-link a:hover .arrow { transform: translate(2px, -2px); color: var(--accent); }
 
 /* Blog page */
 .blog-soon { color: var(--muted); }
 
-/* Notes */
+/* Notes — editorial index table */
 
-.notes-course { margin-bottom: 1.75rem; }
-.notes-course:last-child { margin-bottom: 0; }
+.notes-table { list-style: none; margin: 0; padding: 0; }
 
-.notes-course h3 {
+.note-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto auto;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.note-row:first-child { border-top: none; }
+
+.note-chip {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--accent);
-  margin-bottom: 0.5em;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  padding-top: 0.15em;
 }
 
-.notes-course ul { list-style: none; margin: 0; padding: 0; }
+.note-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.15;
+  text-decoration: none;
+  color: var(--fg);
+  transition: color 0.15s ease;
+}
 
-.notes-course li {
-  padding: 0.4em 0;
-  border-bottom: 1px dotted var(--rule);
+.note-title--plain { color: var(--muted); }
+
+.note-row:hover a.note-title { color: var(--accent); }
+
+.note-kind {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.note-link {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.note-link a { color: var(--muted); text-decoration: none; }
+.note-link a:hover { color: var(--accent); }
+
+@media (max-width: 560px) {
+  .note-row {
+    grid-template-columns: 1fr auto;
+    row-gap: 0.15rem;
+  }
+  .note-chip { grid-column: 1; }
+  .note-link { grid-column: 2; grid-row: 1; text-align: right; }
+  .note-title { grid-column: 1 / -1; }
+  .note-kind { grid-column: 1 / -1; }
+}
+
+/* Lumina sample (projects.html) — two-pane DOM demo, no canvas */
+#demo-lumina-mount {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
   flex-wrap: wrap;
+  align-items: stretch;
 }
 
-.notes-course li:last-child { border-bottom: none; }
+.lumina-in {
+  flex: 1 1 46%;
+  min-width: 15rem;
+  align-self: stretch;
+  resize: vertical;
+  min-height: 9rem;
+  border: none;
+  border-right: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--fg) 2%, transparent);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  padding: 0.9rem 1rem;
+}
 
-.notes-course a { text-decoration: none; }
-.notes-course a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lumina-in:focus { outline: none; }
 
-.notes-course span.plain { color: var(--muted); }
+/* right column: render + source stacked, whatever wrapper the sample uses */
+.lumina-in ~ * { flex: 1 1 46%; min-width: 15rem; }
+
+.lumina-render {
+  padding: 1.1rem 1rem;
+  min-height: 3.5rem;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--fg);
+  border-bottom: 1px solid var(--rule);
+}
+
+.lumina-src { position: relative; margin: 0; }
+
+.lumina-src pre {
+  margin: 0;
+  padding: 0.9rem 2.8rem 0.9rem 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.lumina-src button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.2em 0.55em;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.lumina-src button:hover { color: var(--accent); border-color: var(--accent); }
+
+.lumina-readout {
+  flex-basis: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* stacked-fraction and sup/sub spans in the Lumina render */
+.lx-sup { font-size: 0.7em; vertical-align: super; }
+.lx-sub { font-size: 0.7em; vertical-align: sub; }
+
+.lx-frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  margin: 0 0.15em;
+  line-height: 1.05;
+}
+
+.lx-frac > :first-child { border-bottom: 1px solid currentColor; padding: 0 0.3em; }
+.lx-frac > :last-child { padding: 0 0.3em; }
+
+.lx-int, .lx-sum { font-size: 1.35em; line-height: 1; }
+
+@media (max-width: 560px) {
+  .lumina-in { border-right: none; border-bottom: 1px solid var(--rule); flex-basis: 100%; }
+}
 
 /* Redirect page */
 

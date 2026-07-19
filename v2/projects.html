@@ -26,6 +26,7 @@
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#fafaf7">
+    <script>(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -46,6 +47,7 @@
                     aria-label="Open command palette">
                     <kbd>ctrl</kbd><kbd>k</kbd>
                 </button>
+                <button id="theme-btn" class="kbd-hint theme-btn" type="button" aria-label="Toggle theme">☾</button>
             </nav>
         </div>
     </header>
@@ -53,8 +55,8 @@
     <main id="main">
         <section class="hero wrap">
             <h1>Projects</h1>
-            <p class="deck">Research systems and engineering tools built with a bias toward <em>mathematical
-                    clarity</em> — a few come with the underlying physics you can poke at, live.</p>
+            <p class="deck">I like my projects to be actual useful, so here's a quick demonstration with some mathematical
+                    clarity and a few come with the underlying physics you can seen for yourself!</p>
         </section>
 
         <hr>
@@ -67,11 +69,13 @@
                         <div class="row-head">
                             <a class="row-title" href="https://github.com/mohamedelsayed-0/gkp-thermal-recovery">GKP
                                 Thermal Recovery<span class="arrow" aria-hidden="true">↗</span></a>
-                            <span class="row-meta">repo</span>
+                            <span class="row-meta">repo · demo below</span>
                         </div>
                         <p class="row-desc">Finite-energy GKP qubit recovery under thermal loss — independent
                             quantum error correction research.</p>
                         <p class="row-tags">python · quantum error correction</p>
+                        <div class="demo-stage" id="demo-gkp-mount"></div>
+                        <p class="sample-caption">a finite-energy GKP qubit losing its Wigner negativity to thermal noise</p>
                     </div>
                 </li>
 
@@ -97,6 +101,20 @@
                     <span class="row-idx">03</span>
                     <div class="row-main">
                         <div class="row-head">
+                            <a class="row-title" href="https://github.com/mohamedelsayed-0/Mechanica">Mechanica<span
+                                    class="arrow" aria-hidden="true">↗</span></a>
+                            <span class="row-meta">repo</span>
+                        </div>
+                        <p class="row-desc">A PyTorch library for differentiable mechanics and robotics — Lagrangian
+                            and Hamiltonian systems via autodiff, with optional native C++ kernels.</p>
+                        <p class="row-tags">pytorch · c++ · robotics</p>
+                    </div>
+                </li>
+
+                <li class="row">
+                    <span class="row-idx">04</span>
+                    <div class="row-main">
+                        <div class="row-head">
                             <a class="row-title" href="https://github.com/mohamedelsayed-0/CIV102">Structural Beam
                                 Simulation<span class="arrow" aria-hidden="true">↗</span></a>
                             <span class="row-meta">repo · demo below</span>
@@ -111,7 +129,7 @@
                 </li>
 
                 <li class="row">
-                    <span class="row-idx">04</span>
+                    <span class="row-idx">05</span>
                     <div class="row-main">
                         <div class="row-head">
                             <a class="row-title" href="https://github.com/mohamedelsayed-0/Pong-AI">Pong AI<span
@@ -127,20 +145,22 @@
                 </li>
 
                 <li class="row">
-                    <span class="row-idx">05</span>
+                    <span class="row-idx">06</span>
                     <div class="row-main">
                         <div class="row-head">
                             <span class="row-title">Lumina — LaTeX Notetaker</span>
-                            <span class="row-meta">in progress</span>
+                            <span class="row-meta">abandoned · demo below</span>
                         </div>
                         <p class="row-desc">Web tool that converts handwritten, typed, and audio notes into
                             structured LaTeX documents optimized for notation-heavy coursework.</p>
                         <p class="row-tags">typescript · javascript · css · python</p>
+                        <div class="demo-stage" id="demo-lumina-mount"></div>
+                        <p class="sample-caption">the real Lumina reads handwriting and audio — this toy only reads your keyboard</p>
                     </div>
                 </li>
 
                 <li class="row">
-                    <span class="row-idx">06</span>
+                    <span class="row-idx">07</span>
                     <div class="row-main">
                         <div class="row-head">
                             <a class="row-title"
@@ -165,6 +185,7 @@
             <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
             <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         </p>
+        <p class="footer-clock"><span id="clock"></span></p>
     </footer>
 
     <div id="palette-overlay" class="palette-overlay" hidden>
@@ -175,9 +196,11 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="demo-gkp.js" defer></script>
     <script src="demo-slit.js" defer></script>
     <script src="demo-beam.js" defer></script>
     <script src="demo-pong.js" defer></script>
+    <script src="demo-lumina.js" defer></script>
 </body>
 
 </html>

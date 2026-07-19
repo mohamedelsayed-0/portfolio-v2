@@ -25,6 +25,7 @@
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#fafaf7">
+    <script>(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -45,6 +46,7 @@
                     aria-label="Open command palette">
                     <kbd>ctrl</kbd><kbd>k</kbd>
                 </button>
+                <button id="theme-btn" class="kbd-hint theme-btn" type="button" aria-label="Toggle theme">☾</button>
             </nav>
         </div>
     </header>
@@ -59,46 +61,69 @@
 
         <hr>
 
-        <section id="pong" class="wrap section">
+        <section class="wrap section">
             <div class="sec-head">
                 <span class="sec-num">01</span>
                 <span class="sec-rule"></span>
-                <h2 class="sec-title">Pong AI</h2>
+                <h2 class="sec-title">What shipped looks like</h2>
             </div>
-            <p class="demo-desc">An AI-driven Pong agent built for the annual ESC180 tournament — placed 3rd overall,
-                maximizing score against a professor-built opponent over a thousand rounds with collision physics and
-                an adaptive, time-optimized strategy.</p>
-            <figure class="showcase-figure">
-                <img src="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif" loading="lazy"
-                    alt="Two AI-controlled Pong paddles rallying during the ESC180 tournament.">
-                <figcaption>the tournament matchup — AI versus AI, from the ESC180 assignment</figcaption>
-            </figure>
-            <div class="demo-links">
-                <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/">Assignment description</a>
-                <a href="https://github.com/mohamedelsayed-0/Pong-AI">Pong-AI repo</a>
-                <a href="https://www.linkedin.com/feed/update/urn:li:activity:7415496511515504640/">LinkedIn post</a>
-            </div>
-        </section>
 
-        <hr>
+            <div class="showcase">
+                <figure class="show-card">
+                    <div class="show-media">
+                        <img src="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif" loading="lazy"
+                            alt="Two AI-controlled Pong paddles rallying during the ESC180 tournament.">
+                    </div>
+                    <div class="show-body">
+                        <p class="show-meta">game ai · 2024</p>
+                        <h3 class="show-title">Pong AI</h3>
+                        <p class="show-desc">AI-driven Pong agent built for the ESC180 tournament — placed 3rd
+                            overall, with collision physics, responsive paddle controls, and an adaptive strategy.</p>
+                        <div class="show-links">
+                            <a href="https://github.com/mohamedelsayed-0/Pong-AI">repo <span class="arrow"
+                                    aria-hidden="true">↗</span></a>
+                            <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/">assignment <span class="arrow"
+                                    aria-hidden="true">↗</span></a>
+                        </div>
+                    </div>
+                </figure>
 
-        <section id="roblox" class="wrap section">
-            <div class="sec-head">
-                <span class="sec-num">02</span>
-                <span class="sec-rule"></span>
-                <h2 class="sec-title">Roblox</h2>
+                <figure class="show-card">
+                    <div class="show-media">
+                        <div class="show-placeholder"><span>clip coming soon</span></div>
+                    </div>
+                    <div class="show-body">
+                        <p class="show-meta">gameplay · 2023</p>
+                        <h3 class="show-title">Gameplay Systems Engineering</h3>
+                        <p class="show-desc">Server-side logic in Lua, optimized for performance at scale under
+                            high-concurrency conditions.</p>
+                    </div>
+                </figure>
+
+                <figure class="show-card">
+                    <div class="show-media">
+                        <div class="show-placeholder"><span>clip coming soon</span></div>
+                    </div>
+                    <div class="show-body">
+                        <p class="show-meta">animation · 2023</p>
+                        <h3 class="show-title">3D Character Animations</h3>
+                        <p class="show-desc">Animations and assets built in Blender, delivered as production-ready
+                            content for multiple shipped titles.</p>
+                    </div>
+                </figure>
+
+                <figure class="show-card">
+                    <div class="show-media">
+                        <div class="show-placeholder"><span>clip coming soon</span></div>
+                    </div>
+                    <div class="show-body">
+                        <p class="show-meta">physics · 2023</p>
+                        <h3 class="show-title">Physics &amp; Combat Systems</h3>
+                        <p class="show-desc">Custom hit detection, ragdoll physics, and ability systems running at
+                            scale.</p>
+                    </div>
+                </figure>
             </div>
-            <p class="demo-desc">Shipped work that can't embed here — collaborations with Roblox studios spanning
-                1.7 billion platform visits and 250,000 concurrent players.</p>
-            <ul class="roblox-list">
-                <li><strong>Gameplay Systems Engineering</strong> — server-side logic in Lua, optimized for
-                    performance at scale under high-concurrency conditions.</li>
-                <li><strong>3D Character Animations</strong> — animations and assets built in Blender, delivered as
-                    production-ready content for multiple shipped titles.</li>
-                <li><strong>Physics &amp; Combat Systems</strong> — custom hit detection, ragdoll physics, and
-                    ability systems running at scale.</li>
-            </ul>
-            <p class="sample-caption">animation clips — coming soon</p>
         </section>
     </main>
 
@@ -109,6 +134,7 @@
             <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
             <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         </p>
+        <p class="footer-clock"><span id="clock"></span></p>
     </footer>
 
     <div id="palette-overlay" class="palette-overlay" hidden>

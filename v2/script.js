@@ -6,16 +6,75 @@
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // ---------- Theme toggle (light <-> dark) ----------
+  // The no-flash inline <head> script already applied any saved theme; here we
+  // wire the nav button, sync its glyph + <meta theme-color>, and nudge canvas
+  // samples to redraw (they re-read CSS vars each frame).
+  var THEME_COLORS = { light: "#fafaf7", dark: "#161614" };
+
+  function effectiveTheme() {
+    var attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "light" || attr === "dark") return attr;
+    return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+
+  function syncThemeUI(theme) {
+    var btn = document.getElementById("theme-btn");
+    if (btn) btn.textContent = theme === "dark" ? "☀" : "☾";
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", THEME_COLORS[theme]);
+  }
+
+  function toggleTheme() {
+    var next = effectiveTheme() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+    syncThemeUI(next);
+    window.dispatchEvent(new Event("resize")); // sample canvases re-read vars
+  }
+
+  syncThemeUI(effectiveTheme());
+  var themeBtn = document.getElementById("theme-btn");
+  if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
+
+  // ---------- Dual-timezone footer clock ----------
+  var clockEl = document.getElementById("clock");
+  if (clockEl) {
+    var tzFmt = function (tz) {
+      return new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
+      }).format(new Date());
+    };
+    var tickClock = function () {
+      clockEl.textContent = "Toronto " + tzFmt("America/Toronto") + " · Cairo " + tzFmt("Africa/Cairo");
+    };
+    tickClock();
+    setInterval(tickClock, 30000);
+  }
+
+  // ---------- Reading hairline: scroll-progress bar ----------
+  var progress = document.createElement("div");
+  progress.className = "scroll-progress";
+  document.body.appendChild(progress);
+  function updateProgress() {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var frac = max > 0 ? window.scrollY / max : 0;
+    progress.style.transform = "scaleX(" + Math.max(0, Math.min(1, frac)) + ")";
+  }
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  window.addEventListener("resize", updateProgress);
+  updateProgress();
+
   // ---------- Hero instrument: a thin-lens ray tracer ----------
-  // A fan of rays leaves a point source, refracts through a center lens, and
-  // converges to the image point given by 1/s + 1/s' = 1/f. When the source
-  // crosses inside f the image flips real -> virtual (dashed extensions).
+  // A fan leaves a point source, refracts through the lens, and converges to
+  // the image given by 1/s + 1/s' = 1/f; inside f the image goes virtual.
   var canvas = document.getElementById("wave");
   if (canvas) {
     var ctx = canvas.getContext("2d");
     var readout = document.getElementById("wave-readout");
     var mouse = null;   // {x, y} over canvas, null = idle
     var t = 0;          // idle drift clock
+    var is404 = document.body.classList.contains("is-404");
 
     function cssVar(name, fallback) {
       var v = getComputedStyle(document.documentElement).getPropertyValue(name);
@@ -41,7 +100,7 @@
       ctx.stroke();
     }
 
-    function draw(sx, sy) {
+    function draw(sx, sy, hovered) {
       var rect = canvas.getBoundingClientRect();
       var w = rect.width, h = rect.height, mid = h / 2;
       var cx = w / 2;                 // lens plane
@@ -91,54 +150,78 @@
       // --- optics ---
       var s = cx - sx;                       // object distance (px, >0)
       s = Math.max(6, s);
-      var denom = s - f;
-      if (Math.abs(denom) < 1e-3) denom = (denom < 0 ? -1e-3 : 1e-3);
-      var sp = (s * f) / denom;              // image distance s'
-      sp = Math.max(-40 * f, Math.min(40 * f, sp));
-      var m = -sp / s;                       // linear magnification (signed)
-      var virtual = sp < 0;
-      var I = { x: cx + sp, y: mid + m * (sy - mid) };
+
+      // Hovering splits the outgoing fan into three colors at slightly
+      // different focal lengths (dispersion); idle = one accent fan.
+      var passes = hovered
+        ? [[0.96, "#5b4bd6"], [1.0, accent], [1.04, "#c0504d"]]
+        : [[1.0, accent]];
 
       // fan of rays across the aperture; three near the principals are stronger
       var N = 9;
       var strong = [0, (N - 1) / 2, N - 1]; // top-edge, chief, bottom-edge
+      var ys = [];
 
+      // incoming rays: source -> lens (straight, independent of focal length)
       for (var i = 0; i < N; i++) {
         var ly = top + (ap * 2) * (i / (N - 1));
-        var L = { x: cx, y: ly };
-        var isStrong = strong.indexOf(i) !== -1;
-
-        // incoming ray: source -> lens (straight)
+        ys.push(ly);
         ctx.strokeStyle = muted;
-        ctx.globalAlpha = isStrong ? 0.5 : 0.22;
+        ctx.globalAlpha = strong.indexOf(i) !== -1 ? 0.5 : 0.22;
         ctx.lineWidth = 1;
         ctx.setLineDash([]);
         ctx.beginPath();
         ctx.moveTo(sx, sy);
-        ctx.lineTo(L.x, L.y);
+        ctx.lineTo(cx, ly);
         ctx.stroke();
-
-        // outgoing ray: lies on the line through L and the image point I.
-        // Physical ray always travels to the right.
-        var toI = { x: I.x - L.x, y: I.y - L.y };
-        var dir = toI.x >= 0 ? toI : { x: -toI.x, y: -toI.y };
-        if (Math.abs(dir.x) < 1e-3) dir.x = 1e-3;
-
-        ctx.strokeStyle = accent;
-        ctx.globalAlpha = isStrong ? 0.6 : 0.28;
-        rayToRight(L, dir, w);
-
-        // virtual image: dashed backward extension from the lens toward I
-        if (virtual) {
-          ctx.globalAlpha = isStrong ? 0.4 : 0.18;
-          ctx.setLineDash([3, 3]);
-          ctx.beginPath();
-          ctx.moveTo(L.x, L.y);
-          ctx.lineTo(I.x, I.y);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
       }
+
+      // outgoing fan + focus dot, once per chromatic pass
+      var mainSp = 0, mainVirtual = false, mainM = 0;
+      passes.forEach(function (p) {
+        var f2 = f * p[0];
+        var denom = s - f2;
+        if (Math.abs(denom) < 1e-3) denom = denom < 0 ? -1e-3 : 1e-3;
+        var sp = (s * f2) / denom;
+        sp = Math.max(-40 * f, Math.min(40 * f, sp));
+        var m = -sp / s;
+        var virtual = sp < 0;
+        var I = { x: cx + sp, y: mid + m * (sy - mid) };
+        if (p[0] === 1.0) { mainSp = sp; mainVirtual = virtual; mainM = m; }
+
+        ctx.strokeStyle = p[1];
+        for (var j = 0; j < N; j++) {
+          var isStrong = strong.indexOf(j) !== -1;
+          var L = { x: cx, y: ys[j] };
+          var toI = { x: I.x - L.x, y: I.y - L.y };
+          var dir = toI.x >= 0 ? toI : { x: -toI.x, y: -toI.y };
+          if (Math.abs(dir.x) < 1e-3) dir.x = 1e-3;
+          ctx.globalAlpha = hovered ? (isStrong ? 0.45 : 0.3) : (isStrong ? 0.6 : 0.28);
+          ctx.setLineDash([]);
+          rayToRight(L, dir, w);
+          if (virtual) {
+            ctx.globalAlpha = hovered ? (isStrong ? 0.3 : 0.16) : (isStrong ? 0.4 : 0.18);
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(L.x, L.y);
+            ctx.lineTo(I.x, I.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+
+        // focus dot for this pass: filled if real, hollow if virtual
+        if (I.x > 2 && I.x < w - 2 && I.y > 2 && I.y < h - 2) {
+          ctx.globalAlpha = hovered ? 0.85 : 1;
+          ctx.strokeStyle = p[1];
+          ctx.fillStyle = p[1];
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.arc(I.x, I.y, 3.5, 0, Math.PI * 2);
+          if (virtual) ctx.stroke(); else ctx.fill();
+        }
+      });
 
       // --- source dot ---
       ctx.globalAlpha = 1;
@@ -148,21 +231,11 @@
       ctx.arc(sx, sy, 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // --- image point: filled if real, hollow if virtual ---
-      if (I.x > 2 && I.x < w - 2 && I.y > 2 && I.y < h - 2) {
-        ctx.strokeStyle = accent;
-        ctx.fillStyle = accent;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(I.x, I.y, 3.5, 0, Math.PI * 2);
-        if (virtual) ctx.stroke(); else ctx.fill();
-      }
-
-      // --- readout ---
+      // --- readout (tracks the central, 1.0f pass) ---
       if (readout) {
-        var mag = Math.abs(sp / s).toFixed(1);
-        var kind = virtual ? "virtual" : "real";
-        var orient = m < 0 ? "inverted" : "upright";
+        var mag = Math.abs(mainSp / s).toFixed(1);
+        var kind = mainVirtual ? "virtual" : "real";
+        var orient = mainM < 0 ? "inverted" : "upright";
         readout.textContent =
           "s = " + (s / f).toFixed(2) + "f · image " + kind + ", " + orient + ", " + mag + "×";
       }
@@ -179,8 +252,10 @@
         var sy = Math.max(8, Math.min(h - 8, mouse.y));
         return { x: sx, y: sy };
       }
-      // idle drift: s sweeps ~0.6f..2.4f (crosses f), gentle vertical bob
-      var s = f * (1.5 + Math.cos(t) * 0.9);
+      // idle drift sweeps across f; 404 begins on the virtual branch (0.7f).
+      var s = is404
+        ? f * (0.7 + (1 - Math.cos(t)) * 0.85)
+        : f * (1.5 + Math.cos(t) * 0.9);
       return { x: cx - s, y: mid + Math.sin(t * 0.7) * (h * 0.22) };
     }
 
@@ -189,7 +264,8 @@
         var rect = canvas.getBoundingClientRect();
         var w = rect.width, h = rect.height, cx = w / 2;
         var f = Math.max(46, w / 6);
-        draw(cx - 1.5 * f, h / 2 - h * 0.22); // static at s = 1.5f
+        var sMul = is404 ? 0.7 : 1.5; // 404 sits on the virtual branch
+        draw(cx - sMul * f, h / 2 - h * 0.22, false); // single fan, no hover
       };
       size();
       staticFrame();
@@ -205,7 +281,7 @@
       (function loop() {
         if (!mouse) t += 0.012;
         var src = sourceForFrame();
-        draw(src.x, src.y);
+        draw(src.x, src.y, !!mouse); // chromatic split only while hovered
         requestAnimationFrame(loop);
       })();
     }
@@ -224,7 +300,8 @@
     { label: "Resume", hint: "pdf", url: "assets/resume.pdf" },
     { label: "Email", hint: "mailto", url: "mailto:mohamedessam.elsayed07@gmail.com" },
     { label: "GitHub", hint: "external", url: "https://github.com/mohamedelsayed-0" },
-    { label: "LinkedIn", hint: "external", url: "https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" }
+    { label: "LinkedIn", hint: "external", url: "https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/" },
+    { label: "Toggle theme", hint: "action", action: toggleTheme }
   ];
 
   var overlay = document.getElementById("palette-overlay");
@@ -269,6 +346,7 @@
 
   function go(d) {
     close();
+    if (typeof d.action === "function") { d.action(); return; }
     window.location.href = d.url;
   }
 

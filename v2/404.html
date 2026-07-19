@@ -16,11 +16,12 @@
     <link rel="apple-touch-icon" href="/assets/profile.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#fafaf7">
+    <script>(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 
     <link rel="stylesheet" href="/styles.css">
 </head>
 
-<body>
+<body class="is-404">
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
@@ -36,6 +37,7 @@
                     aria-label="Open command palette">
                     <kbd>ctrl</kbd><kbd>k</kbd>
                 </button>
+                <button id="theme-btn" class="kbd-hint theme-btn" type="button" aria-label="Toggle theme">☾</button>
             </nav>
         </div>
     </header>
@@ -43,7 +45,7 @@
     <main id="main">
         <section class="hero wrap">
             <h1>404</h1>
-            <p class="deck">This page fell <em>outside the focal length</em>.</p>
+            <p class="deck">s &lt; f — the rays diverge, and <em>no real image forms</em> here.</p>
             <canvas id="wave" aria-hidden="true"></canvas>
             <p class="readout"><span id="wave-readout" aria-hidden="true">s = 1.50f · image real, inverted, 2.0×</span></p>
             <p class="caption">a thin lens — bring your cursor inside f</p>
@@ -58,6 +60,7 @@
             <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
             <a href="/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         </p>
+        <p class="footer-clock"><span id="clock"></span></p>
     </footer>
 
     <div id="palette-overlay" class="palette-overlay" hidden>

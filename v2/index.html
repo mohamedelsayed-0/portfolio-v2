@@ -26,6 +26,7 @@
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#fafaf7">
+    <script>(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -46,6 +47,7 @@
                     aria-label="Open command palette">
                     <kbd>ctrl</kbd><kbd>k</kbd>
                 </button>
+                <button id="theme-btn" class="kbd-hint theme-btn" type="button" aria-label="Toggle theme">☾</button>
             </nav>
         </div>
     </header>
@@ -156,10 +158,10 @@
             </div>
             <ul class="lifetime-list">
                 <li>Make actual contributions towards making quantum hardware accessible to all</li>
-                <li>Help with the AI scale problem, I want large trillion paramater models to be easily runnable locally</li>
+                <li>Help with the AI scale problem, I want large trillion parameter models to be easily runnable locally</li>
                 <li>Build tools that make experimental physics faster and less manual for other researchers</li>
-                <li>Contribute to a complete rehaul of the education system</li>
-                <li>Continously give back to communities who help people strive</li>
+                <li>Contribute to a complete overhaul of the education system</li>
+                <li>Continuously give back to communities who help people strive</li>
                 <li>Write a history book</li>
                 <li>Make something teleport</li>
             </ul>
@@ -173,6 +175,7 @@
             <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
             <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         </p>
+        <p class="footer-clock"><span id="clock"></span></p>
     </footer>
 
     <div id="palette-overlay" class="palette-overlay" hidden>

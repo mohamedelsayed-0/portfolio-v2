@@ -25,6 +25,7 @@
     <link rel="apple-touch-icon" href="assets/profile.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#fafaf7">
+    <script>(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -45,6 +46,7 @@
                     aria-label="Open command palette">
                     <kbd>ctrl</kbd><kbd>k</kbd>
                 </button>
+                <button id="theme-btn" class="kbd-hint theme-btn" type="button" aria-label="Toggle theme">☾</button>
             </nav>
         </div>
     </header>
@@ -58,111 +60,195 @@
 
         <hr>
 
-        <section class="notes-term wrap section">
+        <section class="wrap section">
             <div class="sec-head">
                 <span class="sec-num">01</span>
                 <span class="sec-rule"></span>
-                <h2 class="sec-title">Fall 2025 (Y1S1)</h2>
+                <h2 class="sec-title">First year</h2>
             </div>
 
-            <div class="notes-course">
-                <h3>ESC180 — Intro to Programming</h3>
-                <ul>
-                    <li><a href="https://github.com/mohamedelsayed-0/ESC180">Course Projects, Labs, and Midterm
-                            Review</a></li>
-                </ul>
-            </div>
+            <div class="notes-table">
+                <div class="note-row">
+                    <span class="note-chip">ESC180</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/ESC180">Course Projects, Labs,
+                        and Midterm Review</a>
+                    <span class="note-kind">projects</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/ESC180">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
 
-            <div class="notes-course">
-                <h3>ESC103 — Engineering Mathematics</h3>
-                <ul>
-                    <li><a href="assets/ESC103_Exam_Review.pdf">Exam Review</a></li>
-                </ul>
-            </div>
+                <div class="note-row">
+                    <span class="note-chip">ESC103</span>
+                    <a class="note-title" href="assets/ESC103_Exam_Review.pdf">Exam Review</a>
+                    <span class="note-kind">exam review</span>
+                    <span class="note-link"><a href="assets/ESC103_Exam_Review.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
 
-            <div class="notes-course">
-                <h3>CIV102 — Structures and Materials</h3>
-                <ul>
-                    <li><a href="assets/Beams_And_Extra.pdf">Beam Review + a bit of everything</a></li>
-                    <li><a href="assets/CheatSheet.pdf">Exam Cheatsheet</a></li>
-                    <li><a href="assets/CIV102_Notes.pdf">Condensed Course Notes</a></li>
-                    <li><a href="https://github.com/mohamedelsayed-0/CIV102">Course Project</a></li>
-                </ul>
-            </div>
+                <div class="note-row">
+                    <span class="note-chip">CIV102</span>
+                    <a class="note-title" href="assets/Beams_And_Extra.pdf">Beam Review + a bit of everything</a>
+                    <span class="note-kind">review</span>
+                    <span class="note-link"><a href="assets/Beams_And_Extra.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
 
-            <div class="notes-course">
-                <h3>ESC194 — Calculus I</h3>
-                <ul>
-                    <li><a href="assets/ESC194_DeltaEpsilon.pdf">Delta Epsilon Intuitive Understanding</a></li>
-                </ul>
-            </div>
+                <div class="note-row">
+                    <span class="note-chip">CIV102</span>
+                    <a class="note-title" href="assets/CheatSheet.pdf">Exam Cheatsheet</a>
+                    <span class="note-kind">cheatsheet</span>
+                    <span class="note-link"><a href="assets/CheatSheet.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
 
-            <div class="notes-course">
-                <h3>PHY180 — Classical Mechanics</h3>
-                <ul>
-                    <li><a href="assets/PHY180_Exam_Review.pdf">Exam Cheatsheet</a></li>
-                    <li><a href="https://github.com/mohamedelsayed-0/PHY180">Pendulum Code</a></li>
-                    <li><a href="assets/FINALPHYSICSREPORT (1).pdf">Course Report</a></li>
-                </ul>
-            </div>
+                <div class="note-row">
+                    <span class="note-chip">CIV102</span>
+                    <a class="note-title" href="assets/CIV102_Notes.pdf">Condensed Course Notes</a>
+                    <span class="note-kind">lecture notes</span>
+                    <span class="note-link"><a href="assets/CIV102_Notes.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
 
-            <div class="notes-course">
-                <h3>ESC101 — Praxis I</h3>
-                <ul>
-                    <li><a href="https://github.com/mohamedelsayed-0/ESC101">Mini-Project</a></li>
-                </ul>
+                <div class="note-row">
+                    <span class="note-chip">CIV102</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/CIV102">Course Project</a>
+                    <span class="note-kind">project</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/CIV102">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC194</span>
+                    <a class="note-title" href="assets/ESC194_DeltaEpsilon.pdf">Delta Epsilon Intuitive
+                        Understanding</a>
+                    <span class="note-kind">lecture notes</span>
+                    <span class="note-link"><a href="assets/ESC194_DeltaEpsilon.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">PHY180</span>
+                    <a class="note-title" href="assets/PHY180_Exam_Review.pdf">Exam Cheatsheet</a>
+                    <span class="note-kind">cheatsheet</span>
+                    <span class="note-link"><a href="assets/PHY180_Exam_Review.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">PHY180</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/PHY180">Pendulum Code</a>
+                    <span class="note-kind">code</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/PHY180">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">PHY180</span>
+                    <a class="note-title" href="assets/FINALPHYSICSREPORT (1).pdf">Course Report</a>
+                    <span class="note-kind">report</span>
+                    <span class="note-link"><a href="assets/FINALPHYSICSREPORT (1).pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC101</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/ESC101">Mini-Project</a>
+                    <span class="note-kind">project</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/ESC101">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">MAT185</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/MAT185">Assignments</a>
+                    <span class="note-kind">assignments</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/MAT185">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">MAT185</span>
+                    <span class="note-title note-title--plain">Exam Review</span>
+                    <span class="note-kind">exam review</span>
+                    <span class="note-link"></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">MAT185</span>
+                    <span class="note-title note-title--plain">Proofs you should know</span>
+                    <span class="note-kind">proofs</span>
+                    <span class="note-link"></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC102</span>
+                    <span class="note-title note-title--plain">Can't help with this one — see the Projects section
+                        instead.</span>
+                    <span class="note-kind">note</span>
+                    <span class="note-link"></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC190</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/ESC190">Lecture Notes —
+                        Python</a>
+                    <span class="note-kind">lecture notes</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/ESC190">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC190</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/ESC190">Lecture Notes — C</a>
+                    <span class="note-kind">lecture notes</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/ESC190">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC190</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/ESC190">Course Projects + Bonus
+                        Project</a>
+                    <span class="note-kind">projects</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/ESC190">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
+
+                <div class="note-row">
+                    <span class="note-chip">ESC190</span>
+                    <a class="note-title" href="https://github.com/mohamedelsayed-0/ESC190">Labs</a>
+                    <span class="note-kind">labs</span>
+                    <span class="note-link"><a href="https://github.com/mohamedelsayed-0/ESC190">github <span
+                                class="arrow" aria-hidden="true">↗</span></a></span>
+                </div>
             </div>
         </section>
 
         <hr>
 
-        <section class="notes-term wrap section">
+        <section class="wrap section">
             <div class="sec-head">
                 <span class="sec-num">02</span>
                 <span class="sec-rule"></span>
-                <h2 class="sec-title">Winter 2026 (Y1S2)</h2>
+                <h2 class="sec-title">Notes &amp; reviews</h2>
             </div>
 
-            <div class="notes-course">
-                <h3>MAT185 — Linear Algebra</h3>
-                <ul>
-                    <li><a href="https://github.com/mohamedelsayed-0/MAT185">Assignments</a></li>
-                    <li><span class="plain">Exam Review</span></li>
-                    <li><span class="plain">Proofs you should know</span></li>
-                </ul>
-            </div>
+            <div class="notes-table">
+                <div class="note-row">
+                    <span class="note-chip">MSE160</span>
+                    <span class="note-title note-title--plain">Read the textbook, all the advice I can
+                        give....</span>
+                    <span class="note-kind">advice</span>
+                    <span class="note-link"></span>
+                </div>
 
-            <div class="notes-course">
-                <h3>MSE160 — Molecules and Materials</h3>
-                <ul>
-                    <li><span class="plain">Read the textbook, all the advice I can give....</span></li>
-                </ul>
-            </div>
-
-            <div class="notes-course">
-                <h3>ECE159 — Electric Circuits</h3>
-                <ul>
-                    <li><a href="assets/ECE159_Exam_Cheatsheet.pdf">Exam Cheatsheet</a></li>
-                </ul>
-            </div>
-
-            <div class="notes-course">
-                <h3>ESC102 — Praxis II</h3>
-                <ul>
-                    <li><span class="plain">Can't help with this one — see the Projects section instead.</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="notes-course">
-                <h3>ESC190 — Algorithms &amp; Data Structures</h3>
-                <ul>
-                    <li><a href="https://github.com/mohamedelsayed-0/ESC190">Lecture Notes — Python</a></li>
-                    <li><a href="https://github.com/mohamedelsayed-0/ESC190">Lecture Notes — C</a></li>
-                    <li><a href="https://github.com/mohamedelsayed-0/ESC190">Course Projects + Bonus Project</a>
-                    </li>
-                    <li><a href="https://github.com/mohamedelsayed-0/ESC190">Labs</a></li>
-                </ul>
+                <div class="note-row">
+                    <span class="note-chip">ECE159</span>
+                    <a class="note-title" href="assets/ECE159_Exam_Cheatsheet.pdf">Exam Cheatsheet</a>
+                    <span class="note-kind">cheatsheet</span>
+                    <span class="note-link"><a href="assets/ECE159_Exam_Cheatsheet.pdf">pdf <span class="arrow"
+                                aria-hidden="true">↓</span></a></span>
+                </div>
             </div>
         </section>
     </main>
@@ -174,6 +260,7 @@
             <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
             <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         </p>
+        <p class="footer-clock"><span id="clock"></span></p>
     </footer>
 
     <div id="palette-overlay" class="palette-overlay" hidden>
