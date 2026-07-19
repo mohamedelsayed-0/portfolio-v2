@@ -10,7 +10,7 @@
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   mount.innerHTML =
-    '<canvas class="demo-canvas" width="960" height="360" aria-hidden="true"></canvas>' +
+    '<canvas class="demo-canvas" width="960" height="480" aria-hidden="true"></canvas>' +
     '<div class="demo-controls">' +
     '<label>Position <input type="range" id="beam-pos" min="2" max="98" value="38" step="1"></label>' +
     '<label>Load <input type="range" id="beam-load" min="0" max="100" value="62" step="1"></label>' +
@@ -42,6 +42,7 @@
   // ---- geometry / mechanics (L = 1, EI = 1) ----
   var N = 200;
   var VREF = 1 / 48; // deflection at P=1, a=0.5 — the reference max
+  var MREF = 0.25; // moment at P=1, a=0.5 — the reference max
   function vAt(x, P, a) {
     var b = 1 - a;
     return x <= a
@@ -55,7 +56,7 @@
   var display = new Array(N + 1);
   var fromArr = new Array(N + 1);
   var fromPos = posFrac, fromLoad = loadFrac;
-  var maxAbs = 0, maxLoc = 0;
+  var maxAbs = 0, maxLoc = 0, mPeak = 0;
   var rafId = null, animStart = null;
   var DUR = 200;
 
@@ -69,12 +70,34 @@
     }
     maxAbs = m;
     maxLoc = mi / N;
+    mPeak = P * a * (1 - a); // triangular BMD peak Ra·a = P·a·b at the load
   }
 
   function updateReadout() {
     readout.textContent =
       "P = " + Math.round(loadFrac * 100) + "% · a = " + posFrac.toFixed(2) +
-      "L · δmax = " + (maxAbs / VREF).toFixed(2) + " at x = " + maxLoc.toFixed(2) + "L";
+      "L · δmax = " + (maxAbs / VREF).toFixed(2) + " at x = " + maxLoc.toFixed(2) + "L" +
+      " · M_max = " + (mPeak / MREF).toFixed(2);
+  }
+
+  // reaction arrow: tip at the support, tail below, length ∝ R
+  function drawReaction(x, yTip, R, label, c, gap, sc) {
+    var yTail = yTip + gap + R * sc;
+    ctx.strokeStyle = c.fg;
+    ctx.fillStyle = c.fg;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, yTail);
+    ctx.lineTo(x, yTip);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, yTip);
+    ctx.lineTo(x - 5, yTip + 9);
+    ctx.lineTo(x + 5, yTip + 9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = c.muted;
+    ctx.fillText(label, x - 8, yTail + 11);
   }
 
   function cancelAnim() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
@@ -132,8 +155,8 @@
     var w = rect.width, h = rect.height;
     var c = colors();
     var b = bounds(rect);
-    var beamY = h * 0.42;
-    var ampMax = h * 0.3;
+    var beamY = h * 0.24;
+    var ampMax = h * 0.16;
     var scale = ampMax / VREF;
 
     ctx.clearRect(0, 0, w, h);
@@ -181,11 +204,43 @@
     ctx.lineTo(b.x1 + s * 1.6, beamY + s * 1.8);
     ctx.stroke();
 
+    // reactions Ra = P·b/L, Rb = P·a/L (L=1) — live off the lerped dPos/dLoad
+    var Ra = dLoad * (1 - dPos), Rb = dLoad * dPos;
+    ctx.font = "600 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+    drawReaction(b.x0, beamY, Ra, "Ra", c, h * 0.06, h * 0.2);
+    drawReaction(b.x1, beamY, Rb, "Rb", c, h * 0.06, h * 0.2);
+
+    // bending-moment diagram — triangular, peak P·a·b at the load
+    var yM0 = h * 0.62, mScale = (h * 0.18) / MREF;
+    var mPk = dLoad * dPos * (1 - dPos);
+    var axm = b.x0 + dPos * b.span;
+    ctx.beginPath();
+    ctx.moveTo(b.x0, yM0);
+    ctx.lineTo(axm, yM0 + mPk * mScale);
+    ctx.lineTo(b.x1, yM0);
+    ctx.closePath();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = c.accent;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = c.accent;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
     // load arrow (tip follows the current curve at its position)
     var idxA = clamp(Math.round(dPos * N), 0, N);
     var ax = b.x0 + dPos * b.span;
     var tipY = beamY + display[idxA] * scale;
     var len = 18 + dLoad * 46;
+    if (hoverArrow) {
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = c.fg;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(ax, tipY - len * 0.5, len * 0.5 + 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     ctx.strokeStyle = c.fg;
     ctx.fillStyle = c.fg;
     ctx.lineWidth = 2;
@@ -203,6 +258,7 @@
 
   // ---- drag interaction (canvas), mirrored by the position slider ----
   var dragging = false;
+  var hoverArrow = false;
 
   function hitArrow(clientX) {
     var rect = canvas.getBoundingClientRect();
@@ -227,7 +283,12 @@
     dragTo(e.clientX);
   });
   canvas.addEventListener("pointermove", function (e) {
-    if (dragging) dragTo(e.clientX);
+    if (dragging) { dragTo(e.clientX); return; }
+    var hv = hitArrow(e.clientX);
+    if (hv !== hoverArrow) { hoverArrow = hv; render(); }
+  });
+  canvas.addEventListener("pointerleave", function () {
+    if (hoverArrow) { hoverArrow = false; render(); }
   });
   function endDrag(e) {
     dragging = false;

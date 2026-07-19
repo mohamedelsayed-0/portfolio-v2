@@ -177,7 +177,7 @@ kbd { font-family: var(--font-mono); }
 #wave {
   display: block;
   width: 100%;
-  height: 96px;
+  height: 150px;
   margin: 0.5rem 0 0.4rem;
 }
 
@@ -284,6 +284,21 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
 }
 
 .row:hover .row-title { color: var(--accent); }
+
+/* ↗ affordance: slides up-right on row hover to signal the title is clickable */
+.row-title .arrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.62em;
+  color: var(--muted);
+  margin-left: 0.2em;
+  transition: transform 0.2s ease, color 0.15s ease;
+}
+
+.row:hover .row-title .arrow {
+  transform: translate(2px, -2px);
+  color: var(--accent);
+}
 
 .row-org { color: var(--muted); font-size: 0.95rem; }
 
@@ -453,6 +468,42 @@ hr { border: none; border-top: 1px solid var(--rule); margin: 0; }
   color: var(--fg);
   font-weight: 500;
 }
+
+/* Embedded project samples (projects.html) */
+.row-main .demo-stage { margin-top: 0.9rem; }
+
+.sample-caption {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: 0.15rem 0 0.4rem;
+}
+
+/* Media showcase figures (demos.html) */
+.showcase-figure {
+  margin: 0 0 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fg) 2%, transparent);
+}
+
+.showcase-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.showcase-figure figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* Blog page */
+.blog-soon { color: var(--muted); }
 
 /* Notes */
 

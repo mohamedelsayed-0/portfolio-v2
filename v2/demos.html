@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Demos — playable interference, beam-deflection, and Pong experiments by Mohamed Elsayed.">
+        content="Demos — a media showcase of shipped and competition work by Mohamed Elsayed: Pong AI and Roblox game development.">
     <title>Demos | Mohamed Elsayed</title>
 
     <meta property="og:title" content="Demos | Mohamed Elsayed">
-    <meta property="og:description" content="Playable interference, beam, and Pong experiments.">
+    <meta property="og:description" content="A media showcase of Pong AI and Roblox game development work.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://elsayedmohamed.com/demos.html">
     <meta property="og:image" content="https://elsayedmohamed.com/assets/og-meem.png">
@@ -36,8 +36,10 @@
         <div class="wrap header-inner">
             <a class="site-name" href="index.html">Mohamed Elsayed</a>
             <nav aria-label="Primary">
+                <a href="projects.html">Projects</a>
                 <a href="demos.html">Demos</a>
                 <a href="notes.html">Notes</a>
+                <a href="blog.html">Blog</a>
                 <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
                 <button id="palette-btn" class="kbd-hint" type="button" aria-haspopup="dialog"
                     aria-label="Open command palette">
@@ -50,54 +52,31 @@
     <main id="main">
         <section class="hero wrap">
             <h1>Demos</h1>
-            <p class="deck">Small, <em>playable</em> experiments — physics and gameplay you can poke at, not just
-                read about.</p>
-        </section>
-
-        <hr>
-
-        <section id="interference" class="wrap section">
-            <div class="sec-head">
-                <span class="sec-num">01</span>
-                <span class="sec-rule"></span>
-                <h2 class="sec-title">Interference lab</h2>
-            </div>
-            <p class="demo-desc">Two point sources radiate wavefronts; drag the sliders and watch the intensity
-                pattern build up on the screen at the right edge.</p>
-            <div class="demo-stage" id="demo-slit-mount"></div>
-        </section>
-
-        <hr>
-
-        <section id="beam" class="wrap section">
-            <div class="sec-head">
-                <span class="sec-num">02</span>
-                <span class="sec-rule"></span>
-                <h2 class="sec-title">Beam bench</h2>
-            </div>
-            <p class="demo-desc">A simply supported Euler–Bernoulli beam: move the point load along the span and
-                watch the deflection curve respond.</p>
-            <div class="demo-stage" id="demo-beam-mount"></div>
-            <div class="demo-links">
-                <a href="https://github.com/mohamedelsayed-0/CIV102">CIV102 repo</a>
-            </div>
+            <p class="deck">A <em>showcase</em> of work that lives outside a repo — a tournament AI in motion and
+                shipped game systems at scale. Playable versions of a few pieces live on the
+                <a href="projects.html">projects page</a>.</p>
         </section>
 
         <hr>
 
         <section id="pong" class="wrap section">
             <div class="sec-head">
-                <span class="sec-num">03</span>
+                <span class="sec-num">01</span>
                 <span class="sec-rule"></span>
-                <h2 class="sec-title">Pong vs the machine</h2>
+                <h2 class="sec-title">Pong AI</h2>
             </div>
-            <p class="demo-desc">Click to start, move your paddle with the mouse, and race a predictive AI to five
-                points.</p>
-            <div class="demo-stage" id="demo-pong-mount"></div>
+            <p class="demo-desc">An AI-driven Pong agent built for the annual ESC180 tournament — placed 3rd overall,
+                maximizing score against a professor-built opponent over a thousand rounds with collision physics and
+                an adaptive, time-optimized strategy.</p>
+            <figure class="showcase-figure">
+                <img src="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif" loading="lazy"
+                    alt="Two AI-controlled Pong paddles rallying during the ESC180 tournament.">
+                <figcaption>the tournament matchup — AI versus AI, from the ESC180 assignment</figcaption>
+            </figure>
             <div class="demo-links">
-                <a href="https://github.com/mohamedelsayed-0/Pong-AI">Pong-AI repo</a>
                 <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/">Assignment description</a>
-                <a href="https://www.cs.toronto.edu/~guerzhoy/niftypong/pongAIvAI.gif">Tournament GIF</a>
+                <a href="https://github.com/mohamedelsayed-0/Pong-AI">Pong-AI repo</a>
+                <a href="https://www.linkedin.com/feed/update/urn:li:activity:7415496511515504640/">LinkedIn post</a>
             </div>
         </section>
 
@@ -105,7 +84,7 @@
 
         <section id="roblox" class="wrap section">
             <div class="sec-head">
-                <span class="sec-num">04</span>
+                <span class="sec-num">02</span>
                 <span class="sec-rule"></span>
                 <h2 class="sec-title">Roblox</h2>
             </div>
@@ -119,6 +98,7 @@
                 <li><strong>Physics &amp; Combat Systems</strong> — custom hit detection, ragdoll physics, and
                     ability systems running at scale.</li>
             </ul>
+            <p class="sample-caption">animation clips — coming soon</p>
         </section>
     </main>
 
@@ -139,9 +119,6 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="demo-slit.js" defer></script>
-    <script src="demo-beam.js" defer></script>
-    <script src="demo-pong.js" defer></script>
 </body>
 
 </html>

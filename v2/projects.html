@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Projects by Mohamed Elsayed — quantum error correction, quantum optics, structural simulation, and AI, several with live interactive samples.">
+    <title>Projects | Mohamed Elsayed</title>
+
+    <meta property="og:title" content="Projects | Mohamed Elsayed">
+    <meta property="og:description"
+        content="Research systems and engineering tools, several with live interactive samples.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://elsayedmohamed.com/projects.html">
+    <meta property="og:image" content="https://elsayedmohamed.com/assets/og-meem.png">
+
+    <link rel="canonical" href="https://elsayedmohamed.com/projects.html">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" type="image/svg+xml" href="assets/meem-favicon.svg">
+    <link rel="apple-touch-icon" href="assets/profile.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fafaf7">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <div class="wrap header-inner">
+            <a class="site-name" href="index.html">Mohamed Elsayed</a>
+            <nav aria-label="Primary">
+                <a href="projects.html">Projects</a>
+                <a href="demos.html">Demos</a>
+                <a href="notes.html">Notes</a>
+                <a href="blog.html">Blog</a>
+                <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+                <button id="palette-btn" class="kbd-hint" type="button" aria-haspopup="dialog"
+                    aria-label="Open command palette">
+                    <kbd>ctrl</kbd><kbd>k</kbd>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="hero wrap">
+            <h1>Projects</h1>
+            <p class="deck">Research systems and engineering tools built with a bias toward <em>mathematical
+                    clarity</em> — a few come with the underlying physics you can poke at, live.</p>
+        </section>
+
+        <hr>
+
+        <section class="wrap section">
+            <ol class="rows">
+                <li class="row">
+                    <span class="row-idx">01</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <a class="row-title" href="https://github.com/mohamedelsayed-0/gkp-thermal-recovery">GKP
+                                Thermal Recovery<span class="arrow" aria-hidden="true">↗</span></a>
+                            <span class="row-meta">repo</span>
+                        </div>
+                        <p class="row-desc">Finite-energy GKP qubit recovery under thermal loss — independent
+                            quantum error correction research.</p>
+                        <p class="row-tags">python · quantum error correction</p>
+                    </div>
+                </li>
+
+                <li class="row">
+                    <span class="row-idx">02</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <a class="row-title"
+                                href="https://github.com/mohamedelsayed-0/gaussian_simulations/tree/main">Gaussian
+                                Simulations<span class="arrow" aria-hidden="true">↗</span></a>
+                            <span class="row-meta">repo · demo below</span>
+                        </div>
+                        <p class="row-desc">Independent research deriving closed-form entanglement survival
+                            thresholds for two-mode squeezed vacuum states in symmetric phase-insensitive Gaussian
+                            channels.</p>
+                        <p class="row-tags">python · quantum optics</p>
+                        <div class="demo-stage" id="demo-slit-mount"></div>
+                        <p class="sample-caption">the wave interference underneath — a toy version</p>
+                    </div>
+                </li>
+
+                <li class="row">
+                    <span class="row-idx">03</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <a class="row-title" href="https://github.com/mohamedelsayed-0/CIV102">Structural Beam
+                                Simulation<span class="arrow" aria-hidden="true">↗</span></a>
+                            <span class="row-meta">repo · demo below</span>
+                        </div>
+                        <p class="row-desc">Beam deflection calculator for arbitrary cross sections with 3D stress
+                            visualizations and deflection animations under moving and distributed loads, built for a
+                            CIV102 capstone.</p>
+                        <p class="row-tags">python · matlab</p>
+                        <div class="demo-stage" id="demo-beam-mount"></div>
+                        <p class="sample-caption">the deflection curve, live — drag the load along the span</p>
+                    </div>
+                </li>
+
+                <li class="row">
+                    <span class="row-idx">04</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <a class="row-title" href="https://github.com/mohamedelsayed-0/Pong-AI">Pong AI<span
+                                    class="arrow" aria-hidden="true">↗</span></a>
+                            <span class="row-meta">repo · demo below</span>
+                        </div>
+                        <p class="row-desc">AI-driven Pong agent built for the ESC180 tournament — placed 3rd
+                            overall, with collision physics, responsive paddle controls, and an adaptive strategy.</p>
+                        <p class="row-tags">python · pygame</p>
+                        <div class="demo-stage" id="demo-pong-mount"></div>
+                        <p class="sample-caption">play the concept — the real thing is on the demos page</p>
+                    </div>
+                </li>
+
+                <li class="row">
+                    <span class="row-idx">05</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <span class="row-title">Lumina — LaTeX Notetaker</span>
+                            <span class="row-meta">in progress</span>
+                        </div>
+                        <p class="row-desc">Web tool that converts handwritten, typed, and audio notes into
+                            structured LaTeX documents optimized for notation-heavy coursework.</p>
+                        <p class="row-tags">typescript · javascript · css · python</p>
+                    </div>
+                </li>
+
+                <li class="row">
+                    <span class="row-idx">06</span>
+                    <div class="row-main">
+                        <div class="row-head">
+                            <a class="row-title"
+                                href="https://github.com/mohamedelsayed-0/ESC102/tree/main/esc102-design-portfolio">ESC102
+                                Design Portfolio<span class="arrow" aria-hidden="true">↗</span></a>
+                            <span class="row-meta">repo</span>
+                        </div>
+                        <p class="row-desc">Capstone work for ESC102 — a portfolio framed through an engineering
+                            design perspective, with an emphasis on process, iteration, and technical
+                            communication.</p>
+                        <p class="row-tags">engineering design · portfolio</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer class="site-footer wrap">
+        <p>
+            <a href="mailto:mohamedessam.elsayed07@gmail.com">Email</a> ·
+            <a href="https://www.linkedin.com/in/mohamed-elsayed-b4aa02362/">LinkedIn</a> ·
+            <a href="https://github.com/mohamedelsayed-0">GitHub</a> ·
+            <a href="assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+        </p>
+    </footer>
+
+    <div id="palette-overlay" class="palette-overlay" hidden>
+        <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+            <input id="palette-input" type="text" placeholder="Jump to..." autocomplete="off" spellcheck="false">
+            <ul id="palette-list" role="listbox"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="demo-slit.js" defer></script>
+    <script src="demo-beam.js" defer></script>
+    <script src="demo-pong.js" defer></script>
+</body>
+
+</html>
