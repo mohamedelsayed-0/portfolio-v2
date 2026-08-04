@@ -413,6 +413,7 @@
     { label: "Demos", hint: "page", url: "demos.html" },
     { label: "Notes", hint: "page", url: "notes.html" },
     { label: "Blog", hint: "page", url: "blog.html" },
+    { label: "Check that your loss can move", hint: "post", url: "blog-adam.html" },
     { label: "Resume", hint: "pdf", url: "assets/resume.pdf" },
     { label: "Email", hint: "mailto", url: "mailto:mohamedessam.elsayed07@gmail.com" },
     { label: "GitHub", hint: "external", url: "https://github.com/mohamedelsayed-0" },
