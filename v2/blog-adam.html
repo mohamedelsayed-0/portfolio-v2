@@ -74,7 +74,7 @@
                 <p class="lead">Hide a direction in high-dimensional noise and ask a neural network
                     to find it.</p>
 
-                <p>The setup is a <strong>planted single-index model</strong>. You draw inputs
+                <p>The setup is a planted single index model. You draw inputs
                     <span class="m">x</span> from a standard Gaussian in <span class="m">d</span>
                     dimensions, pick one secret direction <span class="m">u</span>, and make the
                     label depend on nothing but how far along that direction you are:
@@ -93,7 +93,7 @@
                         time wandering before it falls. Conceptual, not measured.</figcaption>
                 </figure>
 
-                <p>Training here has two phases, a long, nearly blind <em>search</em>, then a fast fit
+                <p>Training here has two phases, a long, nearly blind search, then a fast fit
                     once the direction is found. The interesting quantity is how long the search
                     takes, and specifically how that time grows with dimension. If it scales like
                     <span class="m">d</span> you are fine. If it scales like <span class="m">d²</span>
@@ -118,8 +118,8 @@
                     from 12 to 1024, budgets out to 40,000 steps. SGD found the direction in 50 steps.
                     Adam never found it.</p>
 
-                <p>Didn't really know what to do at this point so I did the only sensible thing, I tried to break it. Over three campaigns I
-                    pinned down exactly which ingredient was responsible.</p>
+                <p>Didn't really know what to do at this point so I did the only sensible thing, I tried to break it. Over three sweeps I
+                    pinned down exactly which part was responsible.</p>
 
                 <ul class="findings">
                     <li>It survived the grokking regime, AdamW failed 0 for 72 under multipass
@@ -135,12 +135,12 @@
                         <span class="m">(ε, lr)</span> plane.</li>
                 </ul>
 
-                <p>I also killed several of my own explanations along the way. I initially thought it might be the per-coordinate
-                    signal to noise, however that idea died quickly when batch sizes up to 8192 changed nothing. The noise
-                    story died when Adam failed just as hard at zero label noise. Each probe agreed
+                <p>I also debunked several of my own inuitive explanations along the way. I initially thought it might be the per-coordinate
+                    signal to noise, however that idea was dismissed rather quickly when batch sizes up to 8192 changed nothing. The noise
+                    story failed when Adam failed just as hard at zero label noise. Each probe agreed
                     with every other one. It was, I thought, a tidy result.</p>
 
-                <p class="pull">It was all completely consistent, and completely meaningless.</p>
+                <p class="pull">It was all completely consistent, and yet failed each time</p>
             </section>
 
             <hr>
@@ -158,14 +158,14 @@
                 <pre class="code">f(x) = (1/m) Σ a_j · tanh(w_j · x)</pre>
 
                 <p>Every term is an odd function of <span class="m">x</span>, so
-                    <span class="m">f</span> is odd: flip the input and the output flips. My target
-                    was <span class="m">He₂(z) = z² − 1</span>, which is <em>even</em>: flip the
+                    <span class="m">f</span> is odd, flip the input and the output flips. My target
+                    was <span class="m">He₂(z) = z² − 1</span>, which is even, in other words flip the
                     input and the output is unchanged.</p>
 
                 <p>Under a symmetric input distribution, the best <span class="m">L₂</span>
                     approximation to an even function by an odd one is not merely bad. It is
                     <strong>exactly zero</strong>. The positive and negative halves cancel term for
-                    term. My network was not struggling to learn the task — it was structurally
+                    term. My network was not struggling to learn the task, it was structurally
                     incapable of expressing any part of it.</p>
 
                 <figure class="fig">
@@ -173,20 +173,17 @@
                     <figcaption>The parity argument. An odd network can only produce odd functions,
                         and averaged against an even target under a symmetric input distribution
                         every odd candidate scores exactly what the zero function scores. There is
-                        nothing for the optimizer to descend toward. This is a theorem, not an
-                        empirical finding — no amount of training crosses it.</figcaption>
+                        nothing for the optimizer to descend toward.</figcaption>
                 </figure>
 
-                <p>The evidence had been sitting in my logs the entire time. Normalized MSE was
-                    <span class="m">1.00</span> in every single run of all three campaigns —
+                <p>I eventually realized that the evidence had been sitting in my logs the entire time. Normalized MSE was
+                    <span class="m">1.00</span> in every single run of all three sweeps, 
                     <span class="m">1.00</span> meaning "exactly as good as predicting the mean."
                     I had seen it, and explained it away as the search phase not having finished.</p>
 
-                <p>It was not a phase. It was a ceiling.</p>
-
-                <p>The fix is one line — give the neurons bias terms,
-                    <span class="m">tanh(w·x + b)</span> — which breaks the odd symmetry and makes
-                    the target representable. Run the identical experiment both ways:</p>
+                <p>Using some help (thank you claude), I realized that the fix is one line, that is giving the neurons bias terms,
+                    <span class="m">tanh(w·x + b)</span> ; which breaks the odd symmetry and makes
+                    the target representable. I then ran the identical experiment both ways:</p>
 
                 <figure class="fig">
                     <!--FIG2--><svg viewBox="0 0 640 268" role="img" aria-label="With biases the loss moves; without them it cannot" xmlns="http://www.w3.org/2000/svg"><line class="grid" x1="210.0" y1="42" x2="210.0" y2="222"/><text class="lbl num" x="210.0" y="240" text-anchor="middle">0.90</text><line class="grid" x1="346.6" y1="42" x2="346.6" y2="222"/><text class="lbl num" x="346.6" y="240" text-anchor="middle">0.95</text><line class="grid" x1="483.1" y1="42" x2="483.1" y2="222"/><text class="lbl num" x="483.1" y="240" text-anchor="middle">1.00</text><line class="rowline" x1="210" y1="71.5" x2="311.3" y2="71.5"/><text class="lbl" x="196" y="75.0" text-anchor="end">sgd · bias on</text><circle class="ring" cx="311.3" cy="71.5" r="7"/><circle class="s1-f hit" cx="311.3" cy="71.5" r="5" data-tip="sgd · biases on · nmse 0.94"/><text class="lbl strong num" x="325.3" y="75.0" text-anchor="start">0.94</text><line class="rowline" x1="210" y1="114.5" x2="416.9" y2="114.5"/><text class="lbl" x="196" y="118.0" text-anchor="end">adam · bias on</text><circle class="ring" cx="416.9" cy="114.5" r="7"/><circle class="s2-f hit" cx="416.9" cy="114.5" r="5" data-tip="adam · biases on · nmse 0.98"/><text class="lbl strong num" x="430.9" y="118.0" text-anchor="start">0.98</text><line class="rowline" x1="210" y1="157.5" x2="520.6" y2="157.5"/><text class="lbl" x="196" y="161.0" text-anchor="end">sgd · bias off</text><circle class="ring" cx="520.6" cy="157.5" r="7"/><circle class="s1-f hit" cx="520.6" cy="157.5" r="5" data-tip="sgd · biases off · nmse 1.01"/><text class="lbl strong num" x="506.6" y="161.0" text-anchor="end">1.01</text><line class="rowline" x1="210" y1="200.5" x2="483.3" y2="200.5"/><text class="lbl" x="196" y="204.0" text-anchor="end">adam · bias off</text><circle class="ring" cx="483.3" cy="200.5" r="7"/><circle class="s2-f hit" cx="483.3" cy="200.5" r="5" data-tip="adam · biases off · nmse 1.00"/><text class="lbl strong num" x="469.3" y="204.0" text-anchor="end">1.00</text><line class="ceiling" x1="483.1" y1="42" x2="483.1" y2="222"/><text class="lbl strong" x="475.1" y="36.0" text-anchor="end">1.00 — the loss cannot move</text><line class="ax" x1="210" y1="222" x2="606" y2="222"/><text class="lbl dim" x="408" y="258" text-anchor="middle">final normalized MSE — 1.00 is a floor</text></svg><!--/FIG2-->
@@ -194,16 +191,16 @@
                         loss moves and both optimizers work. Without them it sits at 1.00 and nothing
                         in that half of the chart is learning, whatever the alignment metric says.
                         Trained to 20,000 steps with early stopping disabled, the bias-free runs stay
-                        at 1.00 — exactly as the parity argument requires.</figcaption>
+                        at 1.00, as expected from our earlier observations.</figcaption>
                 </figure>
 
-                <p>With biases on, Adam matches SGD. The separation evaporates.</p>
+                <p>With biases on, Adam matches SGD. Meaning that the "separation" evaporates.</p>
 
-                <p>The bias-free SGD bar is the one to look at. It "succeeds" on the alignment
-                    metric — it locks onto the planted direction, overlap climbing past 0.9 — while
+                <p>The bias-free SGD bar is particularly interesting and worth the one to look at. It "succeeds" on the alignment
+                    metric; it locks onto the planted direction, overlap climbing past 0.9, while
                     its loss sits at <span class="m">1.01</span>. It found the needle and still could
-                    not use it. That bar is the whole phenomenon: <strong>my metric and my loss were
-                    measuring different things, and I had only been watching the metric.</strong></p>
+                    not use it. That bar is the whole observed issue and fix, i.e. my metric and my loss were
+                    measuring different things, and I had only been watching the metric. </p>
 
                 <p>What I had actually discovered was that SGD and Adam break a symmetry differently
                     in a misspecified model. That is not a fact about learning. It is barely a fact
@@ -219,8 +216,8 @@
                     <h2 class="sec-title">What is actually true</h2>
                 </div>
 
-                <p>With the task fixed, the real question finally becomes askable: on a problem the
-                    network <em>can</em> represent, does Adam's search time scale differently in
+                <p>With the task fixed, I foudn the real question to be whether on a problem the network can represent,
+                    does Adam's search time scale differently in
                     <span class="m">d</span> than SGD's?</p>
 
                 <figure class="fig">
@@ -232,9 +229,9 @@
                 </figure>
 
                 <p>No. The exponents are <span class="m">d^0.96</span> and
-                    <span class="m">d^1.01</span> — a gap of 0.06, which is nothing. Adam carries a
+                    <span class="m">d^1.01</span>,a gap of 0.06, which is nothing. Adam carries a
                     roughly constant 3× penalty in absolute time, and constant factors are exactly
-                    what tuning absorbs. The <em>scaling</em> is what generalizes to problems bigger
+                    what tuning absorbs. The scaling is what generalizes to problems bigger
                     than the one on your desk, and the scaling is identical.</p>
 
                 <p>The answer to my original question is boring. The interesting part was how hard I
@@ -251,13 +248,13 @@
                 </div>
 
                 <p>Fixing the task was not the end of it. Two more artifacts lined up to replace the
-                    one I had just killed.</p>
+                    one I had just dismissed
 
                 <h3>The detector disagreed with itself</h3>
 
                 <p>"Found the direction" was defined as the network's top singular vector reaching
                     overlap 0.6 with the planted one. I computed that overlap with a randomized
-                    low-rank SVD — fast, and in this regime, wrong. It draws an internal random
+                    low-rank SVD, fast, and in this regime, wrong. It draws an internal random
                     projection and takes no seed, so the same matrix gives a different answer every
                     call.</p>
 
