@@ -1,5 +1,3 @@
-/* Mohamed Elsayed — portfolio v2 (editorial minimal). One stylesheet, all pages. */
-
 :root {
   --bg: #fafaf7;
   --fg: #1a1a1a;
@@ -23,6 +21,12 @@
     --accent: #6f8fff;
     --rule: rgba(255, 255, 255, 0.14);
   }
+}
+
+/* Prevent line-based SVG elements from receiving the default black fill */
+.fig svg polyline,
+.fig svg line {
+  fill: none;
 }
 
 [data-theme="dark"] {
