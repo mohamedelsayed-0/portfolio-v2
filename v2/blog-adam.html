@@ -247,14 +247,14 @@
                     <h2 class="sec-title">Two more near misses</h2>
                 </div>
 
-                <p>Fixing the task was not the end of it. Two more artifacts lined up to replace the
+                <p>Fixing the task was not the end of it. Two more things lined up to replace the
                     one I had just dismissed
 
                 <h3>The detector disagreed with itself</h3>
 
-                <p>"Found the direction" was defined as the network's top singular vector reaching
+                <p>"Found the direction" was defined in my code as the network's top singular vector reaching
                     overlap 0.6 with the planted one. I computed that overlap with a randomized
-                    low-rank SVD, fast, and in this regime, wrong. It draws an internal random
+                    low-rank SVD, fast, and in this regime, it was wrong. It draws an internal random
                     projection and takes no seed, so the same matrix gives a different answer every
                     call.</p>
 
@@ -267,13 +267,13 @@
                         instrument.</figcaption>
                 </figure>
 
-                <p>Across the sweep, 44 runs recorded a final overlap <em>below</em> the threshold
+                <p>Across the sweep, 44 runs recorded a final overlap below, the threshold
                     they had supposedly crossed, with no weight updates in between. Replacing it with
-                    an exact computation — same cost, deterministic — took that count to zero. I had
+                    an exact computation - same cost, deterministic - took that count to zero. I had
                     written that function myself, in the first week, and it had propagated through
                     all four campaigns.</p>
 
-                <h3>The learning-rate grid was too narrow</h3>
+                <h3>The learning rate grid was too narrow</h3>
 
                 <p>On a harder version of the task I got an exponent gap of <strong>+0.52</strong>,
                     comfortably past the significance threshold I had set in advance. A live finding,
@@ -287,13 +287,13 @@
                 <figure class="fig">
                     <!--FIG4--><svg viewBox="0 0 640 320" role="img" aria-label="Widening the learning-rate grid removes the apparent gap" xmlns="http://www.w3.org/2000/svg"><line class="grid" x1="92" y1="259.5" x2="606" y2="259.5"/><text class="lbl num" x="82" y="263.0" text-anchor="end">100</text><line class="grid" x1="92" y1="222.2" x2="606" y2="222.2"/><text class="lbl num" x="82" y="225.7" text-anchor="end">250</text><line class="grid" x1="92" y1="165.8" x2="606" y2="165.8"/><text class="lbl num" x="82" y="169.3" text-anchor="end">1,000</text><line class="grid" x1="92" y1="121.0" x2="606" y2="121.0"/><text class="lbl num" x="82" y="124.5" text-anchor="end">3,000</text><line class="grid" x1="92" y1="72.0" x2="606" y2="72.0"/><text class="lbl num" x="82" y="75.5" text-anchor="end">10,000</text><text class="lbl num" x="131.9" y="292" text-anchor="middle">128</text><text class="lbl num" x="348.5" y="292" text-anchor="middle">256</text><text class="lbl num" x="565.1" y="292" text-anchor="middle">512</text><line class="ax" x1="92" y1="274" x2="606" y2="274"/><text class="lbl dim" x="349" y="310" text-anchor="middle">ambient dimension d</text><text class="lbl dim" x="16" y="154" text-anchor="middle" transform="rotate(-90 16 154)">steps to find the direction</text><polyline class="ghost" points="131.9,194.0 348.5,113.6 565.1,68.7"/><text class="lbl dim" x="555.1" y="58.7" text-anchor="end">before widening the grid — d^2.22</text><circle class="s1-f seed" cx="131.9" cy="259.5" r="2.6"/><circle class="s1-f seed" cx="131.9" cy="259.5" r="2.6"/><circle class="s1-f seed" cx="131.9" cy="259.5" r="2.6"/><circle class="s1-f seed" cx="348.5" cy="222.2" r="2.6"/><circle class="s1-f seed" cx="348.5" cy="198.3" r="2.6"/><circle class="s1-f seed" cx="348.5" cy="222.2" r="2.6"/><circle class="s1-f seed" cx="565.1" cy="167.8" r="2.6"/><circle class="s1-f seed" cx="565.1" cy="131.8" r="2.6"/><circle class="s1-f seed" cx="565.1" cy="163.8" r="2.6"/><polyline class="s1" points="131.9,259.5 348.5,222.2 565.1,163.8"/><circle class="ring" cx="131.9" cy="259.5" r="6"/><circle class="s1-f hit" cx="131.9" cy="259.5" r="4.5" data-tip="SGD · d=128 · 100 steps"/><circle class="ring" cx="348.5" cy="222.2" r="6"/><circle class="s1-f hit" cx="348.5" cy="222.2" r="4.5" data-tip="SGD · d=256 · 250 steps"/><circle class="ring" cx="565.1" cy="163.8" r="6"/><circle class="s1-f hit" cx="565.1" cy="163.8" r="4.5" data-tip="SGD · d=512 · 1050 steps"/><circle class="s2-f seed" cx="131.9" cy="180.3" r="2.6"/><circle class="s2-f seed" cx="131.9" cy="198.3" r="2.6"/><circle class="s2-f seed" cx="131.9" cy="194.0" r="2.6"/><circle class="s2-f seed" cx="348.5" cy="119.0" r="2.6"/><circle class="s2-f seed" cx="348.5" cy="113.6" r="2.6"/><circle class="s2-f seed" cx="348.5" cy="93.8" r="2.6"/><circle class="s2-f seed" cx="565.1" cy="86.0" r="2.6"/><circle class="s2-f seed" cx="565.1" cy="49.1" r="2.6"/><circle class="s2-f seed" cx="565.1" cy="88.3" r="2.6"/><polyline class="s2" points="131.9,194.0 348.5,113.6 565.1,86.0"/><circle class="ring" cx="131.9" cy="194.0" r="6"/><circle class="s2-f hit" cx="131.9" cy="194.0" r="4.5" data-tip="Adam · d=128 · 500 steps"/><circle class="ring" cx="348.5" cy="113.6" r="6"/><circle class="s2-f hit" cx="348.5" cy="113.6" r="4.5" data-tip="Adam · d=256 · 3600 steps"/><circle class="ring" cx="565.1" cy="86.0" r="6"/><circle class="s2-f hit" cx="565.1" cy="86.0" r="4.5" data-tip="Adam · d=512 · 7100 steps"/><line class="s1 key" x1="92" y1="20" x2="110" y2="20"/><circle class="s1-f" cx="101" cy="20" r="3.2"/><text class="lbl" x="116" y="23.5">SGD</text><line class="s2 key" x1="145.2" y1="20" x2="163.2" y2="20"/><circle class="s2-f" cx="154.2" cy="20" r="3.2"/><text class="lbl" x="169.2" y="23.5">Adam</text><text class="lbl strong" x="553.1" y="183.8" text-anchor="end">d^1.70</text><text class="lbl strong" x="553.1" y="108.0" text-anchor="end">d^1.91</text></svg><!--/FIG4-->
                     <figcaption>The dashed line is Adam on the original grid. Widening it drops the
-                        largest-dimension point and the exponent falls from 2.22 to 1.91 — the gap
+                        largest-dimension point and the exponent falls from 2.22 to 1.91. The gap
                         against SGD goes from +0.52 to +0.21, back under threshold. Six further runs
                         confirmed the grid's upper edge was not binding.</figcaption>
                 </figure>
 
-                <p>That one would have been the write-up. It died in about four minutes of compute,
-                    because I checked whether my tuning grid was binding before I believed my own
+                <p>That one would have been the write up and something I thought was genuinely worth exploring. It died in about four minutes of compute :)
+                    because I checked whether my tuning grid was binding before I believed my own 
                     number.</p>
             </section>
 
@@ -306,30 +306,25 @@
                     <h2 class="sec-title">The diagnostic</h2>
                 </div>
 
-                <p>The generalizable lesson is one sentence.</p>
-
-                <p class="pull">Before interpreting <em>how</em> a model fails, verify that it could
+                <p class="pull">Before interpreting how a model fails, verify that it could
                     have succeeded.</p>
 
-                <p>Concretely, for anyone running this class of experiment: check that your loss can
+                <p>I realized that a bit too late, and thats a lesson for the future I guess. I've read more papers and realized thatt most actually do not check that their o
+                    optimizers ensure their loss can
                     actually move before you interpret anything else. Alignment metrics, overlap
-                    measures, subspace distances — all of them can look spectacular while the loss
+                    measures, subspace distances, etc. All of them can look spectacular while the loss
                     sits pinned at its trivial value. If you only report the metric, a
                     representability failure is indistinguishable from a learning result, and it will
-                    be <em>more</em> internally consistent than a real effect, not less, because an
+                    be more internally consistent than a real effect, not less, because an
                     artifact has no competing mechanisms to muddy it.</p>
 
-                <p>The specific trap that got me: an odd activation with no biases, pointed at an
+                <p>The specific trap that got me was an odd activation with no biases, pointed at an
                     even target. Worth knowing that quadratic activations sidestep it entirely, which
-                    is what the theory papers in this area tend to use — the hazard arrives when
+                    is what the theory papers in this area tend to use. The hazard arrived when
                     someone swaps in <span class="m">tanh</span> for realism and inherits a parity
-                    mismatch nobody wrote down.</p>
+                    mismatch nobody noticed</p>
 
-                <p>The meta-lesson is less flattering and more useful. Every dead end in this project
-                    came from building first and checking second: five ideas killed by a literature
-                    search I ran after implementing them, and one phenomenon killed by a control I
-                    ran after three GPU campaigns. The harness was never the bottleneck. Question
-                    selection was.</p>
+
             </section>
 
             <hr>
@@ -360,7 +355,7 @@
                 </div>
 
                 <p class="post-note">Both surviving gaps sit under the 0.25 threshold I set before
-                    running. The bottom row is the artifact, kept visible on purpose — it is what the
+                    running. The bottom row is the artifact, kept visible on purpose ; it is what the
                     result looks like one check short of the truth.</p>
 
                 <p>Every figure on this page is generated directly from the run files using the same
